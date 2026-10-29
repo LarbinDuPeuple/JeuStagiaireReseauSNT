@@ -1,0 +1,22 @@
+# Publie le jeu sur Firebase Hosting à chaque mise à jour de la branche main.
+# Nécessite le secret FIREBASE_SERVICE_ACCOUNT (voir FIREBASE.md).
+name: Déploiement Firebase Hosting
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # tant que le secret n'est pas ajouté, on ne tente pas le déploiement
+      - id: secret
+        run: echo "ok=${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}" >> "$GITHUB_OUTPUT"
+      - if: steps.secret.outputs.ok == 'true'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: jeustagiaire-snt

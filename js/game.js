@@ -626,7 +626,9 @@ function recordError(notion) { if (notion) S.errors[notion] = (S.errors[notion] 
 function unlock(id) {
   if (!id || !NOTIONS[id] || S.notions.includes(id)) return;
   S.notions.push(id);
+  freshNotions.add(id);
   toast(`📒 Nouvelle fiche dans ton carnet : <b>${NOTIONS[id].title}</b> <small>(touche C)</small>`, 'info', 4500);
+  if (carnetOpen()) renderCarnet(null, id);
 }
 
 /* quiz : qcm, ordre, saisie, tri */
@@ -890,21 +892,42 @@ function tcpPuzzle(cfg) {
 let curNotion = null;
 const carnetOpen = () => !$('#carnet-panel').hidden;
 function closeCarnet() { $('#carnet-panel').hidden = true; document.body.classList.remove('carnet-on'); }
+const freshNotions = new Set();
 function carnet(focus) {
   if (carnetOpen() && !focus) { closeCarnet(); return; }
+  renderCarnet(focus || curNotion);
+}
+/* nouvelle : fiche qui vient de se débloquer pendant que le carnet est ouvert */
+function renderCarnet(focus, nouvelle) {
   const p = $('#carnet-panel');
+  const wasOpen = carnetOpen();
+  const prev = wasOpen ? p.querySelector('.m-body') : null;
+  const keepOpen = prev ? [...prev.querySelectorAll('details[open]')].map(d => d.dataset.id) : [];
+  const keepScroll = prev ? prev.scrollTop : 0;
   p.hidden = false; document.body.classList.add('carnet-on');
   p.innerHTML = '<div class="m-head"><h2>📒 Mon carnet</h2><button class="m-close" aria-label="Fermer le carnet">✕</button></div><div class="m-body"></div>';
   p.querySelector('.m-close').onclick = closeCarnet;
   const b = p.querySelector('.m-body');
   const ids = Object.keys(NOTIONS);
-  focus = focus || curNotion;
-  b.innerHTML = `<p class="muted">${S.notions.length} / ${ids.length} fiches débloquées. Les fiches se débloquent au fil des missions et des tickets.</p><div class="notions">${ids.map(id => {
+  const banner = nouvelle ? `<button class="carnet-new">🆕 Nouvelle fiche : <b>${NOTIONS[nouvelle].icon} ${NOTIONS[nouvelle].title}</b> <small>(clique pour la lire)</small></button>` : '';
+  b.innerHTML = `${banner}<p class="muted">${S.notions.length} / ${ids.length} fiches débloquées. Les fiches se débloquent au fil des missions et des tickets.</p><div class="notions">${ids.map(id => {
     const n = NOTIONS[id], ok = S.notions.includes(id);
-    return ok ? `<details ${focus === id ? 'open' : ''}><summary>${n.icon} ${n.title}</summary><div class="notion-body">${n.html}</div></details>` : '<div class="locked">🔒 Fiche verrouillée</div>';
+    const open = focus === id || keepOpen.includes(id);
+    const tag = freshNotions.has(id) ? ' <span class="badge-new">Nouveau</span>' : '';
+    return ok ? `<details data-id="${id}" class="${freshNotions.has(id) ? 'fresh' : ''}" ${open ? 'open' : ''}><summary>${n.icon} ${n.title}${tag}</summary><div class="notion-body">${n.html}</div></details>` : '<div class="locked">🔒 Fiche verrouillée</div>';
   }).join('')}</div>`;
-  const f = b.querySelector('details[open]');
-  if (f) f.scrollIntoView({ block: 'start' });
+  b.querySelectorAll('details').forEach(d => d.addEventListener('toggle', () => {
+    if (!d.open) return;
+    freshNotions.delete(d.dataset.id); d.classList.remove('fresh');
+    const t = d.querySelector('.badge-new'); if (t) t.remove();
+  }));
+  const go = id => { const d = b.querySelector(`details[data-id="${id}"]`); if (d) { d.open = true; d.scrollIntoView({ block: 'start' }); } };
+  if (nouvelle) {
+    b.scrollTop = keepScroll;
+    b.querySelector('.carnet-new').onclick = e => { e.currentTarget.remove(); go(nouvelle); };
+    p.classList.remove('flash'); void p.offsetWidth; p.classList.add('flash');
+  } else if (focus) go(focus);
+  else if (wasOpen) b.scrollTop = keepScroll;
 }
 
 /* ---------------------------------------------------------------------

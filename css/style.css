@@ -233,5 +233,10 @@ svg.map g.rt.nb:hover circle { fill: #e8f0ff; }
 #carnet-panel .m-body { overflow: auto; }
 .m-tools { display: flex; gap: 8px; align-items: center; }
 .m-carnet { white-space: nowrap; }
+#carnet-panel .carnet-new { position: sticky; top: 0; z-index: 1; display: block; width: 100%; margin-bottom: 10px; padding: 10px 12px; border: 0; border-radius: 12px; background: #7a5bd6; color: #fff; font: inherit; text-align: left; cursor: pointer; box-shadow: var(--shadow); }
+#carnet-panel .badge-new { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: #7a5bd6; color: #fff; font-size: .75em; font-weight: 700; vertical-align: middle; }
+#carnet-panel details.fresh > summary { background: #efe9ff; }
+#carnet-panel.flash { animation: carnet-flash 1.2s ease-out 2; }
+@keyframes carnet-flash { 0%, 100% { box-shadow: var(--shadow); } 40% { box-shadow: 0 0 0 6px rgba(122, 91, 214, .55), var(--shadow); } }
 @media print { #carnet-panel { display: none !important; } }
 @media (min-width: 1100px) { body.carnet-on #modal-wrap { padding-right: 464px; } }

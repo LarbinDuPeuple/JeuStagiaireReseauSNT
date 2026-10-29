@@ -293,7 +293,7 @@ const MISSIONS = [
               <tr><td>Imprimante</td><td>192.168.1.30</td><td>Wi-Fi</td><td>hier</td></tr>
               <tr><td>Decodeur-TV</td><td>192.168.1.2</td><td>câble</td><td>maintenant</td></tr>
               <tr><td>PC-JEROME</td><td>192.168.1.47</td><td>Wi-Fi</td><td>toutes les nuits, 3 h du matin</td></tr></table>
-              Mme Le Gall vit seule et ne connaît aucun Jérôme. Quel appareil n'a rien à faire sur son réseau ?`,
+              Mme Le Gall vit seule. Quel appareil n'a rien à faire sur son réseau ?`,
               c: ['PC-SALON', 'Decodeur-TV', 'PC-JEROME', 'Tablette-Mamie'], a: 2,
               ex: "Un voisin utilise son Wi-Fi sans autorisation : il télécharge la nuit et ralentit sa connexion." },
             { q: 'Que conseilles-tu à Mme Le Gall ?',

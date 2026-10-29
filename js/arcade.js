@@ -1,6 +1,6 @@
 'use strict';
 /* =====================================================================
-   Mini-jeu « Routeur express » (borne d'arcade, ouverte par l'enseignant)
+   Mini-jeu « Routeur express » (borne d'arcade, ouverte entre deux parties)
    Un réseau tiré au hasard à chaque partie : on achemine les paquets de
    proche en proche avec les tables de routage locales, malgré les pannes,
    le compteur de sauts et les visios pressées. Le score dépend de la
@@ -66,12 +66,25 @@ const arConnected = net => arDist(net, 0, 'up').every(x => x < Infinity);
 
 /* ---------- partie ---------- */
 function arcade() {
-  if (!arcadeOpen()) { toast("🕹️ La borne est éteinte. Ton professeur l'allumera quand ce sera le moment !", '', 5000); return; }
+  if (arcadeOff()) { toast("🕹️ La borne est éteinte : ton professeur l'a fermée pour le moment.", '', 5000); return; }
+  if (!arcadeOpen()) { toast("🕹️ La borne s'allume quand tu as terminé une partie. Au travail, stagiaire !", '', 5000); return; }
   const b = openModal({ title: '🕹️ ROUTEUR EXPRESS', wide: true });
   $('#modal').classList.add('arcade');
   arIntro(b);
 }
-const arcadeOpen = () => !ONLINE.on || !!ONLINE.arcade;
+/* ouverte entre deux parties et à la fin du stage, sauf si le professeur l'a éteinte */
+const arcadeOff = () => ONLINE.on && !!ONLINE.arcadeOff;
+const arcadeOpen = () => !!S && (S.pause || S.finished) && !arcadeOff();
+function arcadeHint() { if (arcadeOpen()) toast("🕹️ La borne d'arcade <b>Routeur express</b> est allumée (au fond de la hotline, à côté du café) !", 'ok', 8000); }
+/* le professeur éteint ou rallume la borne */
+function arcadeSwitched() {
+  if (!S || !$('#title-screen').hidden) return;
+  if (arcadeOff()) {
+    if (window.ARCADE_ON) { arcadeOn = false; window.ARCADE_ON = false; closeModal(true); }
+    if (S.pause || S.finished) toast("🕹️ Ton professeur a éteint la borne d'arcade.", '', 6000);
+  } else arcadeHint();
+  if (typeof refreshHUD === 'function') refreshHUD();
+}
 function arBest() { try { return +localStorage.getItem(AR.BEST_KEY) || 0; } catch (e) { return 0; } }
 
 function arIntro(b) {

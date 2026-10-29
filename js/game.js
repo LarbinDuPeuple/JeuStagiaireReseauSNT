@@ -984,16 +984,16 @@ function missionComplete() {
   const b = openModal({ title: `✅ Mission ${S.m + 1} accomplie !`, closable: false });
   b.innerHTML = `<div class="mission-card"><h3>${m.title}</h3><p>Score : <b>${S.score}</b> · Satisfaction des clients : <b>${Math.round(S.sat)} %</b></p>
     <h4>📒 Notions acquises</h4><ul>${notions.map(n => `<li>${NOTIONS[n].icon} ${NOTIONS[n].title}</li>`).join('')}</ul>
-    ${last ? '<p>🎉 Tu as terminé ton stage ! Voici ton rapport.</p>' : endPart ? `<div class="goal">🏁 <b>Fin de la partie ${m.partie}.</b> ${ONLINE.on ? 'Ta partie est sauvegardée en ligne.' : `Note ton <b>code de reprise</b> : il te permettra de reprendre la partie ${np} sur n'importe quel ordinateur. Si ton professeur le demande, enregistre aussi ton rapport.<div class="code">${resumeCode(np)}</div>`}</div><p>${partOpen(np) ? `Tu peux commencer la partie ${np} tout de suite, ou continuer à répondre aux tickets de la hotline.` : `🔒 La partie ${np} s'ouvrira quand ton professeur la débloquera. En attendant, les appels s'enchaînent à la hotline !`}</p>` : '<p>Prends une minute pour relire les fiches de ton carnet avant de continuer.</p>'}</div>
+    ${last ? '<p>🎉 Tu as terminé ton stage ! Voici ton rapport.</p>' : endPart ? `<div class="goal">🏁 <b>Fin de la partie ${m.partie}.</b> ${ONLINE.on ? 'Ta partie est sauvegardée en ligne.' : `Note ton <b>code de reprise</b> : il te permettra de reprendre la partie ${np} sur n'importe quel ordinateur. Si ton professeur le demande, enregistre aussi ton rapport.<div class="code">${resumeCode(np)}</div>`}</div><p>${partOpen(np) ? `Tu peux commencer la partie ${np} tout de suite, ou continuer à répondre aux tickets de la hotline.` : `🔒 La partie ${np} s'ouvrira quand ton professeur la débloquera. En attendant, réponds aux appels de la hotline${arcadeOff() ? '' : " ou va jouer à la borne d'arcade 🕹️ (à côté du café)"} !`}</p>` : '<p>Prends une minute pour relire les fiches de ton carnet avant de continuer.</p>'}</div>
     <div class="actions">${last ? '<button class="btn primary" id="next">Voir mon rapport de stage</button>' : endPart ? `<button class="btn" id="send">📤 Enregistrer mon rapport</button><button class="btn ${partOpen(np) ? '' : 'primary'}" id="stay">Continuer la hotline</button>${partOpen(np) ? `<button class="btn primary" id="next">Commencer la partie ${np}</button>` : ''}` : '<button class="btn primary" id="next">Mission suivante →</button>'}</div>`;
   if (b.querySelector('#next')) b.querySelector('#next').onclick = () => {
     closeModal(true);
-    if (last) { S.finished = true; save(); refreshHUD(); report(); }
+    if (last) { S.finished = true; save(); refreshHUD(); report(); arcadeHint(); }
     else { S.m++; S.s = 0; S.sp = {}; S.pause = false; save(); refreshHUD(); missionIntro(); }
     if (window.onlineTick) onlineTick(true);
   };
   if (endPart) b.querySelector('#send').onclick = () => exportRapport(S.m + 1);
-  if (endPart) b.querySelector('#stay').onclick = () => { closeModal(true); S.m++; S.s = 0; S.sp = {}; S.pause = true; S.nextInc = S.t + 5; save(); refreshHUD(); if (window.onlineTick) onlineTick(true); };
+  if (endPart) b.querySelector('#stay').onclick = () => { closeModal(true); S.m++; S.s = 0; S.sp = {}; S.pause = true; S.nextInc = null; save(); refreshHUD(); arcadeHint(); if (window.onlineTick) onlineTick(true); };
 }
 
 function idleAction(id) {
@@ -1055,17 +1055,16 @@ const INCIDENTS_BY = {};
 INCIDENTS.forEach(i => { INCIDENTS_BY[i.id] = i; });
 const busy = id => S.tickets.some(t => t.ctx.client === id || t.reportAt === id || t.fixAt === id || t.caller === id);
 const INC_CFG = { off: null, calme: [200, 300, 1], normal: [110, 170, 1], intense: [60, 100, 2] };
-/* fin d'une partie ou fin du jeu : les appels s'enchaînent (5 s entre deux) pour patienter */
+/* fin d'une partie ou fin du jeu : les appels gardent leur rythme habituel, la borne d'arcade s'ouvre */
 const waiting = () => S.pause || S.finished;
-const WAIT_GAP = 5;
 INCIDENTS.forEach(i => { i.apply = i.apply || (() => {}); i.revert = i.revert || (() => {}); });
 const PATIENCE = 240;
 
 function scheduleIncidents() {
   const wait = waiting();
-  const cfg = wait && S.settings.inc !== 'off' ? [WAIT_GAP, WAIT_GAP, 1] : INC_CFG[S.settings.inc];
+  const cfg = INC_CFG[S.settings.inc];
   if (!cfg || !reached(INCIDENTS[0].unlock) || !$('#title-screen').hidden) return;
-  if (S.nextInc === null) { S.nextInc = S.t + (wait ? WAIT_GAP : 40); return; }
+  if (S.nextInc === null) { S.nextInc = S.t + 40; return; }
   if (S.t < S.nextInc || uiBusy()) return;
   if (S.tickets.length >= cfg[2] || S.tickets.some(t => INCIDENTS_BY[t.id].exclusive)) return;
   // en attente, plus de limite de répétition : on privilégie seulement les tickets les moins vus
@@ -1172,7 +1171,6 @@ function resolveTicket(t, el) {
   S.tickets = S.tickets.filter(x => x.uid !== t.uid);
   const fast = S.t - t.t0 < 90;
   addScore(50 + (fast ? 25 : 0)); addSat(t.late ? 4 : 8); S.incOk++;
-  if (waiting()) S.nextInc = S.t + WAIT_GAP;
   if (inc.notion) unlock(inc.notion);
   sfx.step();
   const p = PEOPLE[t.caller];
@@ -1204,7 +1202,7 @@ function refreshHUD() {
   $('#hud-notions').textContent = S.notions.length;
   let html;
   if (S.finished) html = '<h3>🏁 Stage terminé</h3><p class="muted">Bravo ! Tu peux revoir ton rapport. Les appels continuent : la hotline compte sur toi.</p><button class="btn small" onclick="report()">📄 Mon rapport de stage</button>';
-  else if (S.pause) { const n = waitPart(); html = `<h3>☕ Fin de la partie ${n - 1}</h3>${ONLINE.on ? '' : `<p class="small">Ton code de reprise :</p><div class="code">${resumeCode(n)}</div>`}${partOpen(n) ? `<button class="btn primary small" onclick="startPart()">▶ Commencer la partie ${n}</button>` : `<p class="muted small">🔒 La partie ${n} n'est pas encore ouverte : ton professeur la débloquera. En attendant, réponds aux appels !</p>`}`; }
+  else if (S.pause) { const n = waitPart(); html = `<h3>☕ Fin de la partie ${n - 1}</h3>${ONLINE.on ? '' : `<p class="small">Ton code de reprise :</p><div class="code">${resumeCode(n)}</div>`}${partOpen(n) ? `<button class="btn primary small" onclick="startPart()">▶ Commencer la partie ${n}</button>` : `<p class="muted small">🔒 La partie ${n} n'est pas encore ouverte : ton professeur la débloquera. En attendant, réponds aux appels${arcadeOff() ? '' : " ou joue à la borne d'arcade 🕹️"} !</p>`}`; }
   else {
     html = `<h3>🎯 ${m.title}</h3><ol class="steps">`;
     m.steps.forEach((st, i) => {
@@ -1396,7 +1394,7 @@ function startScreen() {
     S.net = Object.assign(newState().net, st.net || {});
     if (nm) S.name = nm; if (cl) S.classe = cl;
     // partie terminée avant l'ajout de la partie 3 : l'élève attend la partie 3 à la hotline
-    if (S.finished && S.m < MISSIONS.length - 1 && S.s >= MISSIONS[S.m].steps.length) { S.finished = false; S.m++; S.s = 0; S.sp = {}; S.pause = true; S.nextInc = S.t + WAIT_GAP; }
+    if (S.finished && S.m < MISSIONS.length - 1 && S.s >= MISSIONS[S.m].steps.length) { S.finished = false; S.m++; S.s = 0; S.sp = {}; S.pause = true; S.nextInc = null; }
     ts.hidden = true; save(); refreshHUD();
     if (S.finished) report(); else if (S.s === 0 && !S.pause) missionIntro();
     else if (!S.pause && MISSIONS[S.m] && S.s >= MISSIONS[S.m].steps.length) missionComplete();
@@ -1433,7 +1431,7 @@ function startScreen() {
     S = newState(name, classe); ts.hidden = true;
     jumpTo(firstOf(st.part), st.stats);
     // partie pas encore ouverte par l'enseignant : on attend à la hotline
-    if (!partOpen(st.part)) { closeModal(true); S.pause = true; S.nextInc = S.t + WAIT_GAP; save(); refreshHUD(); }
+    if (!partOpen(st.part)) { closeModal(true); S.pause = true; S.nextInc = null; save(); refreshHUD(); }
   };
 }
 

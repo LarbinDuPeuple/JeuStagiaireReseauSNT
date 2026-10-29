@@ -6,13 +6,13 @@
    - bloque l'écran quand l'enseignant le demande ;
    - ouvre la partie 2 (puis la partie 3) quand l'enseignant la débloque ;
    - efface la partie si l'enseignant supprime la progression de l'élève ;
-   - allume la borne d'arcade (mini-jeu) et enregistre les meilleurs scores.
+   - laisse l'enseignant éteindre la borne d'arcade (mini-jeu) et enregistre les meilleurs scores.
    Sans configuration (js/firebase-config.js), hors ligne ou depuis une clé USB,
    le jeu fonctionne comme avant et toutes les parties sont libres.
    --------------------------------------------------------------------- */
 const FB_VERSION = '10.12.2';
 const FB_BASE = window.FIREBASE_SDK_BASE || `https://www.gstatic.com/firebasejs/${FB_VERSION}/`;
-const ONLINE = { on: false, ok: false, locked: false, msg: '', parts: {}, arcade: false };
+const ONLINE = { on: false, ok: false, locked: false, msg: '', parts: {}, arcadeOff: false };
 const classeId = c => String(c || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'sans-classe';
 /* identifiant d'une partie : « 2nde-4__lucas-m » (accents, points et majuscules ignorés) */
 const partieKey = (nom, classe) => `${classeId(classe)}__${classeId(nom)}`;
@@ -97,9 +97,9 @@ const partOpen = n => n <= 1 || !ONLINE.on || !!ONLINE.parts[n];
       ONLINE.parts[n] = all.some(d => d['partie' + n]);
       if (ONLINE.parts[n] !== was && typeof partChanged === 'function') partChanged(n, ONLINE.parts[n]);
     });
-    const arc = ONLINE.arcade;
-    ONLINE.arcade = all.some(d => d.arcade);
-    if (ONLINE.arcade && !arc && S && typeof toast === 'function' && document.getElementById('title-screen').hidden) toast("🕹️ La borne d'arcade <b>Routeur express</b> est allumée (au fond de la hotline, à côté du café) !", 'ok', 8000);
+    const off = ONLINE.arcadeOff;
+    ONLINE.arcadeOff = all.some(d => d.arcadeOff);
+    if (off !== ONLINE.arcadeOff && typeof arcadeSwitched === 'function') arcadeSwitched();
     const el = document.getElementById('lock-screen');
     if (!el) return;
     el.hidden = !ONLINE.locked;

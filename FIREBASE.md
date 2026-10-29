@@ -42,13 +42,13 @@ Quand le jeu évolue, il peut falloir recoller les règles : console Firebase > 
 - Les élèves ouvrent le jeu sur https://jeustagiaire-snt.web.app (publié automatiquement à chaque mise à jour du dépôt, voir `.github/workflows/firebase-hosting.yml`). Ils tapent leur prénom avec l'initiale du nom et leur classe : leur partie est sauvegardée en ligne et se retrouve sur n'importe quel poste. Leur progression est envoyée automatiquement (au plus toutes les 20 secondes).
 - Tu ouvres https://jeustagiaire-snt.web.app/prof.html et tu te connectes. La pastille verte indique les élèves en jeu.
 - **🛑 Bloquer la 2nde X** : tous les jeux de la classe affichent « Pause ! » avec ton message. Le temps de jeu et les tickets sont figés. **▶ Débloquer** relance tout. Il faut une à deux secondes pour que l'écran change.
-- **🕹️ Allumer la borne d'arcade** : ouvre le mini-jeu « Routeur express » pour les élèves en avance (voir la fiche enseignant). Il faut les règles à jour (avec la partie `scores`).
+- **🕹️ Éteindre la borne d'arcade** : la borne (mini-jeu « Routeur express ») s'allume toute seule pour les élèves qui attendent la partie suivante ; ce bouton la ferme pour la classe ou pour toutes, et la rallume. Le classement demande les règles à jour (avec la partie `scores`).
 - Le jeu ne marche en ligne que par le lien https. Ouvert depuis une clé USB ou un fichier, il reste hors ligne.
 
 ## Données personnelles (RGPD)
 
 - Seuls sont stockés : le **prénom et l'initiale** tapés par l'élève, sa **classe**, sa partie et ses résultats dans le jeu. Pas de nom de famille, pas d'adresse e-mail, pas de compte élève.
 - Seul ton compte peut lire ces données ; chaque élève ne peut écrire que sa propre fiche.
-- Exception : le **classement de la borne d'arcade** (prénom et initiale, classe, meilleur score, nombre de parties) est lisible par tous les joueurs connectés au jeu, puisqu'il s'affiche dans la borne. Si tu ne l'allumes pas, rien n'est enregistré. Le bouton « Remettre à zéro le classement » l'efface pour la classe.
+- Exception : le **classement de la borne d'arcade** (prénom et initiale, classe, meilleur score, nombre de parties) est lisible par tous les joueurs connectés au jeu, puisqu'il s'affiche dans la borne. Un score n'est enregistré que si l'élève joue à la borne. Le bouton « Remettre à zéro le classement » l'efface pour la classe.
 - Bouton **« Effacer les données de la classe »** dans l'espace enseignant, à utiliser en fin d'année.
 - Comme il s'agit de données d'élèves mineurs hébergées chez un prestataire (Google), signale ce traitement au DPO de l'établissement avant de l'utiliser.

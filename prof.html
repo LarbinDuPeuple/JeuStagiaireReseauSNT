@@ -91,7 +91,7 @@
         <button class="btn" id="ar-class"></button>
         <button class="btn" id="ar-all"></button>
       </div>
-      <p class="muted" style="margin:6px 0 0">Les parties 2 et 3 restent fermées tant que tu ne les as pas débloquées. En attendant, les élèves qui ont fini enchaînent les appels de la hotline. La borne d'arcade (mini-jeu « Routeur express », sur le routage) s'allume quand tu le décides, pour les élèves en avance.</p>
+      <p class="muted" style="margin:6px 0 0">Les parties 2 et 3 restent fermées tant que tu ne les as pas débloquées. En attendant, les élèves qui ont fini répondent aux appels de la hotline et peuvent jouer à la borne d'arcade (mini-jeu « Routeur express », sur le routage). La borne s'allume toute seule pour un élève qui a fini une partie et se referme quand il commence la suivante ; tu peux l'éteindre pour une classe ou pour toutes.</p>
       <div id="lock-state"></div>
       <div id="live-err"></div>
     </div>
@@ -326,16 +326,16 @@ function renderLocks() {
     $(`#p${n}-all`).className = 'btn ' + (pa ? '' : 'open');
   });
   const label = k => k === 'toutes' ? 'toutes les classes' : esc(CLASSES.find(c => classeId(c) === k) || k);
-  const ac = !!ctlOf(id).arcade, aa = !!ctlOf('toutes').arcade;
-  $('#ar-class').textContent = ac ? `🕹️ Éteindre la borne (${name})` : `🕹️ Allumer la borne d'arcade (${name})`;
-  $('#ar-class').className = 'btn ' + (ac ? '' : 'open');
-  $('#ar-all').textContent = aa ? '🕹️ Éteindre la borne (toutes)' : '🕹️ Borne pour toutes les classes';
-  $('#ar-all').className = 'btn ' + (aa ? '' : 'open');
+  const ac = !!ctlOf(id).arcadeOff, aa = !!ctlOf('toutes').arcadeOff;
+  $('#ar-class').textContent = ac ? `🕹️ Rallumer la borne (${name})` : `🕹️ Éteindre la borne d'arcade (${name})`;
+  $('#ar-class').className = 'btn ' + (ac ? 'open' : '');
+  $('#ar-all').textContent = aa ? '🕹️ Rallumer la borne (toutes)' : '🕹️ Éteindre la borne (toutes)';
+  $('#ar-all').className = 'btn ' + (aa ? 'open' : '');
   const keys = Object.keys(live.ctl).filter(k => !k.startsWith('reset-'));
   const on = keys.filter(k => live.ctl[k].bloque);
   $('#lock-state').innerHTML = (on.length ? `<p class="locked-banner">Jeux en pause : ${on.map(label).join(', ')}</p>` : '')
     + [2, 3].map(n => { const o = keys.filter(k => live.ctl[k]['partie' + n]); return o.length ? `<p class="muted" style="margin:8px 0 0">🔓 Partie ${n} ouverte : ${o.map(label).join(', ')}</p>` : ''; }).join('')
-    + (k => k.length ? `<p class="muted" style="margin:8px 0 0">🕹️ Borne allumée : ${k.map(label).join(', ')}</p>` : '')(keys.filter(k => live.ctl[k].arcade));
+    + (k => k.length ? `<p class="muted" style="margin:8px 0 0">🕹️ Borne éteinte : ${k.map(label).join(', ')}</p>` : '')(keys.filter(k => live.ctl[k].arcadeOff));
 }
 (function () {
   const cfg = window.FIREBASE_CONFIG;
@@ -402,8 +402,8 @@ function renderLocks() {
       $(`#p${n}-class`).onclick = () => { const id = classeId(cur); setCtl(id, { [f]: !ctlOf(id)[f] }); };
       $(`#p${n}-all`).onclick = () => setCtl('toutes', { [f]: !ctlOf('toutes')[f] });
     });
-    $('#ar-class').onclick = () => { const id = classeId(cur); setCtl(id, { arcade: !ctlOf(id).arcade }); };
-    $('#ar-all').onclick = () => setCtl('toutes', { arcade: !ctlOf('toutes').arcade });
+    $('#ar-class').onclick = () => { const id = classeId(cur); setCtl(id, { arcadeOff: !ctlOf(id).arcadeOff }); };
+    $('#ar-all').onclick = () => setCtl('toutes', { arcadeOff: !ctlOf('toutes').arcadeOff });
     window.clearScores = () => {
       const ss = live.scores.filter(x => classeId(x.classe) === classeId(cur));
       if (!ss.length || !confirm(`Remettre à zéro le classement de la ${cur} (${ss.length} élève(s)) ?`)) return;

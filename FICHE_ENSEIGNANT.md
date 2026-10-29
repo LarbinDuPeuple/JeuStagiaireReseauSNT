@@ -91,15 +91,15 @@ Exemples d'activités du BO repris : déterminer l'adresse IP d'un équipement e
 
 **Changement de poste :** avec le lien en ligne, la partie est sauvegardée sur le serveur. L'élève la retrouve sur n'importe quel ordinateur en retapant son **prénom avec l'initiale de son nom** (ex. « Lucas M. ») et sa classe ; majuscules, accents et points ne comptent pas. L'initiale évite que deux homonymes partagent la même partie. Il n'y a pas de mot de passe : un élève qui tape le nom d'un camarade récupère sa partie (tu peux supprimer une progression depuis l'espace enseignant). Hors ligne (clé USB), la sauvegarde reste dans le navigateur et le jeu affiche à la fin des parties 1 et 2 un **code de reprise** lié au prénom.
 
-**Élève qui finit une partie en avance :** les appels de la hotline s'enchaînent alors toutes les 5 secondes (pannes et quiz de révision des missions déjà faites), pour qu'il ne s'ennuie pas pendant que les autres terminent. Avec le mode en ligne, les **parties 2 et 3 restent fermées** tant que tu ne les as pas débloquées dans l'espace enseignant ; l'élève reçoit alors un message et lance la partie suivante d'un clic. Sans le mode en ligne, toutes les parties sont libres : il lance la suivante en parlant à Gwenaëlle.
+**Élève qui finit une partie en avance :** il continue à répondre aux appels de la hotline (pannes et quiz de révision des missions déjà faites), au rythme habituel, et la **borne d'arcade** s'allume pour lui (voir « Différenciation »). Avec le mode en ligne, les **parties 2 et 3 restent fermées** tant que tu ne les as pas débloquées dans l'espace enseignant ; l'élève reçoit alors un message et lance la partie suivante d'un clic. Sans le mode en ligne, toutes les parties sont libres : il lance la suivante en parlant à Gwenaëlle.
 
 ## Différenciation
 
-- **Élèves rapides :** menu ⚙️, appels « Intense » (deux tickets en même temps). Défi : taper soi-même les commandes au lieu de cliquer sur les raccourcis. En ligne, tu peux aussi allumer la **borne d'arcade** (voir ci-dessous).
+- **Élèves rapides :** menu ⚙️, appels « Intense » (deux tickets en même temps). Défi : taper soi-même les commandes au lieu de cliquer sur les raccourcis. Entre deux parties, la **borne d'arcade** les occupe (voir ci-dessous).
 
 ### La borne d'arcade « Routeur express »
 
-Une borne rétro au fond de la hotline, à côté du café. Elle est **éteinte** tant que tu ne l'allumes pas dans l'espace enseignant (bouton « 🕹️ Allumer la borne d'arcade », pour la classe affichée ou pour toutes). Les élèves reçoivent un message quand elle s'allume. Hors ligne (clé USB, fichier), elle est toujours allumée.
+Une borne rétro au fond de la hotline, à côté du café. Elle s'allume **toute seule** pour un élève qui a terminé une partie (ou tout le stage) et se referme dès qu'il commence la partie suivante : pendant les missions, elle reste éteinte. L'élève reçoit un message quand elle s'allume. En ligne, tu peux l'**éteindre** quand tu veux dans l'espace enseignant (bouton « 🕹️ Éteindre la borne d'arcade », pour la classe affichée ou pour toutes), puis la rallumer ; un élève en train de jouer est alors renvoyé à la hotline.
 
 - **Le jeu (2 minutes) :** l'élève est le réseau. Des paquets apparaissent sur 10 routeurs, chacun avec l'adresse IP de sa destination (`10.42.x.x` : le réseau `10.42` est écrit sous un routeur). Il clique un paquet puis le routeur voisin où l'envoyer, saut après saut. La table de routage du routeur où se trouve le paquet est affichée.
 - **Ce qui demande de réfléchir :** des fibres cassent (trois pannes par partie) et les tables mettent 6 secondes à se mettre à jour : il faut trouver un autre chemin à la main. Le compteur de sauts détruit les paquets qui tournent en rond. Les visios (▶) ont un délai : en retard, elles ne valent plus rien, il faut les traiter en priorité. Les fichiers (■) sont en 3 morceaux à livrer tous. Le réseau est tiré au hasard à chaque partie : rien à apprendre par cœur.
@@ -128,7 +128,7 @@ Sans le mode en ligne, rien n'est envoyé sur Internet : les rapports importés 
 
 **Supprimer un élève :** bouton 🗑️ au bout de sa ligne. En ligne, sa progression est effacée et son jeu repart au début dès qu'il est ouvert.
 
-**Débloquer les parties 2 et 3 (mode en ligne) :** boutons « 🔓 Débloquer la partie 2 » et « 🔓 Débloquer la partie 3 », pour la classe affichée ou pour toutes les classes. Tant qu'une partie est fermée, les élèves qui ont fini la précédente enchaînent les appels de la hotline.
+**Débloquer les parties 2 et 3 (mode en ligne) :** boutons « 🔓 Débloquer la partie 2 » et « 🔓 Débloquer la partie 3 », pour la classe affichée ou pour toutes les classes. Tant qu'une partie est fermée, les élèves qui ont fini la précédente répondent aux appels de la hotline et peuvent jouer à la borne d'arcade.
 
 **Mode en ligne (facultatif) :** une fois Firebase configuré (voir [FIREBASE.md](FIREBASE.md)), l'espace enseignant affiche les élèves **en direct**, sans import de fichiers, et propose **« 🛑 Bloquer la classe »** ou **« Bloquer toutes les classes »**, avec un message. Les jeux de la classe affichent alors « Pause ! » et le temps est figé jusqu'au déblocage.
 

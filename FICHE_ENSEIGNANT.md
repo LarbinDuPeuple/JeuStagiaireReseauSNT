@@ -2,7 +2,7 @@
 
 **Niveau :** 2nde, SNT, thème **Internet**
 **Durée :** deux séances de 1 h 30, chacune avec **1 h de jeu** et 20 à 30 min d'intro, de débrief et de trace écrite
-**Modalité :** individuel ou binôme, un poste avec un navigateur récent (Chrome, Firefox, Edge). Aucune installation, aucun compte. **Lien du jeu :** https://larbindupeuple.github.io/JeuStagiaireReseauSNT/
+**Modalité :** individuel ou binôme, un poste avec un navigateur récent (Chrome, Firefox, Edge). Aucune installation, aucun compte. **Lien du jeu :** https://jeustagiaire-snt.web.app/
 Fonctionne aussi hors ligne : on peut ouvrir `index.html` directement depuis une clé USB ou le réseau du lycée.
 
 ## Le scénario
@@ -68,7 +68,7 @@ Menu ⚙️, puis **Mode enseignant**, code **`IROISE`**. Il permet de reprendre
 
 ## Espace enseignant : rapports par classe
 
-Page **https://larbindupeuple.github.io/JeuStagiaireReseauSNT/prof.html** (ou `prof.html` dans le dossier du jeu).
+Page **https://jeustagiaire-snt.web.app/prof.html** (ou `prof.html` dans le dossier du jeu).
 
 1. En fin de séance, chaque élève clique sur **« 📤 Enregistrer mon rapport »** : à la fin de la partie 1, à la fin du jeu, ou à tout moment par le menu ⚙️ puis « Rapport de stage ». Le fichier s'appelle `rapport_<classe>_<prénom>.json`.
 2. Les élèves déposent ce fichier dans l'ENT (casier, devoir ou espace de dépôt).

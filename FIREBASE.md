@@ -19,7 +19,7 @@ Compte environ 10 minutes. Firebase est gratuit à cette échelle (offre « Spar
 1. Menu **Créer > Authentication > Commencer**.
 2. Onglet **Mode de connexion** : active **Anonyme** (pour les élèves, aucun compte à créer) et **Adresse e-mail/Mot de passe** (pour toi).
 3. Onglet **Utilisateurs > Ajouter un utilisateur** : ton adresse e-mail et un mot de passe. C'est ton accès à l'espace enseignant.
-4. Onglet **Paramètres > Domaines autorisés > Ajouter un domaine** : `larbindupeuple.github.io`.
+4. Onglet **Paramètres > Domaines autorisés** : `jeustagiaire-snt.web.app` y figure déjà. Ajoute `larbindupeuple.github.io` seulement si tu utilises aussi l'ancien lien.
 
 ## 3. Créer la base de données
 
@@ -35,8 +35,8 @@ Compte environ 10 minutes. Firebase est gratuit à cette échelle (offre « Spar
 
 ## Utilisation en classe
 
-- Les élèves ouvrent le jeu par le lien GitHub Pages, comme d'habitude. Leur progression est envoyée automatiquement (au plus toutes les 20 secondes).
-- Tu ouvres https://larbindupeuple.github.io/JeuStagiaireReseauSNT/prof.html et tu te connectes. La pastille verte indique les élèves en jeu.
+- Les élèves ouvrent le jeu sur https://jeustagiaire-snt.web.app (publié automatiquement à chaque mise à jour du dépôt, voir `.github/workflows/firebase-hosting.yml`). Leur progression est envoyée automatiquement (au plus toutes les 20 secondes).
+- Tu ouvres https://jeustagiaire-snt.web.app/prof.html et tu te connectes. La pastille verte indique les élèves en jeu.
 - **🛑 Bloquer la 2nde X** : tous les jeux de la classe affichent « Pause ! » avec ton message. Le temps de jeu et les tickets sont figés. **▶ Débloquer** relance tout. Il faut une à deux secondes pour que l'écran change.
 - Le jeu ne marche en ligne que par le lien https. Ouvert depuis une clé USB ou un fichier, il reste hors ligne.
 

@@ -4,7 +4,7 @@ Jeu sérieux pour navigateur, en vue isométrique, pour **deux séances de SNT e
 
 > Lundi, 8h30, port de commerce de Brest. Premier jour de stage chez IroiseNet, le fournisseur d'accès à Internet du Finistère. Le technicien est bloqué à Ouessant par la tempête… et le téléphone de la hotline sonne déjà.
 
-**▶ Jouer :** https://larbindupeuple.github.io/JeuStagiaireReseauSNT/
+**▶ Jouer :** https://jeustagiaire-snt.web.app/
 **📄 Fiche enseignant :** [FICHE_ENSEIGNANT.md](FICHE_ENSEIGNANT.md) (déroulé des deux séances, capacités du programme, corrigé)
 
 ## Contenu
@@ -33,4 +33,4 @@ HTML, CSS et JavaScript, sans dépendance ni étape de build : il suffit d'ouvri
 
 Mode enseignant (reprendre à une mission) : menu ⚙️, code `IROISE`.
 
-Espace enseignant (rapports des élèves triés par classe) : [`prof.html`](https://larbindupeuple.github.io/JeuStagiaireReseauSNT/prof.html). Voir la fiche enseignant. Mode en ligne facultatif (suivi en direct, blocage des jeux) : [FIREBASE.md](FIREBASE.md).
+Espace enseignant (rapports des élèves triés par classe) : [`prof.html`](https://jeustagiaire-snt.web.app/prof.html). Voir la fiche enseignant. Mode en ligne facultatif (suivi en direct, blocage des jeux) : [FIREBASE.md](FIREBASE.md).

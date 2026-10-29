@@ -20,6 +20,8 @@ Jeu sérieux pour navigateur, en vue isométrique, pour la SNT en 2nde, thèmes 
 
 Pendant le jeu, **23 tickets** de la hotline se débloquent au fil des missions : 12 pannes à diagnostiquer (box éteinte, DNS en panne, routeur de Morlaix coupé, déni de service, pair-à-pair, neutralité du Net, NTP, clé Wi-Fi, page 404, paiement sur une page en http…) et 11 quiz de révision posés par les collègues (réseaux physiques, adresses IP, DNS, routage, IP et TCP, usages, histoire du Web et URL, requêtes HTTP, HTML et CSS, moteurs de recherche, sécurité). Quand un élève a fini une partie, les appels s'enchaînent toutes les 5 secondes pour l'occuper en attendant les autres. Le jeu propose aussi un carnet de 25 fiches, une carte du réseau, une invite de commandes simulée, un rapport de stage imprimable et, hors ligne, un **code de reprise** entre deux parties.
 
+**Borne d'arcade « Routeur express »** (pour les élèves en avance, allumée par l'enseignant) : un mini-jeu rétro de 2 minutes où l'élève joue le réseau. Il achemine des paquets de routeur en routeur jusqu'à leur réseau de destination, en lisant les tables de routage, pendant que des fibres cassent. Les points dépendent du chemin (le plus court rapporte le plus) et de la vitesse, donc il n'y a pas de score parfait. Le réseau change à chaque partie. En ligne, un classement montre le record de chaque élève de la classe et une « bataille des classes ».
+
 ## Commandes
 
 - Clic sur le sol pour se déplacer, clic sur un collègue ou un équipement pour aller l'utiliser.
@@ -32,6 +34,7 @@ HTML, CSS et JavaScript, sans dépendance ni étape de build : il suffit d'ouvri
 
 - `js/content.js` : contenu pédagogique (missions, questions, tickets, fiches, réseau simulé). C'est le fichier à modifier pour adapter le jeu.
 - `js/web.js` : activités de la partie 3 (navigateur et outils de développement, éditeur HTML/CSS, indexation, mail d'hameçonnage, réglages du navigateur).
+- `js/arcade.js` : mini-jeu « Routeur express » de la borne d'arcade.
 - `js/game.js` : moteur (rendu isométrique, simulation réseau, mini-jeux de routage et de TCP, interface). Il est adapté du moteur du [Stagiaire Réseau](https://github.com/LarbinDuPeuple/JeuStagiaireReseau).
 
 Mode enseignant (reprendre à une mission) : menu ⚙️, code `IROISE`.

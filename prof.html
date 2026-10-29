@@ -87,7 +87,11 @@
         <button class="btn" id="p3-class"></button>
         <button class="btn" id="p3-all"></button>
       </div>
-      <p class="muted" style="margin:6px 0 0">Les parties 2 et 3 restent fermées tant que tu ne les as pas débloquées. En attendant, les élèves qui ont fini enchaînent les appels de la hotline.</p>
+      <div class="live-bar" style="margin-top:8px">
+        <button class="btn" id="ar-class"></button>
+        <button class="btn" id="ar-all"></button>
+      </div>
+      <p class="muted" style="margin:6px 0 0">Les parties 2 et 3 restent fermées tant que tu ne les as pas débloquées. En attendant, les élèves qui ont fini enchaînent les appels de la hotline. La borne d'arcade (mini-jeu « Routeur express », sur le routage) s'allume quand tu le décides, pour les élèves en avance.</p>
       <div id="lock-state"></div>
       <div id="live-err"></div>
     </div>
@@ -256,7 +260,8 @@ function render() {
     <div class="capbar">${CAPS.slice(a, z).map((c, j) => `<div>${esc(c)}<div class="g"><span style="width:${capRate[a + j]}%"></span></div></div><div class="num" style="padding-top:2px">${capRate[a + j]} %</div>`).join('')}</div>`).join('')}
     <h3>Notions les plus ratées</h3>
     <p>${topErr.length ? topErr.map(([n, k]) => `${esc(n)} : ${k} erreur${k > 1 ? 's' : ''}`).join(' · ') : '<span class="muted">Aucune erreur enregistrée.</span>'}</p>
-    <p class="muted noprint">Clique sur un titre de colonne pour trier. Survole les carrés des capacités pour voir leur détail.</p>`;
+    <p class="muted noprint">Clique sur un titre de colonne pour trier. Survole les carrés des capacités pour voir leur détail.</p>${live.on ? arcadeHTML() : ''}`;
+  if (live.on && $('#ar-reset')) $('#ar-reset').onclick = () => clearScores();
   $('#etape').onchange = e => { etape = +e.target.value; try { localStorage.setItem('stagiaire-snt-etape', etape); } catch (x) { /* rien */ } render(); };
   $('#view').querySelectorAll('button.del').forEach(btn => btn.onclick = () => deleteStudent(btn.dataset.k));
   $('#view').querySelectorAll('th[data-k]').forEach(t => t.onclick = () => {
@@ -289,7 +294,19 @@ $('#csv').onclick = () => {
 /* ---------- suivi en direct (Firebase) ---------- */
 const CLASSES = ['2nde 3', '2nde 4', '2nde 5', '2nde 6'];
 const classeId = c => String(c || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'sans-classe';
-const live = { on: false, reports: [], ctl: {} };
+const live = { on: false, reports: [], ctl: {}, scores: [] };
+/* classement du mini-jeu : records de la classe affichée et bataille des classes (moyenne des 5 meilleurs) */
+function arcadeHTML() {
+  const mine = live.scores.filter(x => classeId(x.classe) === classeId(cur)).sort((a, b) => b.best - a.best);
+  const by = {};
+  live.scores.forEach(x => { (by[x.classe] = by[x.classe] || []).push(x.best); });
+  const cls = Object.entries(by).map(([c, v]) => { const t = v.sort((a, b) => b - a).slice(0, 5); return [c, Math.round(t.reduce((a, b) => a + b, 0) / t.length), v.length]; }).sort((a, b) => b[1] - a[1]);
+  return `<h3>🕹️ Routeur express : records de la ${esc(cur)}</h3>
+    ${mine.length ? `<div class="wrap"><table><thead><tr><th>#</th><th>Élève</th><th>Record</th><th>Parties jouées</th></tr></thead><tbody>${mine.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.nom)}</td><td class="num"><b>${x.best}</b></td><td class="num">${x.parties}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Aucune partie jouée dans cette classe.</p>'}
+    <h3>🏫 Bataille des classes</h3>
+    ${cls.length ? `<p>${cls.map(([c, m, n], i) => `${['🥇', '🥈', '🥉'][i] || (i + 1) + '.'} <b>${esc(c)}</b> : ${m} pts <span class="muted">(${n} joueur${n > 1 ? 's' : ''})</span>`).join(' · ')}</p>` : '<p class="muted">Pas encore de scores.</p>'}
+    <p class="noprint"><button class="btn danger" id="ar-reset">🗑️ Remettre à zéro le classement de la ${esc(cur)}</button></p>`;
+}
 const ctlOf = id => live.ctl[id] || {};
 const enLigne = r => r.majMs && Date.now() - r.majMs < 240000;
 function renderLocks() {
@@ -309,10 +326,16 @@ function renderLocks() {
     $(`#p${n}-all`).className = 'btn ' + (pa ? '' : 'open');
   });
   const label = k => k === 'toutes' ? 'toutes les classes' : esc(CLASSES.find(c => classeId(c) === k) || k);
+  const ac = !!ctlOf(id).arcade, aa = !!ctlOf('toutes').arcade;
+  $('#ar-class').textContent = ac ? `🕹️ Éteindre la borne (${name})` : `🕹️ Allumer la borne d'arcade (${name})`;
+  $('#ar-class').className = 'btn ' + (ac ? '' : 'open');
+  $('#ar-all').textContent = aa ? '🕹️ Éteindre la borne (toutes)' : '🕹️ Borne pour toutes les classes';
+  $('#ar-all').className = 'btn ' + (aa ? '' : 'open');
   const keys = Object.keys(live.ctl).filter(k => !k.startsWith('reset-'));
   const on = keys.filter(k => live.ctl[k].bloque);
   $('#lock-state').innerHTML = (on.length ? `<p class="locked-banner">Jeux en pause : ${on.map(label).join(', ')}</p>` : '')
-    + [2, 3].map(n => { const o = keys.filter(k => live.ctl[k]['partie' + n]); return o.length ? `<p class="muted" style="margin:8px 0 0">🔓 Partie ${n} ouverte : ${o.map(label).join(', ')}</p>` : ''; }).join('');
+    + [2, 3].map(n => { const o = keys.filter(k => live.ctl[k]['partie' + n]); return o.length ? `<p class="muted" style="margin:8px 0 0">🔓 Partie ${n} ouverte : ${o.map(label).join(', ')}</p>` : ''; }).join('')
+    + (k => k.length ? `<p class="muted" style="margin:8px 0 0">🕹️ Borne allumée : ${k.map(label).join(', ')}</p>` : '')(keys.filter(k => live.ctl[k].arcade));
 }
 (function () {
   const cfg = window.FIREBASE_CONFIG;
@@ -358,6 +381,10 @@ function renderLocks() {
         live.reports = [...by.values()];
         render();
       }, e => { $('#live-err').innerHTML = `<p class="locked-banner">Lecture impossible (${esc(e.code || e.message)}). Vérifie l'adresse e-mail dans les règles Firestore.</p>`; }));
+      unsubs.push(F.onSnapshot(F.collection(db, 'scores'), snap => {
+        live.scores = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+        render();
+      }, () => {}));
       unsubs.push(F.onSnapshot(F.collection(db, 'controle'), snap => {
         live.ctl = {};
         snap.forEach(d => { live.ctl[d.id] = d.data(); });
@@ -375,16 +402,23 @@ function renderLocks() {
       $(`#p${n}-class`).onclick = () => { const id = classeId(cur); setCtl(id, { [f]: !ctlOf(id)[f] }); };
       $(`#p${n}-all`).onclick = () => setCtl('toutes', { [f]: !ctlOf('toutes')[f] });
     });
+    $('#ar-class').onclick = () => { const id = classeId(cur); setCtl(id, { arcade: !ctlOf(id).arcade }); };
+    $('#ar-all').onclick = () => setCtl('toutes', { arcade: !ctlOf('toutes').arcade });
+    window.clearScores = () => {
+      const ss = live.scores.filter(x => classeId(x.classe) === classeId(cur));
+      if (!ss.length || !confirm(`Remettre à zéro le classement de la ${cur} (${ss.length} élève(s)) ?`)) return;
+      Promise.all(ss.map(x => F.deleteDoc(F.doc(db, 'scores', x.id)))).catch(e => alert('Effacement incomplet : ' + (e.code || e.message)));
+    };
     window.liveDelete = k => {
       const r = live.reports.find(x => keyOf(x) === k);
       if (!r || !confirm(`Supprimer la progression de ${r.nom} (${r.classe}) ?\n\nSa ligne disparaît du tableau et sa partie repart au début (dès que son jeu est ouvert).`)) return;
-      Promise.all(r.ids.flatMap(id => [F.deleteDoc(F.doc(db, 'parties', id)), F.setDoc(F.doc(db, 'controle', 'reset-' + id), { reset: F.serverTimestamp() })]))
+      Promise.all(r.ids.flatMap(id => [F.deleteDoc(F.doc(db, 'parties', id)), F.deleteDoc(F.doc(db, 'scores', id)), F.setDoc(F.doc(db, 'controle', 'reset-' + id), { reset: F.serverTimestamp() })]))
         .catch(e => alert('Suppression incomplète : ' + (e.code || e.message)));
     };
     window.clearClass = () => {
       const rs = live.reports.filter(r => (r.classe || 'Sans classe') === cur);
       if (!rs.length || !confirm(`Effacer définitivement les données des ${rs.length} élèves de ${cur} ?`)) return;
-      Promise.all(rs.flatMap(r => r.ids).map(id => F.deleteDoc(F.doc(db, 'parties', id)))).catch(e => alert('Effacement incomplet : ' + (e.code || e.message)));
+      Promise.all(rs.flatMap(r => r.ids).flatMap(id => [F.deleteDoc(F.doc(db, 'parties', id)), F.deleteDoc(F.doc(db, 'scores', id))])).catch(e => alert('Effacement incomplet : ' + (e.code || e.message)));
     };
   }).catch(e => { $('#login-msg').textContent = 'Mode en ligne indisponible (' + e.message + ').'; });
 })();

@@ -95,7 +95,18 @@ Exemples d'activités du BO repris : déterminer l'adresse IP d'un équipement e
 
 ## Différenciation
 
-- **Élèves rapides :** menu ⚙️, appels « Intense » (deux tickets en même temps). Défi : taper soi-même les commandes au lieu de cliquer sur les raccourcis.
+- **Élèves rapides :** menu ⚙️, appels « Intense » (deux tickets en même temps). Défi : taper soi-même les commandes au lieu de cliquer sur les raccourcis. En ligne, tu peux aussi allumer la **borne d'arcade** (voir ci-dessous).
+
+### La borne d'arcade « Routeur express »
+
+Une borne rétro au fond de la hotline, à côté du café. Elle est **éteinte** tant que tu ne l'allumes pas dans l'espace enseignant (bouton « 🕹️ Allumer la borne d'arcade », pour la classe affichée ou pour toutes). Les élèves reçoivent un message quand elle s'allume. Hors ligne (clé USB, fichier), elle est toujours allumée.
+
+- **Le jeu (2 minutes) :** l'élève est le réseau. Des paquets apparaissent sur 10 routeurs, chacun avec l'adresse IP de sa destination (`10.42.x.x` : le réseau `10.42` est écrit sous un routeur). Il clique un paquet puis le routeur voisin où l'envoyer, saut après saut. La table de routage du routeur où se trouve le paquet est affichée.
+- **Ce qui demande de réfléchir :** des fibres cassent (trois pannes par partie) et les tables mettent 6 secondes à se mettre à jour : il faut trouver un autre chemin à la main. Le compteur de sauts détruit les paquets qui tournent en rond. Les visios (▶) ont un délai : en retard, elles ne valent plus rien, il faut les traiter en priorité. Les fichiers (■) sont en 3 morceaux à livrer tous. Le réseau est tiré au hasard à chaque partie : rien à apprendre par cœur.
+- **Les points :** chaque paquet rapporte jusqu'à 100 points (150 pour une visio), multipliés par l'efficacité du chemin (chemin le plus court / sauts faits) et par la vitesse de livraison (de 100 % à 25 %). Bonus de 60 pour un fichier complet ; pénalités pour un paquet détruit, une visio en retard ou un envoi sur une fibre coupée. Comme le temps compte, aucun score n'est « parfait ».
+- **Notions revues :** routage de proche en proche, tables locales, panne et mise à jour des tables, compteur de sauts, absence de garantie temporelle, découpage en paquets et rôle de TCP. L'écran de fin explique les erreurs de la partie avec ces notions.
+- **Classement (en ligne) :** le meilleur score de chaque élève de la classe, et la « bataille des classes » (moyenne des 5 meilleurs records de chaque classe). Tu le vois aussi en bas de l'onglet de la classe dans l'espace enseignant, avec le nombre de parties jouées et un bouton pour remettre le classement de la classe à zéro.
+- La borne se met en pause quand tu bloques la classe. Le mini-jeu ne compte pas dans la note.
 - **Élèves en difficulté :** appels « Calme » ou « Désactivés » ; le carnet (touche C) contient une fiche par notion. Les commandes ont des boutons raccourcis.
 - **DYS :** les dialogues avancent au clic, sans limite de temps. Le chronomètre des tickets ne pénalise que la satisfaction, pas la réussite.
 
@@ -192,6 +203,7 @@ Les **11 quiz de révision** (Loïc : réseaux physiques et histoire ; Erwan : a
 
 - **Hors programme non exploités :** `ipconfig` affiche le masque de sous-réseau (comme un vrai Windows), mais aucune question ne porte dessus. Le nom technique « TTL » n'est pas utilisé : le jeu parle de « compteur de sauts ».
 - **Simplifications :** les tables de routage sont calculées par la distance la plus courte ; les vrais protocoles de routage ne sont pas au programme.
+- **Borne d'arcade :** les adresses `10.x.x.x` sont des adresses privées, choisies pour être courtes ; dans la réalité, les routeurs d'Internet n'en voient pas passer. Le délai de mise à jour des tables est volontairement exagéré pour le jeu.
 - **Adresses fictives :** IroiseNet, les clients et les domaines en `.bzh` sont inventés. Les adresses `203.0.113.x` et `198.51.100.x` sont des plages réservées à la documentation. Seule `wikipedia.fr` est un vrai nom ; son adresse réelle peut différer de celle du jeu : un vrai `nslookup` en classe fait une bonne comparaison.
 - **Ouessant :** la liaison radio de l'île est une situation inventée pour le scénario.
 - **Pair-à-pair, neutralité du Net, déni de service** sont surtout traités par des tickets aléatoires et le quiz de révision « règles et usages ». La fiche du carnet et une question du contrôle final les garantissent pour tous, mais un débrief oral reste utile.

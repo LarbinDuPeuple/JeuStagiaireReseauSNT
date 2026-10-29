@@ -50,6 +50,7 @@ const ENTS = [
   { id: 'pc_erwan', kind: 'pc', x: 14, y: 2, name: "Poste d'Erwan", h: 50 },
   { id: 'pc_maelys', kind: 'pc', x: 17, y: 2, name: 'Poste de Maëlys', h: 50 },
   { id: 'cafe', kind: 'coffee', x: 20, y: 1, name: 'Machine à café', h: 50 },
+  { id: 'arcade', kind: 'arcade', x: 19, y: 1, name: "Borne d'arcade « Routeur express »", h: 60 },
   { id: 'plante2', kind: 'plant', x: 20, y: 5, deco: true },
   { id: 'plante3', kind: 'plant', x: 1, y: 7, deco: true },
   { id: 'plante4', kind: 'plant', x: 20, y: 7, deco: true },
@@ -383,6 +384,12 @@ function drawCoffee(e) {
   quad(faceY(x + 0.2, y + 0.2, 0, 0.6, 0.6), 0.1, 0.9, 30, 42, '#c0392b');
   box(x + 0.42, y + 0.68, 10, 0.16, 0.12, 8, '#f5f5f5');
 }
+function drawArcade(e) {
+  const { x, y } = e, on = arcadeOpen();
+  box(x + 0.18, y + 0.2, 0, 0.64, 0.6, 58, '#3a0a6b');
+  quad(faceY(x + 0.18, y + 0.2, 0, 0.64, 0.6), 0.1, 0.9, 30, 50, on ? (blink(1.5) ? '#39ff14' : '#22e4ff') : '#111');
+  quad(faceY(x + 0.18, y + 0.2, 0, 0.64, 0.6), 0.2, 0.8, 14, 22, '#ff2fd6');
+}
 function drawPhone(e) {
   const { x, y } = e, r = S.ring;
   box(x + 0.15, y + 0.15, 0, 0.7, 0.7, 24, '#c08a57');
@@ -433,7 +440,7 @@ function drawWall(x, y) {
   const back = x === 0 || y === 0, front = x === MW - 1 || y === MH - 1;
   box(x, y, 0, 1, 1, back ? 64 : front ? 10 : 34, back ? '#d9d3c9' : '#cfc8bd');
 }
-const DRAW = { pc: drawPC, rack: drawRack, server: drawServer, bench: drawBench, screen: drawScreen, coffee: drawCoffee, phone: drawPhone, board: drawBoard, plant: drawPlant };
+const DRAW = { arcade: drawArcade, pc: drawPC, rack: drawRack, server: drawServer, bench: drawBench, screen: drawScreen, coffee: drawCoffee, phone: drawPhone, board: drawBoard, plant: drawPlant };
 
 function computeCamera() {
   const dpr = window.devicePixelRatio || 1;
@@ -994,6 +1001,7 @@ function idleAction(id) {
   if (e.kind === 'person') { say([[id, rand(IDLE[id] || ['…'])]]); return; }
   if (id === 'frise') { unlock('histoire'); carnet('histoire'); return; }
   if (id === 'telephone') { toast("📞 Pas d'appel en cours.", ''); return; }
+  if (id === 'arcade') { arcade(); return; }
   if (id === 'cafe') { toast("☕ Un café bien chaud… Il pleut dehors, comme souvent à Brest.", ''); return; }
   if (id === 'ecran') { carte(); return; }
   if (id === 'mon_pc') { terminal('mon_pc'); return; }
@@ -1432,7 +1440,8 @@ function startScreen() {
 let last = performance.now(), hudTimer = 0, saveTimer = 0;
 function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now; animT += dt;
-  if (S && $('#title-screen').hidden && !ONLINE.locked) {
+  // pendant le mini-jeu, le temps du stage est figé (les clients ne s'impatientent pas)
+  if (S && $('#title-screen').hidden && !ONLINE.locked && !window.ARCADE_ON) {
     S.t += dt;
     updatePlayer(dt); scheduleIncidents(); updateTickets();
     hudTimer += dt; saveTimer += dt;

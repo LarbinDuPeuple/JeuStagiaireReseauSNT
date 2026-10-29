@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Stagiaire du Bout du Monde</title>
+<meta name="description" content="Jeu sérieux SNT 2nde : stagiaire chez un fournisseur d'accès à Internet à Brest. Adresses IP, DNS, routage, TCP.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="view" aria-label="Vue isométrique des locaux d'IroiseNet"></canvas>
+
+<header id="topbar">
+  <div class="logo">🌊 <span>Le Stagiaire du Bout du Monde</span></div>
+  <div id="hud-mission" class="hud-mission"></div>
+  <div class="hud-stats">
+    <div class="sat" title="Satisfaction des clients"><span>😊</span><div class="bar"><i id="hud-sat"></i></div><b id="hud-sat-txt">70 %</b></div>
+    <div class="score" title="Score">⭐ <b id="hud-score">0</b></div>
+  </div>
+  <nav class="hud-btns">
+    <button id="btn-schema" title="Carte du réseau (T)">🗺️<span> Carte</span></button>
+    <button id="btn-carnet" title="Carnet de notions (C)">📒<span> Carnet</span> <i id="hud-notions" class="badge">0</i></button>
+    <button id="btn-help" title="Aide">❓</button>
+    <button id="btn-menu" title="Menu (Échap)">⚙️</button>
+    <button id="btn-side" title="Objectifs">🎯</button>
+  </nav>
+</header>
+
+<aside id="side"><div id="side-body"></div></aside>
+<div id="hint" hidden></div>
+<div id="calls"></div>
+<div id="toasts"></div>
+
+<div id="dialog" hidden>
+  <div class="d-face"></div>
+  <div class="d-main"><div class="d-name"></div><div class="d-text"></div></div>
+  <button class="d-next btn primary">Suite ▶</button>
+</div>
+
+<div id="modal-wrap" hidden><div id="modal" role="dialog" aria-modal="true"></div></div>
+
+<div id="title-screen" hidden>
+  <div class="ts-card">
+    <div class="ts-badge">SNT 2nde · Internet</div>
+    <h1>🌊 Le Stagiaire du Bout du Monde</h1>
+    <p class="ts-pitch">Lundi, 8h30, port de commerce de Brest. Premier jour de stage chez <b>IroiseNet</b>, le fournisseur d'accès à Internet du Finistère. Le technicien est <b>bloqué à Ouessant</b> par la tempête… et le téléphone de la hotline sonne déjà.</p>
+    <form id="ts-form">
+      <label>Prénom <input id="ts-name" maxlength="30" autocomplete="off" placeholder="ex : Nolwenn"></label>
+      <label>Classe <input id="ts-class" maxlength="20" autocomplete="off" placeholder="ex : 2nde 3"></label>
+      <button class="btn primary big">▶ Nouvelle partie</button>
+    </form>
+    <div class="ts-btns">
+      <button id="ts-continue" class="btn big" hidden>▶ Continuer</button>
+      <button id="ts-code" class="btn" type="button">🔑 J'ai un code de reprise (partie 2)</button>
+    </div>
+    <p class="ts-help">🖱️ Clique pour te déplacer · ⌨️ flèches / ZQSD + <kbd>E</kbd> · <kbd>T</kbd> carte · <kbd>C</kbd> carnet</p>
+  </div>
+</div>
+
+<script src="js/content.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

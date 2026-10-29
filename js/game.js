@@ -561,7 +561,8 @@ let modalOnClose = null, modalClosable = true;
 function openModal({ title, wide = false, closable = true, onClose = null } = {}) {
   const m = $('#modal');
   m.className = wide ? 'wide' : '';
-  m.innerHTML = `<div class="m-head"><h2>${title}</h2>${closable ? '<button class="m-close" aria-label="Fermer">✕</button>' : ''}</div><div class="m-body"></div>`;
+  m.innerHTML = `<div class="m-head"><h2>${title}</h2><div class="m-tools"><button class="btn small m-carnet" title="Ouvrir le carnet (C)">📒 Carnet</button>${closable ? '<button class="m-close" aria-label="Fermer">✕</button>' : ''}</div></div><div class="m-body"></div>`;
+  m.querySelector('.m-carnet').onclick = () => carnet(curNotion);
   $('#modal-wrap').hidden = false;
   modalOnClose = onClose; modalClosable = closable;
   if (closable) m.querySelector('.m-close').onclick = () => closeModal();
@@ -569,7 +570,7 @@ function openModal({ title, wide = false, closable = true, onClose = null } = {}
   return m.querySelector('.m-body');
 }
 function closeModal(silent) {
-  $('#modal-wrap').hidden = true;
+  $('#modal-wrap').hidden = true; curNotion = null;
   const cb = modalOnClose; modalOnClose = null;
   if (cb && !silent) cb();
 }
@@ -632,7 +633,9 @@ function unlock(id) {
 function quiz(cfg, onDone) {
   const qs = typeof cfg.questions === 'function' ? cfg.questions() : cfg.questions;
   let i = 0;
+  unlock(cfg.notion);
   const b = openModal({ title: cfg.title, wide: cfg.wide });
+  curNotion = cfg.notion || null;
   const norm = s => String(s).toLowerCase().replace(/\s+/g, '').replace(/,/g, '.');
   function good(q, fbEl, act, first) {
     if (first) { S.quizOk++; addScore(10); }
@@ -647,7 +650,7 @@ function quiz(cfg, onDone) {
   }
   function bad(q, fbEl, msg) {
     S.quizKo++; addScore(-3); recordError(cfg.notion); sfx.ko();
-    fbEl.hidden = false; fbEl.className = 'q-fb ko'; fbEl.innerHTML = `✘ ${msg || q.hint || 'Ce n\'est pas ça. Relis bien la question (ton carnet peut t\'aider).'}`;
+    fbEl.hidden = false; fbEl.className = 'q-fb ko'; fbEl.innerHTML = `✘ ${msg || q.hint || 'Ce n\'est pas ça.'} <i>📒 Ton carnet peut t'aider : bouton « Carnet » en haut, ou touche C.</i>`;
   }
   function show() {
     const q = qs[i]; let first = true;
@@ -783,6 +786,7 @@ function routing(cfg) {
   const links = activeLinks();
   let at = cfg.from, ttl = cfg.ttl, path = [cfg.from], edited = !cfg.editAt, first = true;
   const b = openModal({ title: cfg.title, wide: true, closable: false });
+  curNotion = cfg.bug ? 'limites' : 'routage';
   const table = r => {
     const t = routingTable(r, links, cfg.bug);
     if (cfg.editAt === r && !edited) t[cfg.to] = null;
@@ -845,6 +849,7 @@ function tcpPuzzle(cfg) {
   let pool = shuffle([...Array(N).keys()].map(k => k + 1).filter(n => !lost.has(n)));
   let next = 1, first = true, fresh = null;
   const b = openModal({ title: cfg.title, wide: true, closable: false });
+  curNotion = 'tcp';
   const err = msg => { sfx.ko(); S.quizKo++; addScore(-3); recordError('tcp'); first = false; const e = b.querySelector('.q-fb'); e.hidden = false; e.className = 'q-fb ko'; e.innerHTML = `✘ ${msg}`; };
   function draw() {
     b.innerHTML = `<div class="intro">Les paquets sont arrivés <b>dans le désordre</b>, et il en manque. Chaque paquet porte l'adresse IP de l'émetteur (lycée, <code>203.0.113.80</code>), celle du destinataire (Plymouth, <code>198.51.100.44</code>) et son <b>numéro</b>. Comme TCP, remets-les dans l'ordre en cliquant d'abord le n° 1, puis le 2… Si le suivant manque, <b>redemande-le</b>.</div>
@@ -882,13 +887,24 @@ function tcpPuzzle(cfg) {
 }
 
 /* carnet de notions */
+let curNotion = null;
+const carnetOpen = () => !$('#carnet-panel').hidden;
+function closeCarnet() { $('#carnet-panel').hidden = true; document.body.classList.remove('carnet-on'); }
 function carnet(focus) {
-  const b = openModal({ title: '📒 Mon carnet de notions', wide: true });
+  if (carnetOpen() && !focus) { closeCarnet(); return; }
+  const p = $('#carnet-panel');
+  p.hidden = false; document.body.classList.add('carnet-on');
+  p.innerHTML = '<div class="m-head"><h2>📒 Mon carnet</h2><button class="m-close" aria-label="Fermer le carnet">✕</button></div><div class="m-body"></div>';
+  p.querySelector('.m-close').onclick = closeCarnet;
+  const b = p.querySelector('.m-body');
   const ids = Object.keys(NOTIONS);
+  focus = focus || curNotion;
   b.innerHTML = `<p class="muted">${S.notions.length} / ${ids.length} fiches débloquées. Les fiches se débloquent au fil des missions et des tickets.</p><div class="notions">${ids.map(id => {
     const n = NOTIONS[id], ok = S.notions.includes(id);
     return ok ? `<details ${focus === id ? 'open' : ''}><summary>${n.icon} ${n.title}</summary><div class="notion-body">${n.html}</div></details>` : '<div class="locked">🔒 Fiche verrouillée</div>';
   }).join('')}</div>`;
+  const f = b.querySelector('details[open]');
+  if (f) f.scrollIntoView({ block: 'start' });
 }
 
 /* ---------------------------------------------------------------------
@@ -946,7 +962,7 @@ function missionComplete() {
 function idleAction(id) {
   const e = EBY[id];
   if (e.kind === 'person') { say([[id, rand(IDLE[id] || ['…'])]]); return; }
-  if (id === 'frise') { carnet('histoire'); return; }
+  if (id === 'frise') { unlock('histoire'); carnet('histoire'); return; }
   if (id === 'telephone') { toast("📞 Pas d'appel en cours.", ''); return; }
   if (id === 'cafe') { toast("☕ Un café bien chaud… Il pleut dehors, comme souvent à Brest.", ''); return; }
   if (id === 'ecran') { carte(); return; }
@@ -968,7 +984,7 @@ function interact(id) {
   const st = curStep();
   if (st && !S.finished) {
     const tg = currentTargets();
-    if (tg.includes(id)) opts.push({ label: `⭐ <b>Mission</b> : ${st.label}`, fn: () => st.run(id) });
+    if (tg.includes(id)) opts.push({ label: `⭐ <b>Mission</b> : ${st.label}`, fn: () => { (st.notions || []).forEach(unlock); st.run(id); } });
   }
   if (S.pause && id === 'gwen') opts.push({ label: '▶ <b>Commencer la partie 2</b>', fn: () => { S.pause = false; save(); refreshHUD(); missionIntro(); } });
   if (!opts.length) { idleAction(id); return; }
@@ -1020,6 +1036,7 @@ function spawnIncident(inc, c) {
   $('#calls').append(card);
   while ($('#calls').children.length > 2) $('#calls').firstChild.remove();
   setTimeout(() => card.remove(), 14000);
+  unlock(inc.notion);
   if (S.incTotal === 1) toast('💡 Premier ticket ! Va sur place, observe, teste, puis choisis la cause. Ton carnet a une fiche « Méthode de la hotline ».', 'info', 7000);
   unlock('diagnostic');
   save(); refreshHUD();
@@ -1027,6 +1044,7 @@ function spawnIncident(inc, c) {
 function openTicket(t) {
   const inc = INCIDENTS_BY[t.id], p = PEOPLE[t.caller];
   const b = openModal({ title: `🎫 ${inc.title}`, wide: true });
+  curNotion = 'diagnostic';
   if (t.stage === 'diag') {
     const tools = [['👀 Observer', null]].concat(t.ctx.client ? inc.tools : []);
     b.innerHTML = `<div class="call inline"><div class="call-face" style="background:${p.shirt}">${p.name.replace(/^(M\.|Mme) /, '')[0]}</div><div><div class="call-who">${esc(p.name)} <small>${esc(p.role)}</small></div><div class="call-msg">« ${fill(inc.call)} »</div></div></div>
@@ -1294,15 +1312,15 @@ function loop(now) {
 const KEYMAP = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', z: 'up', w: 'up', s: 'down', q: 'left', a: 'left', d: 'right' };
 addEventListener('keydown', ev => {
   const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
-  if (ev.key === 'Escape') { if (modalOpen() && modalClosable) closeModal(); else if (!uiBusy() && S) menu(); return; }
+  if (ev.key === 'Escape') { if (carnetOpen()) closeCarnet(); else if (modalOpen() && modalClosable) closeModal(); else if (!uiBusy() && S) menu(); return; }
   if (typing) return;
+  if ((ev.key === 'c' || ev.key === 'C') && S && $('#title-screen').hidden) { carnet(); return; }
   if (dlg && ['e', 'E', ' ', 'Enter'].includes(ev.key)) { ev.preventDefault(); advanceDialog(); return; }
   if (!S || uiBusy()) return;
   const k = KEYMAP[ev.key] || KEYMAP[ev.key.toLowerCase()];
   if (k) { keys.add(k); ev.preventDefault(); return; }
   if (['e', 'E', ' ', 'Enter'].includes(ev.key)) { ev.preventDefault(); const id = nearestEnt(); if (id) interact(id); }
   if (ev.key === 't' || ev.key === 'T') carte();
-  if (ev.key === 'c' || ev.key === 'C') carnet();
 });
 addEventListener('keyup', ev => { const k = KEYMAP[ev.key] || KEYMAP[ev.key.toLowerCase()]; if (k) keys.delete(k); });
 addEventListener('blur', () => keys.clear());
@@ -1323,7 +1341,7 @@ cv.addEventListener('pointerdown', ev => {
 $('#dialog').addEventListener('click', advanceDialog);
 $('#modal-wrap').addEventListener('pointerdown', ev => { if (ev.target.id === 'modal-wrap' && modalClosable) closeModal(); });
 $('#btn-schema').onclick = () => !uiBusy() && carte();
-$('#btn-carnet').onclick = () => !uiBusy() && carnet();
+$('#btn-carnet').onclick = () => S && $('#title-screen').hidden && carnet();
 $('#btn-menu').onclick = () => !uiBusy() && menu();
 $('#btn-help').onclick = () => !uiBusy() && help();
 $('#btn-side').onclick = () => { document.body.classList.toggle('side-open'); };

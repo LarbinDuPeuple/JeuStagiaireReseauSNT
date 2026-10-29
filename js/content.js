@@ -62,7 +62,7 @@ const NOTIONS = {
     <p>Rappel : 1 ko = 10<sup>3</sup> octets, 1 Mo = 10<sup>6</sup>, 1 Go = 10<sup>9</sup>, 1 To = 10<sup>12</sup>.</p>` },
   ip: { icon: '🔢', title: 'Adresse IP', html: `
     <p>Chaque appareil connecté à Internet est identifié par une <b>adresse IP</b> (Internet Protocol).</p>
-    <p>En IPv4, c'est <b>4 nombres de 0 à 255</b> séparés par des points : <code>192.168.1.23</code>.</p>
+    <p>En IPv4, c'est <b>4 nombres de 0 à 255</b> séparés par des points : <code>172.16.8.42</code>.</p>
     <p>Les adresses sont <b>numériques et hiérarchiques</b>, un peu comme une adresse postale : le début désigne le réseau, la fin désigne l'appareil.</p>
     <p>La commande <code>ipconfig</code> (Windows) affiche l'adresse IP d'un ordinateur, l'adresse de sa <b>passerelle</b> et celle de son <b>serveur DNS</b>.</p>` },
   box: { icon: '📦', title: 'Le réseau de la maison et la box', html: `
@@ -75,8 +75,8 @@ const NOTIONS = {
   dns: { icon: '📖', title: "DNS : l'annuaire d'Internet", html: `
     <p>Nous retenons des <b>adresses symboliques</b> (<code>wikipedia.fr</code>), les machines utilisent des <b>adresses IP</b>.</p>
     <p>Le <b>DNS</b> (Domain Name System) traduit un nom en adresse IP, et inversement :</p>
-    <pre>nslookup wikipedia.fr          → 185.15.58.224
-nslookup 203.0.113.80          → lycee-lacroixrouge.bzh</pre>
+    <pre>nslookup iroisenet.bzh   → 203.0.113.10
+nslookup 203.0.113.10    → iroisenet.bzh</pre>
     <p>Le DNS est réalisé par un <b>grand nombre d'ordinateurs</b> répartis sur le réseau et mis à jour en permanence. Un serveur DNS est un ordinateur connecté comme les autres.</p>
     <p>Si le DNS est en panne : le nom ne marche plus, mais l'adresse IP, si !</p>` },
   routage: { icon: '🧭', title: 'Le routage des paquets', html: `
@@ -182,9 +182,9 @@ const Q_SUPPORTS = { title: "🔧 L'établi de Loïc", notion: 'physique', quest
     ex: "Internet est <b>indépendant du réseau physique</b> : IP et TCP sont des logiciels installés dans chaque appareil." }
 ] };
 
-const Q_HISTOIRE = { title: '📜 La frise de Gwenaëlle', notion: 'histoire', questions: [
-  { t: 'order', q: 'Remets ces étapes dans l\'ordre chronologique :', items: ['Premiers ordinateurs en réseau (années 1950)', 'ArpaNet aux États-Unis (1970)', 'Cyclades en France (1971)', 'Naissance d\'Internet avec TCP/IP (1983)'],
-    hint: 'Regarde les dates entre parenthèses !', ex: "Cyclades, projet français, a inspiré la façon dont Internet découpe l'information en paquets." },
+const Q_HISTOIRE = { title: '📜 La frise de Gwenaëlle', notion: 'histoire', intro: "📒 Tu peux ouvrir ton <b>carnet</b> à tout moment, même pendant une question (bouton « Carnet » en haut, ou touche C). La fiche « Petite histoire d'Internet » vient de s'y ajouter.", questions: [
+  { t: 'order', q: 'Remets ces étapes dans l\'ordre chronologique :', items: ['Premiers ordinateurs reliés en réseau', 'ArpaNet, le réseau américain', 'Cyclades, le réseau français', "Naissance d'Internet avec TCP/IP"],
+    hint: 'La fiche « Petite histoire d\'Internet » de ton carnet donne les dates.', ex: "Cyclades, projet français, a inspiré la façon dont Internet découpe l'information en paquets." },
   { q: "En 1983, qu'est-ce qui permet à des réseaux très différents de former un seul Internet ?",
     c: ['Un seul constructeur pour tous', 'Un protocole commun : TCP/IP', 'Un câble unique autour du monde', 'Un ordinateur central aux États-Unis'], a: 1,
     fb: ["Justement non : Internet est indépendant des constructeurs.", null, "Internet relie des réseaux de toutes sortes, pas un câble unique.", "Il n'y a pas d'ordinateur central : c'est ce qui rend Internet robuste."],
@@ -216,7 +216,8 @@ const MISSIONS = [
             ['gwen', "Bienvenue chez IroiseNet, {nom} ! Petit souci : Yann, notre technicien, est coincé à Ouessant. La tempête a annulé tous les bateaux."],
             ['gwen', "C'est donc toi qui vas tenir la hotline avec Erwan et Maëlys. Erwan a fait sa 2nde au lycée La Croix Rouge, comme toi : il te donnera un coup de main."],
             ['moi', "La hotline ? Mais je ne connais rien au réseau d'un fournisseur d'accès !"],
-            ['gwen', "Justement, on va commencer par les bases. Viens voir la frise sur le panneau, là, à gauche."]
+            ['gwen', "Justement, on va commencer par les bases. Viens voir la frise sur le panneau, là, à gauche."],
+            ['gwen', "Et garde ton <b>carnet</b> sous la main (touche C) : il se remplit de fiches au fil de la journée, et tu peux le consulter même pendant mes questions."]
           ], done);
         } },
       { id: 'm1s2', label: "Remettre en ordre la frise de l'histoire d'Internet", target: 'frise',

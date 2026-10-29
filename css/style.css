@@ -226,3 +226,12 @@ svg.map g.rt.nb:hover circle { fill: #e8f0ff; }
 .caps { padding-left: 4px; list-style: none; } .caps li { margin: 3px 0; }
 @media (max-width: 760px) { .rt-grid { grid-template-columns: 1fr; } }
 @media print { .report .caps li { break-inside: avoid; } }
+
+/* carnet accessible à tout moment, au-dessus des fenêtres */
+#carnet-panel { position: fixed; top: 8px; right: 8px; bottom: 8px; width: min(440px, calc(100vw - 16px)); background: var(--panel); border-radius: 18px; box-shadow: var(--shadow); z-index: 28; display: flex; flex-direction: column; border: 2px solid #7a5bd6; }
+#carnet-panel[hidden] { display: none; }
+#carnet-panel .m-body { overflow: auto; }
+.m-tools { display: flex; gap: 8px; align-items: center; }
+.m-carnet { white-space: nowrap; }
+@media print { #carnet-panel { display: none !important; } }
+@media (min-width: 1100px) { body.carnet-on #modal-wrap { padding-right: 464px; } }

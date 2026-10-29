@@ -84,7 +84,7 @@ function newState(name = '', classe = '') {
     net: { dnsUp: true, boxOff: {}, cut: null, routerDown: null, ddos: false },
     px: 8.5, py: 12.5, score: 0, sat: 70, t: 0, errors: {}, quizOk: 0, quizKo: 0, ring: false,
     notions: [], tickets: [], seen: {}, incOk: 0, incTotal: 0, incLate: 0, nextInc: null, uid: 1,
-    finished: false, pause: false, fiches: {}, settings: { inc: 'normal', sound: true }
+    finished: false, pause: false, settings: { inc: 'normal', sound: true }
   };
 }
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* stockage indisponible */ } }
@@ -967,10 +967,6 @@ function missionIntro() {
 }
 function missionComplete() {
   const m = MISSIONS[S.m];
-  // fin d'une partie : d'abord la fiche résumé
-  const endOfPart = !MISSIONS[S.m + 1] || MISSIONS[S.m + 1].partie !== m.partie;
-  const fiche = FICHES.find(f => f.partie === m.partie);
-  if (endOfPart && fiche && !(S.fiches[m.partie] && S.fiches[m.partie].fini)) { openFiche(fiche, missionComplete); return; }
   const last = S.m === MISSIONS.length - 1, endPart1 = S.m + 1 === PART2;
   const notions = [...new Set(m.steps.flatMap(s => s.notions || []))];
   const b = openModal({ title: `✅ Mission ${S.m + 1} accomplie !`, closable: false });
@@ -1249,69 +1245,6 @@ const BO_CAPS = [
   ['Caractériser quelques types de réseaux physiques : obsolètes ou actuels, rapides ou lents, filaires ou non.', ['physique']],
   ["Caractériser l'ordre de grandeur du trafic de données sur Internet et son évolution.", ['trafic']]
 ];
-/* ---------------------------------------------------------------------
-   Fiche résumé : texte à trous rempli à la fin de chaque partie.
-   Le score retenu est celui de la première vérification.
-   --------------------------------------------------------------------- */
-const FICHE_MAX_ESSAIS = 3;
-function ficheHTML(fiche) {
-  const bank = fiche.bank.slice().sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }));
-  let n = 0;
-  return fiche.sections.map(sec => `<h4>${sec.h}</h4><div class="f-txt">${sec.html.replace(/\{\{([^}]+)\}\}/g, (_, spec) => {
-    const [ok, ...own] = spec.split('|');
-    const opts = own.length ? own : bank;
-    return `<select class="f-sel" data-i="${n++}" data-ok="${esc(ok)}"><option value="">……</option>${opts.map(o => `<option>${esc(o)}</option>`).join('')}</select>`;
-  })}</div>`).join('');
-}
-function openFiche(fiche, onDone, review) {
-  const b = openModal({ title: `📝 Fiche résumé — ${fiche.title}`, wide: true, closable: !!review });
-  curNotion = null;
-  b.innerHTML = `${review ? '<p class="muted">Ta fiche, avec les bonnes réponses.</p>' : `<div class="intro">📝 <b>Pause fiche !</b> Complète ta fiche résumé avec les mots de la liste. Ton carnet peut t'aider (bouton « Carnet » ou touche C). <b>Ce travail compte dans ta note de jeu</b> : c'est ta première vérification qui est notée.</div>`}
-    <p class="f-bank"><b>Mots à placer :</b> ${fiche.bank.slice().sort((a, c) => a.localeCompare(c, 'fr', { numeric: true })).map(w => `<span class="chip f-word">${esc(w)}</span>`).join(' ')}</p>
-    <div class="fiche">${ficheHTML(fiche)}</div><div class="q-fb" hidden></div><div class="actions"></div>`;
-  const sels = [...b.querySelectorAll('.f-sel')], fb = b.querySelector('.q-fb'), act = b.querySelector('.actions');
-  const showAnswers = () => sels.forEach(x => { x.value = x.dataset.ok; x.disabled = true; x.classList.remove('wrong'); x.classList.add('right'); });
-  const finish = () => {
-    const st = S.fiches[fiche.partie]; st.fini = true; save();
-    if (window.onlineTick) onlineTick(true);
-    closeModal(true); onDone && onDone();
-  };
-  if (review) { showAnswers(); act.innerHTML = '<button class="btn primary">Fermer</button>'; act.firstChild.onclick = () => closeModal(); return; }
-  sels.forEach(x => x.addEventListener('change', () => x.classList.remove('right', 'wrong')));
-  let essais = 0;
-  const check = () => {
-    if (sels.some(x => !x.value)) { fb.hidden = false; fb.className = 'q-fb ko'; fb.innerHTML = 'Il reste des trous à compléter.'; return; }
-    essais++;
-    let ok = 0;
-    sels.forEach(x => { const r = x.value === x.dataset.ok; if (r) ok++; x.classList.toggle('right', r); x.classList.toggle('wrong', !r); if (r) x.disabled = true; });
-    const pct = Math.round(100 * ok / sels.length);
-    if (essais === 1) {
-      S.fiches[fiche.partie] = { score: pct, fini: false };
-      addScore(Math.round(pct / 2));
-      save();
-    }
-    fb.hidden = false;
-    if (ok === sels.length) {
-      sfx.step(); fb.className = 'q-fb ok';
-      fb.innerHTML = `✔ <b>Fiche complète !</b> ${essais === 1 ? 'Tout juste du premier coup, bravo !' : `Ta note de fiche : <b>${S.fiches[fiche.partie].score} %</b> de bonnes réponses à la première vérification.`}`;
-      act.innerHTML = '<button class="btn primary">Continuer ➜</button>'; act.firstChild.onclick = finish;
-    } else if (essais >= FICHE_MAX_ESSAIS) {
-      sfx.ko(); showAnswers(); fb.className = 'q-fb ko';
-      fb.innerHTML = `Voici la correction : recopie-la sur ta fiche papier si tu en as une. Ta note de fiche : <b>${S.fiches[fiche.partie].score} %</b>.`;
-      act.innerHTML = '<button class="btn primary">Continuer ➜</button>'; act.firstChild.onclick = finish;
-    } else {
-      sfx.ko(); fb.className = 'q-fb ko';
-      fb.innerHTML = `${ok} / ${sels.length} justes. Corrige les cases en rouge (essai ${essais} / ${FICHE_MAX_ESSAIS}).`;
-    }
-  };
-  act.innerHTML = '<button class="btn primary">Vérifier ma fiche</button>'; act.firstChild.onclick = check;
-}
-function fichesMenu() {
-  const done = FICHES.filter(f => S.fiches[f.partie] && S.fiches[f.partie].fini);
-  if (!done.length) { toast('📝 Tu rempliras ta première fiche résumé à la fin de la partie 1.', 'info'); return; }
-  choose('📝 Mes fiches résumé', done.map(f => ({ label: `${f.title} <small>(${S.fiches[f.partie].score} %)</small>`, fn: () => openFiche(f, null, true) })));
-}
-
 /* rapport exporté pour l'espace enseignant (prof.html) */
 function signRapport(o) {
   const str = 'IROISE|' + JSON.stringify(o);
@@ -1327,7 +1260,6 @@ function rapportData(done) {
     score: S.score, satisfaction: Math.round(S.sat), ticketsOk: S.incOk, tickets: S.incTotal,
     reponsesOk: S.quizOk, reponsesKo: S.quizKo, minutes: Math.round(S.t / 60),
     capacites: BO_CAPS.map(([, ns]) => ns.every(n => S.notions.includes(n))),
-    fiches: FICHES.map(f => (S.fiches[f.partie] ? S.fiches[f.partie].score : -1)),
     erreurs: Object.entries(S.errors).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([n, k]) => [NOTIONS[n] ? NOTIONS[n].title : n, k])
   };
   o.sig = signRapport(o);
@@ -1354,7 +1286,6 @@ function report() {
     <p><b>Nom :</b> ${esc(S.name || '—')} · <b>Classe :</b> ${esc(S.classe || '—')} · <b>Date :</b> ${new Date().toLocaleDateString('fr-FR')}</p>
     <div class="stats"><div><b>${S.score}</b><span>points</span></div><div><b>${Math.round(S.sat)} %</b><span>satisfaction</span></div><div><b>${S.incOk} / ${S.incTotal}</b><span>tickets résolus</span></div><div><b>${acc} %</b><span>réponses justes</span></div><div><b>${dur} min</b><span>de jeu (ce poste)</span></div></div>
     <p><b>Avis de Gwenaëlle :</b> ${avis}</p>
-    <h4>Fiches résumé</h4><p>${FICHES.map(f => `${f.title} : ${S.fiches[f.partie] ? `<b>${S.fiches[f.partie].score} %</b>` : '<span class="muted">pas encore remplie</span>'}`).join('<br>')}</p>
     <h4>Missions</h4><ul>${MISSIONS.map((m, i) => `<li>${(S.finished || i < S.m) ? '✅' : i === S.m ? '⏳' : '⬜'} Partie ${m.partie} · Mission ${i + 1} — ${m.title}</li>`).join('')}</ul>
     <h4>Capacités du programme (thème Internet)</h4><ul class="caps">${BO_CAPS.map(([t, ns]) => `<li>${ns.every(n => S.notions.includes(n)) ? '✅' : '⬜'} ${t}</li>`).join('')}</ul>
     <h4>Points à retravailler</h4><p>${errs.length ? errs.slice(0, 5).map(([n, k]) => `${NOTIONS[n] ? NOTIONS[n].title : n} (${k} erreur${k > 1 ? 's' : ''})`).join(' · ') : 'Aucune erreur : bravo !'}</p>
@@ -1378,14 +1309,13 @@ function menu() {
   b.innerHTML = `<div class="menu">
     <label>Fréquence des appels <select id="mn-inc"><option value="off">Désactivés</option><option value="calme">Calme</option><option value="normal">Normale</option><option value="intense">Intense</option></select></label>
     <label><input type="checkbox" id="mn-snd"> Sons</label>
-    <div class="actions col"><button class="btn" id="mn-help">❓ Aide</button><button class="btn" id="mn-rep">📄 Rapport de stage (en cours)</button><button class="btn" id="mn-fiche">📝 Mes fiches résumé</button><button class="btn" id="mn-prof">🎓 Mode enseignant</button><button class="btn danger" id="mn-reset">🗑️ Recommencer depuis le début</button></div></div>`;
+    <div class="actions col"><button class="btn" id="mn-help">❓ Aide</button><button class="btn" id="mn-rep">📄 Rapport de stage (en cours)</button><button class="btn" id="mn-prof">🎓 Mode enseignant</button><button class="btn danger" id="mn-reset">🗑️ Recommencer depuis le début</button></div></div>`;
   b.querySelector('#mn-inc').value = S.settings.inc;
   b.querySelector('#mn-snd').checked = S.settings.sound;
   b.querySelector('#mn-inc').onchange = e => { S.settings.inc = e.target.value; S.nextInc = null; save(); refreshHUD(); };
   b.querySelector('#mn-snd').onchange = e => { S.settings.sound = e.target.checked; save(); };
   b.querySelector('#mn-help').onclick = () => { closeModal(true); help(); };
   b.querySelector('#mn-rep').onclick = () => { closeModal(true); report(); };
-  b.querySelector('#mn-fiche').onclick = () => { closeModal(true); fichesMenu(); };
   b.querySelector('#mn-prof').onclick = () => { closeModal(true); teacher(); };
   b.querySelector('#mn-reset').onclick = () => { if (confirm('Effacer la progression et recommencer ?')) { try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* rien */ } location.reload(); } };
 }

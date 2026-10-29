@@ -19,7 +19,7 @@ const part2Open = () => !ONLINE.on || ONLINE.part2;
   const cfg = window.FIREBASE_CONFIG;
   if (!cfg || !cfg.projectId || !/^https?:$/.test(location.protocol)) return;
   ONLINE.on = true; // mode en ligne prévu : la partie 2 attend l'enseignant
-  let F, db, uid, classe = null, lastSent = '', lastTime = 0, sending = false, again = false, oldRules = false;
+  let F, db, uid, classe = null, lastSent = '', lastTime = 0, sending = false, again = false;
   const ctl = {};
   let unsubClasse = null;
 
@@ -99,7 +99,6 @@ const part2Open = () => !ONLINE.on || ONLINE.part2;
       reponsesOk: r.reponsesOk, reponsesKo: r.reponsesKo, minutes: r.minutes,
       capacites: r.capacites, erreurs: r.erreurs.map(([n, k]) => ({ n, k }))
     };
-    if (!oldRules) data.fiches = r.fiches;
     const sig = JSON.stringify(Object.assign({}, data, { minutes: 0 }));
     const changed = sig !== lastSent;
     if (sending) { if (force) again = true; return; }
@@ -110,11 +109,7 @@ const part2Open = () => !ONLINE.on || ONLINE.part2;
     data.maj = F.serverTimestamp();
     F.setDoc(F.doc(db, 'eleves', uid), data)
       .then(() => { lastSent = sig; lastTime = Date.now(); })
-      .catch(e => {
-        // règles Firestore pas encore mises à jour (champ « fiches » refusé) : on envoie sans
-        if (e.code === 'permission-denied' && !oldRules && 'fiches' in data) { oldRules = true; again = true; return; }
-        console.warn('Envoi du rapport impossible :', e); lastTime = Date.now();
-      })
+      .catch(e => { console.warn('Envoi du rapport impossible :', e); lastTime = Date.now(); })
       .finally(() => { sending = false; if (again) { again = false; window.onlineTick(true); } });
   };
 })();

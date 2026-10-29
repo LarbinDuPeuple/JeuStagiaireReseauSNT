@@ -251,15 +251,3 @@ svg.map g.rt.nb:hover circle { fill: #e8f0ff; }
 #lock-screen .lock-msg { background: rgba(255, 255, 255, .12); border-radius: 12px; padding: 10px 14px; font-weight: 600; }
 #lock-screen .muted { color: #b9cde3; font-size: .95em; }
 
-/* fiche résumé dans le jeu */
-.fiche h4 { margin: 14px 0 4px; }
-.f-txt { line-height: 2.1; }
-.f-txt ul { margin: 4px 0; padding-left: 20px; }
-.f-sel { font: inherit; font-size: .95em; padding: 2px 4px; border: 2px solid #b9c6d6; border-radius: 8px; background: #f7f9fc; max-width: 100%; }
-.f-sel.right { border-color: #2fbf71; background: #e8f8ef; color: #155c36; }
-.f-sel.wrong { border-color: #e5484d; background: #fdecec; }
-.f-table { border-collapse: collapse; margin: 6px 0; font-size: .95em; }
-.f-table th, .f-table td { border: 1px solid #d6dee8; padding: 4px 8px; text-align: left; }
-.f-table th { background: #f2f5f9; }
-.f-bank { line-height: 2; }
-.f-word { cursor: default; }

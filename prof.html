@@ -122,7 +122,7 @@ const CAPS = [
 ];
 const NB_MISSIONS = 4;
 /* note de jeu sur 5 : jusqu'où on évalue */
-const ETAPES = [{ label: 'la partie 1', missions: 2, fiches: 1 }, { label: 'les parties 1 et 2', missions: 4, fiches: 2 }];
+const ETAPES = [{ label: 'la partie 1', missions: 2 }, { label: 'les parties 1 et 2', missions: 4 }];
 let etape = 1;
 try { etape = Math.min(ETAPES.length - 1, +(localStorage.getItem('stagiaire-snt-etape') ?? 1)); } catch (e) { /* rien */ }
 const STORE = 'stagiaire-snt-prof-v1';
@@ -173,22 +173,18 @@ const pct = r => r.reponsesOk + r.reponsesKo ? Math.round(100 * r.reponsesOk / (
 const nbCaps = r => (r.capacites || []).filter(Boolean).length;
 const pill = (v, ok, mid) => `<span class="pill ${v >= ok ? 'ok' : v >= mid ? 'mid' : 'ko'}">${v} %</span>`;
 const avg = (rs, f) => rs.length ? Math.round(rs.reduce((s, r) => s + f(r), 0) / rs.length) : 0;
-const ficheScore = (r, i) => (r.fiches && r.fiches[i] >= 0 ? r.fiches[i] : null);
-/* barème : 1,5 progression + 1,5 bonnes réponses + 1 tickets résolus + 1 fiches résumé (que des taux) */
+/* barème : 2 progression + 2 bonnes réponses + 1 tickets résolus (que des taux) */
 function noteJeu(r) {
   const E = ETAPES[etape];
   const prog = Math.min(1, r.missions / E.missions);
   const rep = pct(r) / 100;
   const tick = r.tickets ? r.ticketsOk / r.tickets : 1;
-  let f = 0;
-  for (let i = 0; i < E.fiches; i++) f += (ficheScore(r, i) || 0) / 100;
-  f /= E.fiches;
-  const d = { prog: 1.5 * prog, rep: 1.5 * rep, tick: 1 * tick, fiche: 1 * f };
-  d.total = Math.round(2 * (d.prog + d.rep + d.tick + d.fiche)) / 2;
+  const d = { prog: 2 * prog, rep: 2 * rep, tick: 1 * tick };
+  d.total = Math.round(2 * (d.prog + d.rep + d.tick)) / 2;
   return d;
 }
 const fmt = x => (Math.round(x * 10) / 10).toLocaleString('fr-FR');
-const SORTS = { nom: r => r.nom.toLowerCase(), missions: r => r.missions, score: r => r.score, satisfaction: r => r.satisfaction, tickets: r => r.ticketsOk, pct, caps: nbCaps, date: r => r.date, note: r => noteJeu(r).total, fiche: r => ficheScore(r, 0) || 0 };
+const SORTS = { nom: r => r.nom.toLowerCase(), missions: r => r.missions, score: r => r.score, satisfaction: r => r.satisfaction, tickets: r => r.ticketsOk, pct, caps: nbCaps, date: r => r.date, note: r => noteJeu(r).total };
 
 function render() {
   const list = live.on ? live.reports : reports;
@@ -219,7 +215,7 @@ function render() {
       <div><b>${rs.length ? fmt(rs.reduce((t, r) => t + noteJeu(r).total, 0) / rs.length) : '—'} / 5</b>note de jeu (moyenne)</div>
     </div>
     <div class="wrap"><table>
-      <thead><tr>${live.on ? '<th></th>' : ''}${th('nom', 'Élève')}${th('missions', 'Missions')}${th('score', 'Score')}${th('satisfaction', 'Satisf.')}${th('tickets', 'Tickets')}${th('pct', 'Réponses justes')}${th('caps', 'Capacités BO')}${th('fiche', 'Fiches')}${th('note', 'Note jeu')}<th>Points à retravailler</th>${th('date', 'Rapport du')}<th class="noprint"></th></tr></thead>
+      <thead><tr>${live.on ? '<th></th>' : ''}${th('nom', 'Élève')}${th('missions', 'Missions')}${th('score', 'Score')}${th('satisfaction', 'Satisf.')}${th('tickets', 'Tickets')}${th('pct', 'Réponses justes')}${th('caps', 'Capacités BO')}${th('note', 'Note jeu')}<th>Points à retravailler</th>${th('date', 'Rapport du')}<th class="noprint"></th></tr></thead>
       <tbody>${rs.map(r => `<tr>${live.on ? `<td title="${enLigne(r) ? 'En jeu' : 'Hors ligne'}"><span class="dot ${enLigne(r) ? 'on' : ''}"></span></td>` : ''}
         <td><b>${esc(r.nom)}</b>${r.valide ? '' : ' <span class="warn" title="Le fichier a été modifié après l\'export">⚠️ modifié</span>'}</td>
         <td class="num">${r.missions} / ${NB_MISSIONS}${r.fini ? ' ✅' : r.missions === 2 ? '<br><span class="tag">partie 1 finie</span>' : ''}</td>
@@ -228,14 +224,13 @@ function render() {
         <td class="num">${r.ticketsOk} / ${r.tickets}</td>
         <td class="num">${pill(pct(r), 75, 50)}</td>
         <td class="caps" title="${esc(CAPS.map((c, i) => (r.capacites && r.capacites[i] ? '✅ ' : '⬜ ') + c).join('\n'))}">${(r.capacites || []).map(v => v ? '🟩' : '⬜').join('')} ${nbCaps(r)}/7</td>
-        <td class="num">${[0, 1].map(i => ficheScore(r, i) === null ? '—' : ficheScore(r, i) + ' %').join('<br>')}</td>
-        <td class="num" title="${(n => `Progression ${fmt(n.prog)}/1,5 · Bonnes réponses ${fmt(n.rep)}/1,5 · Tickets ${fmt(n.tick)}/1 · Fiches ${fmt(n.fiche)}/1`)(noteJeu(r))}"><b>${fmt(noteJeu(r).total)}</b> / 5</td>
+        <td class="num" title="${(n => `Progression ${fmt(n.prog)}/2 · Bonnes réponses ${fmt(n.rep)}/2 · Tickets ${fmt(n.tick)}/1`)(noteJeu(r))}"><b>${fmt(noteJeu(r).total)}</b> / 5</td>
         <td>${(r.erreurs || []).filter(e => e[1] > 0).slice(0, 3).map(([n, k]) => `${esc(n)} (${k})`).join(', ') || '<span class="muted">—</span>'}</td>
         <td class="muted">${new Date(r.date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
         <td class="noprint"><button class="del" data-k="${esc(keyOf(r))}" title="Supprimer la progression de cet élève">🗑️</button></td>
-      </tr>`).join('') || `<tr><td colspan="13" class="muted">Aucun élève de cette classe pour l'instant.</td></tr>`}</tbody>
+      </tr>`).join('') || `<tr><td colspan="12" class="muted">Aucun élève de cette classe pour l'instant.</td></tr>`}</tbody>
     </table></div>
-    <p class="muted noprint">Note de jeu évaluée sur <select id="etape">${ETAPES.map((e, i) => `<option value="${i}" ${i === etape ? 'selected' : ''}>${e.label}</option>`).join('')}</select> : progression 1,5 pt (missions faites) + bonnes réponses 1,5 pt (taux de réussite aux questions) + tickets 1 pt (part des tickets reçus qui ont été résolus) + fiches résumé 1 pt (score à la première vérification). Arrondi au demi-point. Survole une note pour son détail.</p>
+    <p class="muted noprint">Note de jeu évaluée sur <select id="etape">${ETAPES.map((e, i) => `<option value="${i}" ${i === etape ? 'selected' : ''}>${e.label}</option>`).join('')}</select> : progression 2 pts (missions faites) + bonnes réponses 2 pts (taux de réussite aux questions) + tickets 1 pt (part des tickets reçus qui ont été résolus). Arrondi au demi-point. Survole une note pour son détail.</p>
     <h3>Capacités du BO validées dans la classe</h3>
     <div class="capbar">${CAPS.map((c, i) => `<div>${esc(c)}<div class="g"><span style="width:${capRate[i]}%"></span></div></div><div class="num" style="padding-top:2px">${capRate[i]} %</div>`).join('')}</div>
     <h3>Notions les plus ratées</h3>
@@ -261,8 +256,8 @@ $('#print').onclick = () => window.print();
 $('#clear').onclick = () => { if (live.on) { clearClass(); return; } if (confirm('Effacer tous les rapports importés sur cet ordinateur ?')) { reports = []; persist(); render(); $('#import-msg').textContent = ''; } };
 $('#csv').onclick = () => {
   const rs = (live.on ? live.reports : reports).filter(r => (r.classe || 'Sans classe') === cur);
-  const head = ['Élève', 'Classe', 'Missions', 'Jeu terminé', 'Score', 'Satisfaction %', 'Tickets résolus', 'Tickets', 'Réponses justes %', 'Capacités validées', ...CAPS, 'Fiche partie 1 %', 'Fiche partie 2 %', `Note de jeu /5 (${ETAPES[etape].label})`, 'dont progression /1,5', 'dont réponses /1,5', 'dont tickets /1', 'dont fiches /1', 'Points à retravailler', 'Date', 'Fichier modifié'];
-  const rows = rs.map(r => [r.nom, r.classe, r.missions, r.fini ? 'oui' : 'non', r.score, r.satisfaction, r.ticketsOk, r.tickets, pct(r), nbCaps(r), ...CAPS.map((_, i) => r.capacites && r.capacites[i] ? 'oui' : 'non'), ficheScore(r, 0) ?? '', ficheScore(r, 1) ?? '', ...(n => [n.total, n.prog, n.rep, n.tick, n.fiche].map(fmt))(noteJeu(r)), (r.erreurs || []).map(([n, k]) => `${n} (${k})`).join(' ; '), new Date(r.date).toLocaleString('fr-FR'), r.valide ? 'non' : 'oui']);
+  const head = ['Élève', 'Classe', 'Missions', 'Jeu terminé', 'Score', 'Satisfaction %', 'Tickets résolus', 'Tickets', 'Réponses justes %', 'Capacités validées', ...CAPS, `Note de jeu /5 (${ETAPES[etape].label})`, 'dont progression /2', 'dont réponses /2', 'dont tickets /1', 'Points à retravailler', 'Date', 'Fichier modifié'];
+  const rows = rs.map(r => [r.nom, r.classe, r.missions, r.fini ? 'oui' : 'non', r.score, r.satisfaction, r.ticketsOk, r.tickets, pct(r), nbCaps(r), ...CAPS.map((_, i) => r.capacites && r.capacites[i] ? 'oui' : 'non'), ...(n => [n.total, n.prog, n.rep, n.tick].map(fmt))(noteJeu(r)), (r.erreurs || []).map(([n, k]) => `${n} (${k})`).join(' ; '), new Date(r.date).toLocaleString('fr-FR'), r.valide ? 'non' : 'oui']);
   const csv = '﻿' + [head, ...rows].map(l => l.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));

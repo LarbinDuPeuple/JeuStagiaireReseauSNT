@@ -291,10 +291,11 @@ const MISSIONS = [
               <tr><td>PC-SALON</td><td>192.168.1.23</td><td>Wi-Fi</td><td>maintenant</td></tr>
               <tr><td>Tablette-Mamie</td><td>192.168.1.24</td><td>Wi-Fi</td><td>il y a 2 h</td></tr>
               <tr><td>Imprimante</td><td>192.168.1.30</td><td>Wi-Fi</td><td>hier</td></tr>
+              <tr><td>Console-Jean</td><td>192.168.1.26</td><td>Wi-Fi</td><td>hier soir, 21 h</td></tr>
               <tr><td>Decodeur-TV</td><td>192.168.1.2</td><td>câble</td><td>maintenant</td></tr>
               <tr><td>PC-JEROME</td><td>192.168.1.47</td><td>Wi-Fi</td><td>toutes les nuits, 3 h du matin</td></tr></table>
-              Mme Le Gall vit seule. Quel appareil n'a rien à faire sur son réseau ?`,
-              c: ['PC-SALON', 'Decodeur-TV', 'PC-JEROME', 'Tablette-Mamie'], a: 2,
+              Mme Le Gall vit seule avec son fils Jean. Quel appareil n'a rien à faire sur son réseau ?`,
+              c: ['PC-SALON', 'Console-Jean', 'PC-JEROME', 'Tablette-Mamie'], a: 2,
               ex: "Un voisin utilise son Wi-Fi sans autorisation : il télécharge la nuit et ralentit sa connexion." },
             { q: 'Que conseilles-tu à Mme Le Gall ?',
               c: ['Débrancher la box tous les soirs avant de dormir', 'Acheter un ordinateur plus récent et plus rapide', 'Changer la clé du Wi-Fi pour une clé longue et secrète', 'Baisser le volume de la télévision'], a: 2,

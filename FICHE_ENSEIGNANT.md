@@ -76,9 +76,11 @@ Page **https://larbindupeuple.github.io/JeuStagiaireReseauSNT/prof.html** (ou `p
 
 La page trie les élèves par classe (un onglet par classe), avec pour chacun : missions faites, score, satisfaction, tickets, taux de bonnes réponses, capacités du BO validées et points à retravailler. Pour chaque classe, elle affiche aussi les moyennes, le taux de validation de chaque capacité et les notions les plus ratées. Export CSV (tableur) et impression possibles. Si un élève réimporte un rapport plus avancé, il remplace l'ancien.
 
-Rien n'est envoyé sur Internet : les rapports restent dans le navigateur de l'ordinateur de l'enseignant. Un fichier modifié à la main par un élève est signalé « ⚠️ modifié ».
+Sans le mode en ligne, rien n'est envoyé sur Internet : les rapports importés restent dans le navigateur de l'ordinateur de l'enseignant. Un fichier modifié à la main par un élève est signalé « ⚠️ modifié ».
 
-**Bloquer les écrans pour capter l'attention :** le jeu n'a pas de serveur, il ne peut donc pas être bloqué à distance. Utilise le logiciel de gestion de salle du lycée s'il existe (Veyon, NetSupport, Italc…), ou la consigne « écran éteint ». La partie est sauvegardée en continu : éteindre l'écran ne fait rien perdre.
+**Mode en ligne (facultatif) :** une fois Firebase configuré (voir [FIREBASE.md](FIREBASE.md)), l'espace enseignant affiche les élèves **en direct**, sans import de fichiers, et propose **« 🛑 Bloquer la classe »** ou **« Bloquer toutes les classes »**, avec un message. Les jeux de la classe affichent alors « Pause ! » et le temps est figé jusqu'au déblocage.
+
+**Sans le mode en ligne**, le jeu ne peut pas être bloqué à distance : utilise le logiciel de gestion de salle du lycée s'il existe (Veyon, NetSupport…), ou la consigne « écran éteint ». La partie est sauvegardée en continu.
 
 ## Évaluation
 

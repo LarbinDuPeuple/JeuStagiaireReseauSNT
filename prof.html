@@ -7,6 +7,7 @@
 <style>
   :root { --bg: #eef3f8; --panel: #fff; --ink: #1d2733; --muted: #5d6b7a; --line: #d6dee8; --blue: #2b6fd6; --green: #1f9d55; --amber: #c98a06; --red: #c43d3d; --shadow: 0 6px 24px rgba(20, 40, 70, .12); }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   header { background: #12324f; color: #fff; padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; }
   header h1 { margin: 0; font-size: 1.15em; }
@@ -41,6 +42,15 @@
   .capbar .g { background: #e8eef5; border-radius: 6px; height: 14px; margin-top: 3px; overflow: hidden; }
   .capbar .g span { display: block; height: 100%; background: var(--green); }
   details summary { cursor: pointer; font-weight: 600; }
+  .live-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .btn.lock { background: var(--red); border-color: var(--red); color: #fff; font-weight: 600; }
+  .btn.unlock { background: var(--green); border-color: var(--green); color: #fff; font-weight: 600; }
+  .login { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+  .login label { display: flex; flex-direction: column; font-size: .9em; font-weight: 600; gap: 3px; }
+  .login input, #lock-msg { font: inherit; padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; }
+  .locked-banner { background: #fde7e7; color: var(--red); border-radius: 10px; padding: 8px 12px; font-weight: 600; margin: 8px 0 0; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #c5cfda; }
+  .dot.on { background: var(--green); }
   @media print { header, #import, .bar, .noprint { display: none !important; } body { background: #fff; } .card { box-shadow: none; padding: 0; } }
 </style>
 </head>
@@ -50,6 +60,26 @@
   <a href="index.html">Retour au jeu</a>
 </header>
 <main>
+  <section class="card" id="live" hidden>
+    <h2 style="margin-top:0">Suivi en direct</h2>
+    <form class="login" id="login">
+      <label>Adresse e-mail <input type="email" name="email" autocomplete="username" required></label>
+      <label>Mot de passe <input type="password" name="pw" autocomplete="current-password" required></label>
+      <button class="btn primary">Se connecter</button>
+      <span id="login-msg" class="warn"></span>
+    </form>
+    <div id="live-on" hidden>
+      <div class="live-bar">
+        <button class="btn" id="lock-class"></button>
+        <button class="btn" id="lock-all"></button>
+        <input id="lock-msg" maxlength="120" placeholder="Message affiché pendant la pause (facultatif)" style="flex:1;min-width:220px">
+        <button class="btn" id="logout">Se déconnecter</button>
+      </div>
+      <div id="lock-state"></div>
+      <div id="live-err"></div>
+    </div>
+  </section>
+
   <section class="card" id="import">
     <h2 style="margin-top:0">Importer les rapports des élèves</h2>
     <p class="muted">Chaque élève clique sur « 📤 Enregistrer mon rapport » (fin de partie, ou menu ⚙️ puis Rapport de stage) et dépose le fichier <code>rapport_….json</code> dans l'ENT. Télécharge-les, puis glisse-les tous ici d'un coup. Rien n'est envoyé sur Internet : tout reste sur cet ordinateur.</p>
@@ -70,6 +100,7 @@
     <div id="view"></div>
   </section>
 </main>
+<script src="js/firebase-config.js"></script>
 <script>
 const CAPS = [
   'Distinguer le rôle des protocoles IP et TCP',
@@ -132,13 +163,16 @@ const avg = (rs, f) => rs.length ? Math.round(rs.reduce((s, r) => s + f(r), 0) /
 const SORTS = { nom: r => r.nom.toLowerCase(), missions: r => r.missions, score: r => r.score, satisfaction: r => r.satisfaction, tickets: r => r.ticketsOk, pct, caps: nbCaps, date: r => r.date };
 
 function render() {
-  const classes = [...new Set(reports.map(r => r.classe || 'Sans classe'))].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }));
-  $('#results').hidden = !reports.length;
-  if (!reports.length) return;
+  const list = live.on ? live.reports : reports;
+  const classes = [...new Set([...(live.on ? CLASSES : []), ...list.map(r => r.classe || 'Sans classe')])].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }));
+  $('#results').hidden = !classes.length;
+  $('#clear').textContent = live.on ? '🗑️ Effacer les données de la classe' : '🗑️ Tout effacer';
+  renderLocks();
+  if (!classes.length) return;
   if (!classes.includes(cur)) cur = classes[0];
-  $('#tabs').innerHTML = classes.map(c => `<button aria-pressed="${c === cur}" data-c="${esc(c)}">${esc(c)} (${reports.filter(r => (r.classe || 'Sans classe') === c).length})</button>`).join('');
+  $('#tabs').innerHTML = classes.map(c => `<button aria-pressed="${c === cur}" data-c="${esc(c)}">${live.on && live.locks[classeId(c)] ? '🛑 ' : ''}${esc(c)} (${list.filter(r => (r.classe || 'Sans classe') === c).length})</button>`).join('');
   $('#tabs').querySelectorAll('button').forEach(b => b.onclick = () => { cur = b.dataset.c; render(); });
-  const rs = reports.filter(r => (r.classe || 'Sans classe') === cur);
+  const rs = list.filter(r => (r.classe || 'Sans classe') === cur);
   const get = SORTS[sortK];
   rs.sort((a, b) => { const x = get(a), y = get(b); return (x > y ? 1 : x < y ? -1 : 0) * sortDir; });
   const capRate = CAPS.map((_, i) => rs.length ? Math.round(100 * rs.filter(r => r.capacites && r.capacites[i]).length / rs.length) : 0);
@@ -149,15 +183,15 @@ function render() {
   $('#view').innerHTML = `
     <h2 style="margin:4px 0">${esc(cur)}</h2>
     <div class="stats">
-      <div><b>${rs.length}</b>élèves</div>
+      <div><b>${rs.length}</b>élèves</div>${live.on ? `<div><b>${rs.filter(enLigne).length}</b>en ligne</div>` : ''}
       <div><b>${rs.filter(r => r.missions >= 2).length} / ${rs.length}</b>partie 1 finie</div>
       <div><b>${rs.filter(r => r.fini).length} / ${rs.length}</b>jeu terminé</div>
       <div><b>${avg(rs, pct)} %</b>réponses justes (moyenne)</div>
       <div><b>${avg(rs, r => r.satisfaction)} %</b>satisfaction (moyenne)</div>
     </div>
     <div class="wrap"><table>
-      <thead><tr>${th('nom', 'Élève')}${th('missions', 'Missions')}${th('score', 'Score')}${th('satisfaction', 'Satisf.')}${th('tickets', 'Tickets')}${th('pct', 'Réponses justes')}${th('caps', 'Capacités BO')}<th>Points à retravailler</th>${th('date', 'Rapport du')}</tr></thead>
-      <tbody>${rs.map(r => `<tr>
+      <thead><tr>${live.on ? '<th></th>' : ''}${th('nom', 'Élève')}${th('missions', 'Missions')}${th('score', 'Score')}${th('satisfaction', 'Satisf.')}${th('tickets', 'Tickets')}${th('pct', 'Réponses justes')}${th('caps', 'Capacités BO')}<th>Points à retravailler</th>${th('date', 'Rapport du')}</tr></thead>
+      <tbody>${rs.map(r => `<tr>${live.on ? `<td title="${enLigne(r) ? 'En jeu' : 'Hors ligne'}"><span class="dot ${enLigne(r) ? 'on' : ''}"></span></td>` : ''}
         <td><b>${esc(r.nom)}</b>${r.valide ? '' : ' <span class="warn" title="Le fichier a été modifié après l\'export">⚠️ modifié</span>'}</td>
         <td class="num">${r.missions} / ${NB_MISSIONS}${r.fini ? ' ✅' : ''}</td>
         <td class="num">${r.score}</td>
@@ -167,7 +201,7 @@ function render() {
         <td class="caps" title="${esc(CAPS.map((c, i) => (r.capacites && r.capacites[i] ? '✅ ' : '⬜ ') + c).join('\n'))}">${(r.capacites || []).map(v => v ? '🟩' : '⬜').join('')} ${nbCaps(r)}/7</td>
         <td>${(r.erreurs || []).filter(e => e[1] > 0).slice(0, 3).map(([n, k]) => `${esc(n)} (${k})`).join(', ') || '<span class="muted">—</span>'}</td>
         <td class="muted">${new Date(r.date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
-      </tr>`).join('')}</tbody>
+      </tr>`).join('') || `<tr><td colspan="10" class="muted">Aucun élève de cette classe pour l'instant.</td></tr>`}</tbody>
     </table></div>
     <h3>Capacités du BO validées dans la classe</h3>
     <div class="capbar">${CAPS.map((c, i) => `<div>${esc(c)}<div class="g"><span style="width:${capRate[i]}%"></span></div></div><div class="num" style="padding-top:2px">${capRate[i]} %</div>`).join('')}</div>
@@ -182,9 +216,9 @@ function render() {
 }
 
 $('#print').onclick = () => window.print();
-$('#clear').onclick = () => { if (confirm('Effacer tous les rapports importés sur cet ordinateur ?')) { reports = []; persist(); render(); $('#import-msg').textContent = ''; } };
+$('#clear').onclick = () => { if (live.on) { clearClass(); return; } if (confirm('Effacer tous les rapports importés sur cet ordinateur ?')) { reports = []; persist(); render(); $('#import-msg').textContent = ''; } };
 $('#csv').onclick = () => {
-  const rs = reports.filter(r => (r.classe || 'Sans classe') === cur);
+  const rs = (live.on ? live.reports : reports).filter(r => (r.classe || 'Sans classe') === cur);
   const head = ['Élève', 'Classe', 'Missions', 'Jeu terminé', 'Score', 'Satisfaction %', 'Tickets résolus', 'Tickets', 'Réponses justes %', 'Capacités validées', ...CAPS, 'Points à retravailler', 'Date', 'Fichier modifié'];
   const rows = rs.map(r => [r.nom, r.classe, r.missions, r.fini ? 'oui' : 'non', r.score, r.satisfaction, r.ticketsOk, r.tickets, pct(r), nbCaps(r), ...CAPS.map((_, i) => r.capacites && r.capacites[i] ? 'oui' : 'non'), (r.erreurs || []).map(([n, k]) => `${n} (${k})`).join(' ; '), new Date(r.date).toLocaleString('fr-FR'), r.valide ? 'non' : 'oui']);
   const csv = '﻿' + [head, ...rows].map(l => l.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
@@ -193,6 +227,84 @@ $('#csv').onclick = () => {
   a.download = `stagiaire_${cur.replace(/[^A-Za-z0-9]+/g, '-')}.csv`;
   document.body.append(a); a.click(); a.remove();
 };
+
+/* ---------- suivi en direct (Firebase) ---------- */
+const CLASSES = ['2nde 3', '2nde 4', '2nde 5', '2nde 6'];
+const classeId = c => String(c || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'sans-classe';
+const live = { on: false, reports: [], locks: {} };
+const enLigne = r => r.majMs && Date.now() - r.majMs < 150000;
+function renderLocks() {
+  if (!live.on) return;
+  const id = classeId(cur || CLASSES[0]);
+  const lc = !!live.locks[id], la = !!live.locks.toutes;
+  $('#lock-class').textContent = lc ? `▶ Débloquer la ${cur}` : `🛑 Bloquer la ${cur || CLASSES[0]}`;
+  $('#lock-class').className = 'btn ' + (lc ? 'unlock' : 'lock');
+  $('#lock-all').textContent = la ? '▶ Débloquer toutes les classes' : '🛑 Bloquer toutes les classes';
+  $('#lock-all').className = 'btn ' + (la ? 'unlock' : 'lock');
+  const on = Object.keys(live.locks).filter(k => live.locks[k]);
+  $('#lock-state').innerHTML = on.length ? `<p class="locked-banner">Jeux en pause : ${on.map(k => k === 'toutes' ? 'toutes les classes' : esc((CLASSES.find(c => classeId(c) === k)) || k)).join(', ')}</p>` : '';
+}
+(function () {
+  const cfg = window.FIREBASE_CONFIG;
+  if (!cfg || !cfg.projectId || !/^https?:$/.test(location.protocol)) return;
+  $('#live').hidden = false;
+  const base = window.FIREBASE_SDK_BASE || 'https://www.gstatic.com/firebasejs/10.12.2/';
+  Promise.all(['app', 'auth', 'firestore'].map(m => import(`${base}firebase-${m}.js`))).then(([app, auth, F]) => {
+    const a = app.initializeApp(cfg), db = F.getFirestore(a), au = auth.getAuth(a);
+    if (window.FIREBASE_EMULATOR) {
+      auth.connectAuthEmulator(au, `http://${window.FIREBASE_EMULATOR.host}:${window.FIREBASE_EMULATOR.auth}`, { disableWarnings: true });
+      F.connectFirestoreEmulator(db, window.FIREBASE_EMULATOR.host, window.FIREBASE_EMULATOR.fs);
+    }
+    let unsubs = [], tick = null;
+    $('#login').onsubmit = ev => {
+      ev.preventDefault();
+      const f = ev.target;
+      $('#login-msg').textContent = '';
+      auth.signInWithEmailAndPassword(au, f.email.value.trim(), f.pw.value)
+        .catch(() => { $('#login-msg').textContent = 'Connexion refusée : vérifie l\'adresse et le mot de passe.'; });
+    };
+    $('#logout').onclick = () => auth.signOut(au);
+    auth.onAuthStateChanged(au, user => {
+      unsubs.forEach(u => u()); unsubs = []; clearInterval(tick); $('#live-err').innerHTML = '';
+      const prof = user && !user.isAnonymous;
+      live.on = !!prof;
+      $('#login').hidden = !!prof; $('#live-on').hidden = !prof; $('#import').hidden = !!prof;
+      if (!prof) { live.reports = []; render(); return; }
+      unsubs.push(F.onSnapshot(F.collection(db, 'eleves'), snap => {
+        const by = new Map();
+        snap.forEach(d => {
+          const x = d.data();
+          const r = Object.assign({}, x, { erreurs: (x.erreurs || []).map(e => [e.n, e.k]), majMs: x.maj ? x.maj.toMillis() : 0, valide: true, ids: [d.id] });
+          r.date = new Date(r.majMs || Date.now()).toISOString();
+          const k = keyOf(r), o = by.get(k);
+          if (!o) by.set(k, r);
+          else {
+            const best = (r.missions > o.missions || (r.missions === o.missions && r.majMs > o.majMs)) ? r : o;
+            best.ids = [...new Set([...o.ids, ...r.ids])]; best.majMs = Math.max(o.majMs, r.majMs);
+            by.set(k, best);
+          }
+        });
+        live.reports = [...by.values()];
+        render();
+      }, e => { $('#live-err').innerHTML = `<p class="locked-banner">Lecture impossible (${esc(e.code || e.message)}). Vérifie l'adresse e-mail dans les règles Firestore.</p>`; }));
+      unsubs.push(F.onSnapshot(F.collection(db, 'controle'), snap => {
+        live.locks = {};
+        snap.forEach(d => { live.locks[d.id] = !!d.data().bloque; });
+        render();
+      }));
+      tick = setInterval(render, 30000);
+    });
+    const setLock = (id, on) => F.setDoc(F.doc(db, 'controle', id), { bloque: on, message: on ? $('#lock-msg').value.trim().slice(0, 120) : '', maj: F.serverTimestamp() })
+      .catch(e => alert('Impossible de modifier la pause : ' + (e.code || e.message)));
+    $('#lock-class').onclick = () => { const id = classeId(cur); setLock(id, !live.locks[id]); };
+    $('#lock-all').onclick = () => setLock('toutes', !live.locks.toutes);
+    window.clearClass = () => {
+      const rs = live.reports.filter(r => (r.classe || 'Sans classe') === cur);
+      if (!rs.length || !confirm(`Effacer définitivement les données des ${rs.length} élèves de ${cur} ?`)) return;
+      Promise.all(rs.flatMap(r => r.ids).map(id => F.deleteDoc(F.doc(db, 'eleves', id)))).catch(e => alert('Effacement incomplet : ' + (e.code || e.message)));
+    };
+  }).catch(e => { $('#login-msg').textContent = 'Mode en ligne indisponible (' + e.message + ').'; });
+})();
 render();
 </script>
 </body>

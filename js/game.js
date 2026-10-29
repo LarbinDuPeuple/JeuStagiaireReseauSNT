@@ -978,9 +978,10 @@ function missionComplete() {
     closeModal(true);
     if (last) { S.finished = true; save(); refreshHUD(); report(); }
     else { S.m++; S.s = 0; S.sp = {}; S.pause = false; save(); refreshHUD(); missionIntro(); }
+    if (window.onlineTick) onlineTick(true);
   };
   if (endPart1) b.querySelector('#send').onclick = () => exportRapport(S.m + 1);
-  if (endPart1) b.querySelector('#stay').onclick = () => { closeModal(true); S.m++; S.s = 0; S.sp = {}; S.pause = true; save(); refreshHUD(); };
+  if (endPart1) b.querySelector('#stay').onclick = () => { closeModal(true); S.m++; S.s = 0; S.sp = {}; S.pause = true; save(); refreshHUD(); if (window.onlineTick) onlineTick(true); };
 }
 
 function idleAction(id) {
@@ -1354,11 +1355,11 @@ function startScreen() {
 let last = performance.now(), hudTimer = 0, saveTimer = 0;
 function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now; animT += dt;
-  if (S && $('#title-screen').hidden) {
+  if (S && $('#title-screen').hidden && !ONLINE.locked) {
     S.t += dt;
     updatePlayer(dt); scheduleIncidents(); updateTickets();
     hudTimer += dt; saveTimer += dt;
-    if (hudTimer > 1) { hudTimer = 0; refreshHUD(); }
+    if (hudTimer > 1) { hudTimer = 0; refreshHUD(); if (window.onlineTick) onlineTick(); }
     if (saveTimer > 5) { saveTimer = 0; save(); }
     updateHint();
   }
@@ -1369,6 +1370,7 @@ function loop(now) {
 /* entrées clavier / souris */
 const KEYMAP = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', z: 'up', w: 'up', s: 'down', q: 'left', a: 'left', d: 'right' };
 addEventListener('keydown', ev => {
+  if (ONLINE.locked) { ev.preventDefault(); return; }
   const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
   if (ev.key === 'Escape') { if (carnetOpen()) closeCarnet(); else if (modalOpen() && modalClosable) closeModal(); else if (!uiBusy() && S) menu(); return; }
   if (typing) return;

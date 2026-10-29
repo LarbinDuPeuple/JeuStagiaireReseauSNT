@@ -33,4 +33,4 @@ HTML, CSS et JavaScript, sans dépendance ni étape de build : il suffit d'ouvri
 
 Mode enseignant (reprendre à une mission) : menu ⚙️, code `IROISE`.
 
-Espace enseignant (rapports des élèves triés par classe) : [`prof.html`](https://larbindupeuple.github.io/JeuStagiaireReseauSNT/prof.html). Voir la fiche enseignant.
+Espace enseignant (rapports des élèves triés par classe) : [`prof.html`](https://larbindupeuple.github.io/JeuStagiaireReseauSNT/prof.html). Voir la fiche enseignant. Mode en ligne facultatif (suivi en direct, blocage des jeux) : [FIREBASE.md](FIREBASE.md).

@@ -240,3 +240,13 @@ svg.map g.rt.nb:hover circle { fill: #e8f0ff; }
 @keyframes carnet-flash { 0%, 100% { box-shadow: var(--shadow); } 40% { box-shadow: 0 0 0 6px rgba(122, 91, 214, .55), var(--shadow); } }
 @media print { #carnet-panel { display: none !important; } }
 @media (min-width: 1100px) { body.carnet-on #modal-wrap { padding-right: 464px; } }
+
+/* écran de pause imposé par l'enseignant (mode en ligne) */
+#lock-screen { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: rgba(18, 50, 79, .98); color: #fff; text-align: center; padding: 16px; }
+#lock-screen[hidden] { display: none; }
+#lock-screen h2 { font-size: 2.4em; margin: 6px 0; }
+#lock-screen p { font-size: 1.15em; max-width: 520px; margin: 8px auto; }
+#lock-screen .lock-icon { font-size: 4em; }
+#lock-screen .lock-msg:empty { display: none; }
+#lock-screen .lock-msg { background: rgba(255, 255, 255, .12); border-radius: 12px; padding: 10px 14px; font-weight: 600; }
+#lock-screen .muted { color: #b9cde3; font-size: .95em; }

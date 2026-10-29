@@ -738,3 +738,51 @@ const INCIDENTS = [
     ] }
 ];
 
+
+/* ---------------------------------------------------------------------
+   Fiches résumé (remplies dans le jeu à la fin de chaque partie)
+   {{mot}} : un trou à compléter avec un mot de la banque
+   {{bonne|choix 1|choix 2|…}} : un trou avec ses propres choix
+   Même contenu que la fiche résumé papier.
+   --------------------------------------------------------------------- */
+const RP = c => `{{${c}|filaire|sans fil}}`, ACT = c => `{{${c}|actuel|obsolète}}`;
+const FICHES = [
+  { partie: 1, title: 'Partie 1 : du réseau physique au DNS',
+    bank: ['passerelle', 'nslookup', '1983', 'paquets', 'ipconfig', 'adresse IP', 'annuaire', 'vidéo', 'TCP/IP', '255', 'routeur', 'physique', 'Cyclades', 'nom'],
+    sections: [
+      { h: "1. Un peu d'histoire", html: "Dans les années 1970, ArpaNet aux États-Unis et {{Cyclades}} en France relient des ordinateurs. L'information y voyage en {{paquets}} indépendants. En {{1983}}, tous ces réseaux adoptent le même protocole, {{TCP/IP}} : c'est la naissance d'Internet." },
+      { h: '2. Les réseaux physiques', html: `Internet est indépendant du réseau {{physique}} : ses protocoles fonctionnent sur des câbles comme sur des ondes radio.
+        <table class="f-table"><tr><th>Réseau</th><th>Filaire ou sans fil ?</th><th>Actuel ou obsolète ?</th></tr>
+        <tr><td>Fibre optique</td><td>${RP('filaire')}</td><td>${ACT('actuel')}</td></tr>
+        <tr><td>Wi-Fi</td><td>${RP('sans fil')}</td><td>${ACT('actuel')}</td></tr>
+        <tr><td>Modem 56k</td><td>${RP('filaire')}</td><td>${ACT('obsolète')}</td></tr>
+        <tr><td>4G / 5G</td><td>${RP('sans fil')}</td><td>${ACT('actuel')}</td></tr>
+        <tr><td>Ethernet (RJ45)</td><td>${RP('filaire')}</td><td>${ACT('actuel')}</td></tr></table>
+        Le trafic d'Internet augmente chaque année, surtout à cause de la {{vidéo}}. Ordre de grandeur prévu en 2021 : 3,3 × 10^{{21|6|12|21|100}} octets.` },
+      { h: "3. L'adresse IP et la box", html: `Chaque appareil connecté est identifié par une {{adresse IP}}. En IPv4, ce sont 4 nombres de 0 à {{255}} séparés par des points. La box est un {{routeur}} : elle relie le réseau de la maison à Internet, c'est la {{passerelle}} des appareils. Sous Windows, la commande {{ipconfig}} affiche l'adresse IP de l'ordinateur, celle de la passerelle et celle du serveur DNS.
+        <ul><li>Chez Mme Le Gall, adresse IP du PC : {{192.168.1.23|192.168.1.1|192.168.1.23|192.168.1.47|203.0.113.53}}</li>
+        <li>Adresse de la box (passerelle) : {{192.168.1.1|192.168.1.1|192.168.1.23|192.168.1.47|203.0.113.53}}</li>
+        <li>Appareil intrus sur son Wi-Fi : {{PC-JEROME|PC-SALON|Console-Jean|PC-JEROME|Tablette-Mamie}}</li></ul>` },
+      { h: '4. Le DNS', html: `Le DNS est l'{{annuaire}} d'Internet : il traduit un {{nom}} en adresse IP, et inversement. La commande {{nslookup}} interroge le DNS.
+        <table class="f-table"><tr><th>Adresse symbolique</th><th>Adresse IP</th></tr>
+        <tr><td>wikipedia.fr</td><td>{{185.15.58.224|185.15.58.224|203.0.113.80|192.168.1.1}}</td></tr>
+        <tr><td>{{lycee-lacroixrouge.bzh|iroisenet.bzh|lycee-lacroixrouge.bzh|mairie-brest.bzh}}</td><td>203.0.113.80</td></tr></table>
+        Au CDI, le site répond quand on tape son adresse IP mais pas son nom : le service en panne est {{le DNS|la box|le câble|le DNS|le site}}.` }
+    ] },
+  { partie: 2, title: 'Partie 2 : le voyage des paquets',
+    bank: ['détruit', 'voisin', 'TCP', 'tracert', 'table de routage', 'IP', '1', 'contenu', 'serveur central', 'ordre', 'autre chemin', 'saturer', "droit d'auteur", 'quand'],
+    sections: [
+      { h: '5. Le routage', html: `Un routeur envoie chaque paquet vers un routeur {{voisin}}, de proche en proche, jusqu'au destinataire. Pour choisir, il lit sa {{table de routage}} : une carte locale, et non la carte complète d'Internet. Si une ligne est coupée, les tables s'ajustent et les paquets prennent un {{autre chemin}}. La commande {{tracert}} affiche la liste des routeurs traversés.
+        <p>Chemin d'un paquet de Brest à Paris : Brest → {{Morlaix|Morlaix|Quimper|Nantes|Ouessant}} → {{Rennes|Rennes|Nantes|Quimper|Morlaix}} → Paris</p>` },
+      { h: '6. Les limites du routage', html: "Chaque paquet porte un compteur de sauts. À chaque routeur, il baisse de {{1}}. Quand il arrive à 0, le paquet est {{détruit}}, par exemple s'il tourne en rond. Un paquet peut aussi ne jamais arriver si une panne matérielle ne laisse aucun autre chemin." },
+      { h: '7. IP et TCP', html: `<table class="f-table"><tr><th>Rôle</th><th>Protocole</th></tr>
+        <tr><td>Donne une adresse à chaque machine et achemine chaque paquet</td><td>{{IP|IP|TCP}}</td></tr>
+        <tr><td>Numérote les paquets et les remet dans l'{{ordre}}</td><td>{{TCP|IP|TCP}}</td></tr>
+        <tr><td>Redemande les paquets perdus</td><td>{{TCP|IP|TCP}}</td></tr></table>
+        Internet ne garantit pas {{quand}} un paquet arrivera. C'est pour cela qu'une visio peut saccader même si la connexion est fiable.` },
+      { h: "8. Usages et règles d'Internet", html: `<ul><li>Dans un réseau pair-à-pair, il n'y a pas de {{serveur central}} : chaque ordinateur envoie et reçoit. Partager un film sans l'accord de ses auteurs est interdit par le {{droit d'auteur}}.</li>
+        <li>Neutralité du Net : les routeurs transmettent les paquets sans tenir compte de leur {{contenu}}.</li>
+        <li>Un déni de service cherche à {{saturer}} un site avec un très grand nombre de messages.</li></ul>
+        <p><b>À retenir :</b> {{IP|IP|TCP}} achemine les paquets, {{TCP|IP|TCP}} fiabilise la communication, et les routeurs décident de proche en proche.</p>` }
+    ] }
+];

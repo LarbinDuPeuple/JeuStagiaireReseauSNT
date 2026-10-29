@@ -88,6 +88,20 @@ Sans le mode en ligne, rien n'est envoyé sur Internet : les rapports importés 
 
 ## Évaluation
 
+**Fiches résumé dans le jeu :** à la fin de chaque partie, le jeu affiche la fiche résumé en texte à trous (menus déroulants, mots de la liste). L'élève a 3 essais ; c'est le score de la **première vérification** qui est retenu. Il peut relire ses fiches corrigées par le menu ⚙️ puis « Mes fiches résumé ». Le contenu est identique à la fiche papier.
+
+**Note de jeu sur 5** (espace enseignant, colonne « Note jeu », aussi dans l'export CSV). Choisis d'abord jusqu'où tu évalues (partie 1, ou parties 1 et 2). Barème, uniquement des taux pour ne pas avantager ceux qui reçoivent plus de tickets :
+
+| Critère | Points | Calcul |
+|---|---|---|
+| Progression | 1,5 | missions faites / missions attendues |
+| Bonnes réponses | 1,5 | taux de réussite aux questions des missions et des quiz |
+| Tickets | 1 | tickets résolus / tickets reçus |
+| Fiches résumé | 1 | score moyen à la première vérification |
+
+Total arrondi au demi-point. La satisfaction des clients n'est pas comptée : elle dépend surtout du temps passé. Survole une note pour voir son détail.
+
+
 Le **rapport de stage** (menu ⚙️ puis « Rapport de stage », imprimable ou en PDF) indique : score, satisfaction des clients, tickets résolus, taux de bonnes réponses, **capacités du BO validées** et **points à retravailler**. Il peut servir d'évaluation formative ou de trace écrite.
 
 Les questions à choix multiples ont été vérifiées pour que la bonne réponse **ne soit pas systématiquement la plus longue** : elle n'est la plus longue qu'environ une fois sur cinq, et la plus courte aussi environ une fois sur cinq (moins que le hasard avec 3 ou 4 choix). Les réponses sont mélangées à chaque affichage.

@@ -82,8 +82,12 @@
       <div class="live-bar" style="margin-top:8px">
         <button class="btn" id="p2-class"></button>
         <button class="btn" id="p2-all"></button>
-        <span class="muted">La partie 2 reste fermée tant que tu ne l'as pas débloquée. En attendant, les élèves enchaînent les appels de la hotline.</span>
       </div>
+      <div class="live-bar" style="margin-top:8px">
+        <button class="btn" id="p3-class"></button>
+        <button class="btn" id="p3-all"></button>
+      </div>
+      <p class="muted" style="margin:6px 0 0">Les parties 2 et 3 restent fermées tant que tu ne les as pas débloquées. En attendant, les élèves qui ont fini enchaînent les appels de la hotline.</p>
       <div id="lock-state"></div>
       <div id="live-err"></div>
     </div>
@@ -118,11 +122,26 @@ const CAPS = [
   'Retrouver une adresse IP à partir d\'une adresse symbolique et inversement',
   "Décrire l'intérêt des réseaux pair-à-pair et leurs usages illicites",
   'Caractériser quelques types de réseaux physiques',
-  "Caractériser l'ordre de grandeur du trafic et son évolution"
+  "Caractériser l'ordre de grandeur du trafic et son évolution",
+  // thème Le Web (partie 3), dans le même ordre que dans le jeu
+  'Connaître les étapes du développement du Web',
+  "Connaître certaines notions juridiques (licence, droit d'auteur, droit d'usage)",
+  "Maîtriser les renvois d'un texte à différents contenus (hypertexte)",
+  "Distinguer le contenu d'une page (HTML) et son style (CSS)",
+  'Étudier et modifier une page HTML simple',
+  "Décomposer l'URL d'une page",
+  'Reconnaître les pages sécurisées',
+  "Décomposer une requête HTTP et identifier les paramètres passés",
+  'Distinguer ce qui est exécuté par le client et par le serveur',
+  "Mener une analyse critique des résultats d'un moteur de recherche",
+  "Comprendre les enjeux de la publication d'informations",
+  'Régler cookies, sécurité et confidentialité du navigateur',
+  'Sécuriser sa navigation, analyser les pages et fichiers'
 ];
-const NB_MISSIONS = 4;
-/* note de jeu sur 5 : jusqu'où on évalue */
-const ETAPES = [{ label: 'la partie 1', missions: 2 }, { label: 'les parties 1 et 2', missions: 4 }];
+const NB_CAPS_INTERNET = 7;
+const NB_MISSIONS = 6;
+/* note de jeu sur 5 : jusqu'où on évalue (et quelles capacités on compte) */
+const ETAPES = [{ label: 'la partie 1', missions: 2, caps: 7 }, { label: 'les parties 1 et 2', missions: 4, caps: 7 }, { label: 'les parties 1 à 3', missions: 6, caps: CAPS.length }];
 let etape = 1;
 try { etape = Math.min(ETAPES.length - 1, +(localStorage.getItem('stagiaire-snt-etape') ?? 1)); } catch (e) { /* rien */ }
 const STORE = 'stagiaire-snt-prof-v1';
@@ -170,7 +189,8 @@ $('#files').onchange = e => { importFiles([...e.target.files]); e.target.value =
 drop.addEventListener('drop', e => importFiles([...e.dataTransfer.files]));
 
 const pct = r => r.reponsesOk + r.reponsesKo ? Math.round(100 * r.reponsesOk / (r.reponsesOk + r.reponsesKo)) : 0;
-const nbCaps = r => (r.capacites || []).filter(Boolean).length;
+const nbCaps = r => (r.capacites || []).slice(0, ETAPES[etape].caps).filter(Boolean).length;
+const finie = r => r.fini ? ' ✅' : r.missions === 2 || r.missions === 4 ? `<br><span class="tag">partie ${r.missions / 2} finie</span>` : '';
 const pill = (v, ok, mid) => `<span class="pill ${v >= ok ? 'ok' : v >= mid ? 'mid' : 'ko'}">${v} %</span>`;
 const avg = (rs, f) => rs.length ? Math.round(rs.reduce((s, r) => s + f(r), 0) / rs.length) : 0;
 /* barème : 2 progression + 2 bonnes réponses + 1 tickets résolus (que des taux) */
@@ -209,6 +229,7 @@ function render() {
     <div class="stats">
       <div><b>${rs.length}</b>élèves</div>${live.on ? `<div><b>${rs.filter(enLigne).length}</b>en ligne</div>` : ''}
       <div><b>${rs.filter(r => r.missions >= 2).length} / ${rs.length}</b>partie 1 finie</div>
+      <div><b>${rs.filter(r => r.missions >= 4).length} / ${rs.length}</b>partie 2 finie</div>
       <div><b>${rs.filter(r => r.fini).length} / ${rs.length}</b>jeu terminé</div>
       <div><b>${avg(rs, pct)} %</b>réponses justes (moyenne)</div>
       <div><b>${avg(rs, r => r.satisfaction)} %</b>satisfaction (moyenne)</div>
@@ -218,12 +239,12 @@ function render() {
       <thead><tr>${live.on ? '<th></th>' : ''}${th('nom', 'Élève')}${th('missions', 'Missions')}${th('score', 'Score')}${th('satisfaction', 'Satisf.')}${th('tickets', 'Tickets')}${th('pct', 'Réponses justes')}${th('caps', 'Capacités BO')}${th('note', 'Note jeu')}<th>Points à retravailler</th>${th('date', 'Rapport du')}<th class="noprint"></th></tr></thead>
       <tbody>${rs.map(r => `<tr>${live.on ? `<td title="${enLigne(r) ? 'En jeu' : 'Hors ligne'}"><span class="dot ${enLigne(r) ? 'on' : ''}"></span></td>` : ''}
         <td><b>${esc(r.nom)}</b>${r.valide ? '' : ' <span class="warn" title="Le fichier a été modifié après l\'export">⚠️ modifié</span>'}</td>
-        <td class="num">${r.missions} / ${NB_MISSIONS}${r.fini ? ' ✅' : r.missions === 2 ? '<br><span class="tag">partie 1 finie</span>' : ''}</td>
+        <td class="num">${r.missions} / ${NB_MISSIONS}${finie(r)}</td>
         <td class="num">${r.score}</td>
         <td class="num">${r.satisfaction} %</td>
         <td class="num">${r.ticketsOk} / ${r.tickets}</td>
         <td class="num">${pill(pct(r), 75, 50)}</td>
-        <td class="caps" title="${esc(CAPS.map((c, i) => (r.capacites && r.capacites[i] ? '✅ ' : '⬜ ') + c).join('\n'))}">${(r.capacites || []).map(v => v ? '🟩' : '⬜').join('')} ${nbCaps(r)}/7</td>
+        <td class="caps" title="${esc(CAPS.map((c, i) => (r.capacites && r.capacites[i] ? '✅ ' : '⬜ ') + c).join('\n'))}">${(r.capacites || []).slice(0, ETAPES[etape].caps).map((v, i) => (i === NB_CAPS_INTERNET ? ' ' : '') + (v ? '🟩' : '⬜')).join('')} ${nbCaps(r)}/${ETAPES[etape].caps}</td>
         <td class="num" title="${(n => `Progression ${fmt(n.prog)}/2 · Bonnes réponses ${fmt(n.rep)}/2 · Tickets ${fmt(n.tick)}/1`)(noteJeu(r))}"><b>${fmt(noteJeu(r).total)}</b> / 5</td>
         <td>${(r.erreurs || []).filter(e => e[1] > 0).slice(0, 3).map(([n, k]) => `${esc(n)} (${k})`).join(', ') || '<span class="muted">—</span>'}</td>
         <td class="muted">${new Date(r.date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
@@ -231,8 +252,8 @@ function render() {
       </tr>`).join('') || `<tr><td colspan="12" class="muted">Aucun élève de cette classe pour l'instant.</td></tr>`}</tbody>
     </table></div>
     <p class="muted noprint">Note de jeu évaluée sur <select id="etape">${ETAPES.map((e, i) => `<option value="${i}" ${i === etape ? 'selected' : ''}>${e.label}</option>`).join('')}</select> : progression 2 pts (missions faites) + bonnes réponses 2 pts (taux de réussite aux questions) + tickets 1 pt (part des tickets reçus qui ont été résolus). Arrondi au demi-point. Survole une note pour son détail.</p>
-    <h3>Capacités du BO validées dans la classe</h3>
-    <div class="capbar">${CAPS.map((c, i) => `<div>${esc(c)}<div class="g"><span style="width:${capRate[i]}%"></span></div></div><div class="num" style="padding-top:2px">${capRate[i]} %</div>`).join('')}</div>
+    ${[['Internet', 0, NB_CAPS_INTERNET], ['Le Web', NB_CAPS_INTERNET, CAPS.length]].map(([t, a, z]) => `<h3>Capacités du BO validées dans la classe : thème ${t}</h3>
+    <div class="capbar">${CAPS.slice(a, z).map((c, j) => `<div>${esc(c)}<div class="g"><span style="width:${capRate[a + j]}%"></span></div></div><div class="num" style="padding-top:2px">${capRate[a + j]} %</div>`).join('')}</div>`).join('')}
     <h3>Notions les plus ratées</h3>
     <p>${topErr.length ? topErr.map(([n, k]) => `${esc(n)} : ${k} erreur${k > 1 ? 's' : ''}`).join(' · ') : '<span class="muted">Aucune erreur enregistrée.</span>'}</p>
     <p class="muted noprint">Clique sur un titre de colonne pour trier. Survole les carrés des capacités pour voir leur détail.</p>`;
@@ -280,16 +301,18 @@ function renderLocks() {
   $('#lock-class').className = 'btn ' + (lc ? 'unlock' : 'lock');
   $('#lock-all').textContent = la ? '▶ Débloquer toutes les classes' : '🛑 Bloquer toutes les classes';
   $('#lock-all').className = 'btn ' + (la ? 'unlock' : 'lock');
-  const pc = !!ctlOf(id).partie2, pa = !!ctlOf('toutes').partie2;
-  $('#p2-class').textContent = pc ? `🔒 Refermer la partie 2 (${name})` : `🔓 Débloquer la partie 2 (${name})`;
-  $('#p2-class').className = 'btn ' + (pc ? '' : 'open');
-  $('#p2-all').textContent = pa ? '🔒 Refermer la partie 2 (toutes)' : '🔓 Partie 2 pour toutes les classes';
-  $('#p2-all').className = 'btn ' + (pa ? '' : 'open');
+  [2, 3].forEach(n => {
+    const f = 'partie' + n, pc = !!ctlOf(id)[f], pa = !!ctlOf('toutes')[f];
+    $(`#p${n}-class`).textContent = pc ? `🔒 Refermer la partie ${n} (${name})` : `🔓 Débloquer la partie ${n} (${name})`;
+    $(`#p${n}-class`).className = 'btn ' + (pc ? '' : 'open');
+    $(`#p${n}-all`).textContent = pa ? `🔒 Refermer la partie ${n} (toutes)` : `🔓 Partie ${n} pour toutes les classes`;
+    $(`#p${n}-all`).className = 'btn ' + (pa ? '' : 'open');
+  });
   const label = k => k === 'toutes' ? 'toutes les classes' : esc(CLASSES.find(c => classeId(c) === k) || k);
   const keys = Object.keys(live.ctl).filter(k => !k.startsWith('reset-'));
-  const on = keys.filter(k => live.ctl[k].bloque), p2 = keys.filter(k => live.ctl[k].partie2);
+  const on = keys.filter(k => live.ctl[k].bloque);
   $('#lock-state').innerHTML = (on.length ? `<p class="locked-banner">Jeux en pause : ${on.map(label).join(', ')}</p>` : '')
-    + (p2.length ? `<p class="muted" style="margin:8px 0 0">🔓 Partie 2 ouverte : ${p2.map(label).join(', ')}</p>` : '');
+    + [2, 3].map(n => { const o = keys.filter(k => live.ctl[k]['partie' + n]); return o.length ? `<p class="muted" style="margin:8px 0 0">🔓 Partie ${n} ouverte : ${o.map(label).join(', ')}</p>` : ''; }).join('');
 }
 (function () {
   const cfg = window.FIREBASE_CONFIG;
@@ -347,8 +370,11 @@ function renderLocks() {
     const setLock = (id, on) => setCtl(id, { bloque: on, message: on ? $('#lock-msg').value.trim().slice(0, 120) : '' });
     $('#lock-class').onclick = () => { const id = classeId(cur); setLock(id, !ctlOf(id).bloque); };
     $('#lock-all').onclick = () => setLock('toutes', !ctlOf('toutes').bloque);
-    $('#p2-class').onclick = () => { const id = classeId(cur); setCtl(id, { partie2: !ctlOf(id).partie2 }); };
-    $('#p2-all').onclick = () => setCtl('toutes', { partie2: !ctlOf('toutes').partie2 });
+    [2, 3].forEach(n => {
+      const f = 'partie' + n;
+      $(`#p${n}-class`).onclick = () => { const id = classeId(cur); setCtl(id, { [f]: !ctlOf(id)[f] }); };
+      $(`#p${n}-all`).onclick = () => setCtl('toutes', { [f]: !ctlOf('toutes')[f] });
+    });
     window.liveDelete = k => {
       const r = live.reports.find(x => keyOf(x) === k);
       if (!r || !confirm(`Supprimer la progression de ${r.nom} (${r.classe}) ?\n\nSa ligne disparaît du tableau et sa partie repart au début (dès que son jeu est ouvert).`)) return;

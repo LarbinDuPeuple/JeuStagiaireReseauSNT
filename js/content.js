@@ -14,6 +14,7 @@ const PEOPLE = {
   maelys: { name: 'Maëlys', role: 'Hotline', shirt: '#7a5bd6', hair: '#d9a441', skin: '#f3d0b0' },
   soizic: { name: 'Soizic', role: 'Supervision du réseau', shirt: '#2f8f6b', hair: '#1d1d1d', skin: '#c98e62' },
   loic: { name: 'Loïc', role: 'Atelier', shirt: '#e09b2d', hair: '#9a9a9a', skin: '#f2c9a5' },
+  klervi: { name: 'Klervi', role: 'Webmaster (sites des clients)', shirt: '#db2777', hair: '#7c2d12', skin: '#f3d0b0' },
   yann: { name: 'Yann', role: 'Technicien (bloqué à Ouessant ⛴️)', shirt: '#14a3a3', hair: '#333', skin: '#b97a52' },
   moi: { name: 'Toi', role: 'Stagiaire', shirt: '#ff7a2f', hair: '#3a2618', skin: '#f0c8a0' },
   // clients (au téléphone)
@@ -31,6 +32,7 @@ const IDLE = {
   erwan: ["Moi aussi j'ai fait ma 2nde à La Croix Rouge. Le réseau, je l'ai découvert en SNT !", "Mon conseil : un problème ? On teste du plus proche au plus loin.", "Il pleut ? Normal, on est à Brest."],
   maelys: ["Quand un client appelle, reste calme et pose des questions simples.", "Le carnet (touche C) contient toutes les fiches que tu débloques."],
   soizic: ["Sur mon grand écran, chaque trait est une fibre optique entre deux routeurs.", "Aucun routeur ne connaît tout Internet. Chacun ne connaît que ses voisins."],
+  klervi: ["Moi, je m'occupe des sites web que les clients hébergent chez IroiseNet : la crêperie du port, le club de voile…", "Internet, ce sont les tuyaux. Le Web, c'est un service qui passe dedans, comme le mail.", "Ma touche préférée ? F12. On voit tout ce que le navigateur échange avec le serveur."],
   loic: ["Sur l'établi, il y a de tout : de la fibre, du cuivre, et même un vieux modem qui chante.", "Un kouign-amann ? Non ? Tant pis, plus pour moi."]
 };
 
@@ -110,6 +112,86 @@ nslookup 203.0.113.10    → iroisenet.bzh</pre>
   ntp: { icon: '🕰️', title: 'NTP : tout le monde à la même heure', html: `
     <p>D'autres protocoles s'appuient sur Internet. Le protocole <b>NTP</b> (Network Time Protocol) permet de <b>synchroniser finement l'heure</b> des ordinateurs et des objets connectés en interrogeant des serveurs de temps.</p>
     <p>C'est aussi le cas du Web avec <b>HTTP</b> et <b>HTTPS</b> (thème suivant !).</p>` },
+  /* ---- thème Web (partie 3) ---- */
+  web_histoire: { icon: '🕸️', title: 'Petite histoire du Web', html: `
+    <ul>
+      <li><b>1965</b> : Ted Nelson invente et programme le concept d'<b>hypertexte</b>.</li>
+      <li><b>1989</b> : naissance du <b>Web</b> au CERN (près de Genève), grâce à Tim Berners-Lee.</li>
+      <li><b>1993</b> : le Web passe dans le <b>domaine public</b> ; premier navigateur grand public, <b>Mosaic</b>.</li>
+      <li><b>1995</b> : des sites <b>interactifs</b> (langage JavaScript) et <b>dynamiques</b> (langage PHP).</li>
+      <li><b>2001</b> : les pages sont standardisées grâce au <b>DOM</b> (Document Object Model).</li>
+      <li><b>2010</b> : des technologies pour développer des applications sur <b>mobiles</b>.</li>
+    </ul>
+    <p>Attention : Internet (1983) est plus ancien que le Web (1989). Le Web est <b>un service</b> qui utilise Internet, comme le mail ou NTP.</p>` },
+  hypertexte: { icon: '🔗', title: 'Le Web et les liens hypertextes', html: `
+    <p>Le <b>Web</b> (la « toile ») donne accès à des pages, images, sons et vidéos <b>reliés par des liens hypertextes</b> et accessibles par Internet.</p>
+    <p>Un <b>hypertexte</b> est un texte augmenté de <b>renvois automatiques</b> vers d'autres textes, images ou sons. Sur le Web, le renvoi peut mener vers <b>n'importe quelle machine</b> d'Internet, grâce à l'adresse (URL) de la page visée :</p>
+    <pre>&lt;a href="https://www.iroisenet.bzh/aide.html"&gt;Aide&lt;/a&gt;</pre>
+    <p>Les pages et leurs liens forment un <b>graphe</b> : chaque page est un sommet, chaque lien une flèche. C'est la « toile d'araignée » du Web.</p>
+    <p>Les formats du Web (HTML, CSS…) sont normalisés par un consortium mondial, le <b>W3C</b>. L'affichage est fait chez l'utilisateur par un programme : le <b>navigateur</b>.</p>` },
+  url: { icon: '🧭', title: 'URL et pages sécurisées', html: `
+    <p>Chaque page a une adresse unique, son <b>URL</b> (Uniform Resource Locator) :</p>
+    <pre>https://www.creperie-arvag.bzh/carte/galettes.html</pre>
+    <table><tr><th>Protocole</th><th>Nom de domaine</th><th>Chemin de la page</th></tr>
+    <tr><td><code>https</code></td><td><code>www.creperie-arvag.bzh</code></td><td><code>/carte/galettes.html</code></td></tr></table>
+    <ul><li><b>http</b> : les échanges circulent en clair.</li>
+    <li><b>https</b> (avec le cadenas 🔒) : les échanges entre le navigateur et le serveur sont <b>chiffrés</b>. Indispensable pour un mot de passe ou un paiement.</li></ul>
+    <p>⚠️ HTTPS prouve que l'échange est chiffré, <b>pas</b> que le site est honnête : un faux site peut aussi avoir un cadenas.</p>` },
+  http: { icon: '📨', title: 'La requête HTTP', html: `
+    <p>Pour afficher une page, le navigateur envoie une <b>requête HTTP</b> au serveur :</p>
+    <pre>GET /carte.php?jour=mardi HTTP/1.1
+Host: www.creperie-arvag.bzh</pre>
+    <ul><li><b>GET</b> : la méthode (« donne-moi »). <b>POST</b> sert à envoyer un formulaire.</li>
+    <li><b>/carte.php</b> : la page demandée ; <b>Host</b> : le nom du serveur.</li>
+    <li>Après le <b>?</b> : les <b>paramètres</b>, sous la forme <code>nom=valeur</code>, séparés par des <code>&amp;</code>. Ici, le paramètre <b>jour</b> vaut <b>mardi</b>.</li></ul>
+    <p>Le serveur répond avec un <b>code</b> : <b>200</b> (OK, voici la page), <b>404</b> (cette page n'existe pas), <b>500</b> (erreur du serveur).</p>
+    <p>Dans un navigateur, la touche <b>F12</b> ouvre les outils de développement : l'onglet <b>Réseau</b> montre toutes les requêtes.</p>` },
+  clientserveur: { icon: '🤝', title: 'Client et serveur', html: `
+    <p>Le Web repose sur le dialogue entre <b>clients</b> (les navigateurs) et <b>serveurs</b>. C'est toujours le <b>client</b> qui prend l'initiative en envoyant une requête.</p>
+    <table><tr><th>Le serveur…</th><th>Le client (navigateur)…</th></tr>
+    <tr><td>stocke les pages, ou les <b>crée à la demande</b> selon la requête (langage <b>PHP</b>, par exemple), puis renvoie le résultat.</td>
+    <td>envoie les requêtes, <b>affiche</b> la page (HTML + CSS) et <b>exécute</b> les programmes qu'elle contient (souvent en <b>JavaScript</b>).</td></tr></table>
+    <p>Quand on affiche le code source d'une page (Ctrl + U), on voit le HTML et le JavaScript reçus, mais <b>jamais le PHP</b> : il a été exécuté sur le serveur, qui n'envoie que le résultat.</p>` },
+  html_css: { icon: '🎨', title: 'HTML et CSS : contenu et style', html: `
+    <p>Une page web est écrite en <b>HTML</b>, un langage de <b>balises</b>, qui décrit son <b>contenu</b> : titres, paragraphes, liens, images.</p>
+    <pre>&lt;h1&gt;Crêperie Ar Vag&lt;/h1&gt;          titre principal
+&lt;p&gt;Galettes et crêpes…&lt;/p&gt;         paragraphe
+&lt;a href="carte.html"&gt;La carte&lt;/a&gt;   lien hypertexte
+&lt;img src="galette.jpg" alt="…"&gt;     image</pre>
+    <p>Son <b>style</b> (couleurs, polices, tailles, marges) est défini à part, en <b>CSS</b> :</p>
+    <pre>h1 { color: red; }
+body { font-family: sans-serif; background: #fdf6e3; }</pre>
+    <p>Séparer contenu et style permet de changer toute l'apparence d'un site sans toucher à son contenu.</p>` },
+  moteur: { icon: '🔎', title: 'Les moteurs de recherche', html: `
+    <p>Un moteur de recherche trouve des pages dont on ne connaît pas l'adresse. Il travaille en trois temps :</p>
+    <ol><li><b>Parcourir</b> le Web avec des robots qui collectent les pages en suivant les liens.</li>
+    <li><b>Indexer</b> : construire un <b>annuaire inversé</b> qui associe à chaque mot la liste des pages où il apparaît.</li>
+    <li><b>Classer</b>, à chaque requête, les pages qui contiennent les mots cherchés, selon leur <b>popularité</b> (nombre de liens qui mènent à elles), leur <b>pertinence</b> et l'ordre des mots de la requête.</li></ol>
+    <p>⚠️ Les premiers résultats peuvent être des <b>liens promotionnels</b> : des sites qui ont <b>payé</b> pour apparaître. Le premier résultat n'est pas forcément le meilleur : on compare plusieurs sources et on vérifie qui a écrit la page.</p>` },
+  hameconnage: { icon: '🎣', title: 'Hameçonnage : vérifier avant de cliquer', html: `
+    <p>L'<b>hameçonnage</b> (phishing) utilise un faux mail et une <b>fausse page</b> qui imite un vrai site pour voler un mot de passe ou une carte bancaire.</p>
+    <ul><li>Le <b>texte d'un lien peut cacher une autre adresse</b> : on <b>survole</b> le lien (sans cliquer) pour voir la vraie adresse, en bas de la fenêtre.</li>
+    <li>On regarde bien le <b>nom de domaine</b> : <code>iroisenet-bzh.secure-paiement.ru</code> n'est pas <code>iroisenet.bzh</code>.</li>
+    <li>Signes d'alerte : urgence, menace, fautes, demande de mot de passe ou de carte bancaire.</li>
+    <li>Le bon réflexe : ne pas cliquer, et <b>taper soi-même l'adresse</b> du vrai site. Ne pas ouvrir une pièce jointe inattendue.</li></ul>` },
+  cookies: { icon: '🍪', title: 'Cookies, historique et confidentialité', html: `
+    <p>Un <b>cookie</b> est un petit fichier qu'un site dépose dans ton navigateur. Utile pour rester connecté ou garder un panier, il peut aussi servir à te <b>pister</b> : les <b>cookies tiers</b> (déposés par des régies publicitaires présentes sur de nombreux sites) suivent ta navigation de site en site.</p>
+    <p>Le navigateur garde aussi un <b>historique</b> de tes visites. Les réglages importants :</p>
+    <ul><li><b>bloquer les cookies tiers</b> ;</li>
+    <li><b>effacer</b> l'historique et les cookies, ou ne pas conserver d'historique (navigation privée) ;</li>
+    <li><b>interdire les programmes</b> (JavaScript) sur les sites douteux ;</li>
+    <li>demander l'autorisation avant de laisser un site accéder à la <b>caméra</b>, au <b>micro</b> ou à la <b>position</b>.</li></ul>
+    <p>Certains moteurs de recherche s'engagent à ne pas garder de traces de tes recherches. La navigation privée n'efface les traces que <b>sur ton ordinateur</b> : les sites et ton fournisseur d'accès voient toujours tes requêtes.</p>` },
+  juridique: { icon: '©️', title: "Droit d'auteur et licences", html: `
+    <ul><li>Une œuvre (photo, texte, musique, logiciel) appartient à son auteur : c'est le <b>droit d'auteur</b>. Ce qui est en ligne n'est <b>pas</b> libre de droits pour autant.</li>
+    <li>La <b>licence</b> dit ce qu'on a le droit de faire avec l'œuvre. Exemple : <b>Creative Commons CC BY</b> = réutilisation permise, en citant l'auteur.</li>
+    <li>Acheter une musique ou un film en ligne, c'est acheter un <b>droit d'usage</b> (en profiter soi-même), pas le droit de le diffuser.</li>
+    <li>Une œuvre a une <b>valeur</b> : la diffuser sans accord prive son auteur de revenus.</li>
+    <li>Publier la photo d'une personne demande son <b>accord</b> (droit à l'image).</li></ul>` },
+  publication: { icon: '📢', title: "Publier sur le Web, et le droit à l'oubli", html: `
+    <p>Le Web a ouvert à tous la possibilité de <b>publier</b>. Mais ni la qualité ni la véracité des informations ne sont garanties : il faut <b>vérifier les sources</b>.</p>
+    <p>Ce qui est publié peut être <b>copié</b> et rester accessible <b>très longtemps</b>, partout. Le <b>droit à l'oubli</b> permet de demander à un moteur de recherche de <b>déréférencer</b> une information personnelle ancienne, mais elle n'est pas toujours effacée partout.</p>
+    <p>Avant de publier : est-ce vrai ? Ai-je le droit ? Est-ce que je l'accepterais dans dix ans ?</p>` },
   diagnostic: { icon: '🩺', title: 'Méthode de la hotline', html: `
     <ol>
       <li><b>Écouter</b> : qui est touché ? Depuis quand ? Un seul appareil ou toute la maison ?</li>
@@ -142,10 +224,11 @@ const DNS_RECORDS = {
   'lycee-lacroixrouge.bzh': '203.0.113.80',
   'mairie-brest.bzh': '198.51.100.20',
   'meteo-iroise.bzh': '198.51.100.71',
-  'ntp.iroisenet.bzh': '203.0.113.123'
+  'ntp.iroisenet.bzh': '203.0.113.123',
+  'creperie-arvag.bzh': '203.0.113.85'
 };
 // où se trouve chaque serveur (routeur auquel il est relié)
-const HOST_AT = { '185.15.58.224': 'paris', '203.0.113.10': 'brest', '203.0.113.80': 'brest', '198.51.100.20': 'brest', '198.51.100.71': 'quimper', '203.0.113.123': 'brest', [DNS_IP]: 'brest' };
+const HOST_AT = { '185.15.58.224': 'paris', '203.0.113.10': 'brest', '203.0.113.80': 'brest', '198.51.100.20': 'brest', '198.51.100.71': 'quimper', '203.0.113.123': 'brest', '203.0.113.85': 'brest', [DNS_IP]: 'brest' };
 
 const ROUTERS = {
   ouessant: { name: 'Ouessant', x: 46, y: 96, ip: '203.0.113.240' },
@@ -199,6 +282,94 @@ const Q_TRAFIC = { title: '📈 La question de Gwenaëlle', notion: 'trafic', qu
     c: ['Les mails', 'Les SMS', 'La vidéo', 'Les pages de texte'], a: 2,
     ex: "La vidéo (streaming, réseaux sociaux, visio) représente la plus grande part du trafic." }
 ] };
+
+/* ---------------------------------------------------------------------
+   Partie 3 : le site de la crêperie (navigateur simulé), graphe, résultats
+   --------------------------------------------------------------------- */
+const CARTE_DU_JOUR = {
+  mardi: 'Galette complète – 9 €', mercredi: 'Galette andouille de Guémené – 11 €', jeudi: 'Galette saumon-poireaux – 12 €',
+  vendredi: 'Galette Saint-Jacques – 14 €', samedi: 'Galette Ar Vag (pommes, chèvre, miel) – 12 €', dimanche: 'Galette forestière – 11 €'
+};
+const CREPERIE = {
+  host: 'www.creperie-arvag.bzh', start: '/index.html',
+  pages: {
+    '/index.html': () => ({ status: 200, kind: 'fichier stocké sur le serveur', html: `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Crêperie Ar Vag – Brest</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <h1>Crêperie Ar Vag</h1>
+  <p>Galettes et crêpes sur le port de Brest depuis 1987.</p>
+  <div class="diapo" id="diapo">🖼️ galette-complete.jpg</div>
+  <ul>
+    <li><a href="/carte.php?jour=mardi">La carte du jour</a></li>
+    <li><a href="/horaires.htm">Nos horaires</a></li>
+  </ul>
+  <script>
+    // diaporama : le navigateur change de photo toutes les 3 secondes
+    const photos = ['galette-complete.jpg', 'crepe-caramel.jpg', 'salle.jpg'];
+    let n = 0;
+    setInterval(() => {
+      n = (n + 1) % photos.length;
+      document.getElementById('diapo').textContent = '🖼️ ' + photos[n];
+    }, 3000);
+  </script>
+</body>
+</html>` }),
+    '/carte.php': p => {
+      const j = String(p.jour || '').toLowerCase();
+      const body = j === 'lundi' ? '<p>La crêperie est fermée le lundi. Kenavo !</p>'
+        : CARTE_DU_JOUR[j] ? `<ul>\n    <li>Galette du jour : ${CARTE_DU_JOUR[j]}</li>\n    <li>Galette complète – 9 €</li>\n    <li>Crêpe beurre-sucre – 4 €</li>\n    <li>Crêpe caramel au beurre salé – 5 €</li>\n  </ul>`
+        : '<p>Aucune carte pour ce jour.</p>';
+      return { status: 200, kind: 'page fabriquée par le serveur (programme PHP)', html: `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Carte du ${j || '?'} – Crêperie Ar Vag</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <h1>Carte du ${j || '?'}</h1>
+  ${body}
+  <p><a href="/index.html">Retour à l'accueil</a></p>
+</body>
+</html>` };
+    },
+    '/horaires.html': () => ({ status: 200, kind: 'fichier stocké sur le serveur', html: `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Horaires – Crêperie Ar Vag</title>
+</head>
+<body>
+  <h1>Nos horaires</h1>
+  <p>Du mardi au dimanche, de 12 h à 14 h et de 19 h à 22 h.</p>
+  <p><a href="/index.html">Retour à l'accueil</a></p>
+</body>
+</html>` })
+  }
+};
+
+/* graphe de liens pour la popularité : D reçoit 3 liens, E 2, A 1, B et C aucun */
+const POP_NODES = { A: [70, 58, 'Encyclopédie'], B: [330, 196, 'Croisières (pub)'], C: [70, 196, 'Blog de touriste'], D: [200, 124, "Mairie d'Ouessant"], E: [330, 58, 'Office de tourisme'] };
+const POP_EDGES = [['A', 'D'], ['C', 'D'], ['E', 'D'], ['D', 'E'], ['A', 'E'], ['C', 'A']];
+const POP_GRAPH = () => {
+  const r = 22, arr = POP_EDGES.map(([a, b]) => {
+    const [x1, y1] = POP_NODES[a], [x2, y2] = POP_NODES[b], d = Math.hypot(x2 - x1, y2 - y1);
+    // deux liens opposés (D⇄E) : on décale légèrement chaque flèche
+    const both = POP_EDGES.some(([u, v]) => u === b && v === a), ox = both ? -(y2 - y1) / d * 6 : 0, oy = both ? (x2 - x1) / d * 6 : 0;
+    return `<line x1="${x1 + (x2 - x1) * r / d + ox}" y1="${y1 + (y2 - y1) * r / d + oy}" x2="${x2 - (x2 - x1) * (r + 4) / d + ox}" y2="${y2 - (y2 - y1) * (r + 4) / d + oy}" marker-end="url(#pg-ar)"/>`;
+  }).join('');
+  const nodes = Object.entries(POP_NODES).map(([k, [x, y, t]]) => `<circle cx="${x}" cy="${y}" r="${r}"/><text x="${x}" y="${y + 6}" class="pg-k">${k}</text><text x="${x}" y="${y < 100 ? y - r - 7 : y + r + 15}" class="pg-t">${t}</text>`).join('');
+  return `<svg class="pop-graph" viewBox="0 0 400 250" role="img" aria-label="Graphe des liens entre cinq pages"><defs><marker id="pg-ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z"/></marker></defs><g class="pg-e">${arr}</g><g class="pg-n">${nodes}</g></svg>`;
+};
+const SERP_HTML = `<div class="serp"><div class="serp-q">🔎 phare Ouessant</div>
+  <div class="serp-r ad"><small><b>Annonce</b> · croisieres-iroise.bzh</small><span>Croisière « Phares d'Ouessant » : -20 % cette semaine !</span></div>
+  <div class="serp-r"><small>mairie-ouessant.bzh › patrimoine</small><span>Les phares de l'île d'Ouessant</span></div>
+  <div class="serp-r"><small>tourisme-ouessant.bzh</small><span>Visiter le phare du Créac'h</span></div></div>`;
 
 /* ---------------------------------------------------------------------
    Missions
@@ -499,6 +670,269 @@ const MISSIONS = [
         },
         notions: ['p2p', 'neutralite'] }
     ]
+  },
+  /* ====================== MISSION 5 (partie 3 : le Web) ====================== */
+  {
+    id: 'm5', partie: 3, title: 'Le site de la crêperie', when: 'Mardi · 9h00 · Brest',
+    story: "Deuxième jour de stage. Yann est rentré d'Ouessant par le premier bateau : il reprend la hotline. Gwenaëlle t'envoie au <b>pôle Web</b>, chez Klervi : IroiseNet héberge aussi les sites web de ses clients. Justement, la <b>crêperie Ar Vag</b>, sur le port, appelle : sur son site, le lien des horaires ne marche plus.",
+    goals: ["Distinguer Internet et le Web, maîtriser les liens hypertextes", 'Connaître les étapes du développement du Web', "Décomposer l'URL d'une page et reconnaître une page sécurisée", 'Décomposer une requête HTTP et identifier les paramètres passés', 'Distinguer ce qui est exécuté par le client et par le serveur', 'Distinguer le contenu (HTML) du style (CSS), et modifier une page HTML simple'],
+    steps: [
+      { id: 'm5s1', label: 'Rencontrer Klervi, la webmaster', target: 'klervi',
+        run() {
+          say([
+            ['klervi', "Salut {nom} ! Gwenaëlle m'a dit que tu avais sauvé la hotline hier. Aujourd'hui, on passe au <b>Web</b>."],
+            ['moi', "Le Web… c'est pas la même chose qu'Internet ?"],
+            ['klervi', "Pas du tout ! Internet, ce sont les tuyaux : les routeurs, les paquets, TCP/IP. Le <b>Web</b> est un <b>service</b> qui passe dans ces tuyaux, comme le mail."],
+            ['klervi', "Le Web, ce sont des pages, des images, des vidéos, reliées par des <b>liens hypertextes</b>. Un clic, et tu passes d'une page de Brest à un serveur au Japon."]
+          ], () => quiz({ title: '🕸️ Le Web selon Klervi', notion: 'hypertexte', questions: [
+            { q: 'Le Web et Internet, c\'est…', c: ['La même chose, deux noms pour un seul et unique réseau', 'Différent : le Web est un service qui utilise Internet', 'Différent : Internet est une petite partie du Web', "Différent : le Web n'a besoin d'aucun câble"], a: 1,
+              fb: ["Non : Internet existait déjà (1983) quand le Web est né (1989).", null, "C'est l'inverse : le Web s'appuie sur Internet.", 'Les pages web voyagent dans les mêmes câbles et les mêmes paquets IP que le reste.'],
+              ex: "Internet est le réseau. Le Web est l'un des services qui l'utilisent, avec le mail, la visio, NTP…" },
+            { q: "Qu'est-ce qu'un lien hypertexte ?", c: ['Un renvoi automatique vers une autre page, une image ou un son', 'Un texte écrit en très gros caractères sur la page', 'Un câble qui relie directement deux ordinateurs entre eux', 'Un message envoyé à tous les internautes connectés en même temps'], a: 0,
+              ex: "Un clic sur un lien hypertexte t'emmène vers un autre contenu, sur n'importe quelle machine d'Internet, grâce à son adresse (URL)." }
+          ] }, done));
+        },
+        notions: ['hypertexte'] },
+      { id: 'm5s2', label: 'Compléter la frise avec l\'histoire du Web', target: 'frise',
+        run() {
+          say([['gwen', "Tu tombes bien ! J'ai ajouté le Web sur la frise. Internet date de 1983… et le Web, d'après toi ?"]], () => quiz({ title: '🕸️ La frise du Web', notion: 'web_histoire', intro: "📒 La fiche « Petite histoire du Web » vient de s'ajouter à ton carnet (touche C).", questions: [
+            { t: 'order', q: "Remets ces étapes du Web dans l'ordre chronologique :", items: ["Ted Nelson invente l'hypertexte", 'Tim Berners-Lee crée le Web au CERN', 'Mosaic, premier navigateur grand public', 'JavaScript et PHP : des sites interactifs', 'Le DOM standardise les pages', 'Le Web arrive sur les mobiles'],
+              hint: 'La fiche « Petite histoire du Web » de ton carnet donne les dates.', ex: '1965, 1989, 1993, 1995, 2001, 2010 : en moins de 50 ans, le Web est passé d\'une idée à nos téléphones.' },
+            { q: 'Où le Web est-il né, en 1989 ?', c: ['Au CERN, près de Genève', 'Dans la Silicon Valley', "Au ministère de l'Armée américaine", 'À Brest, chez IroiseNet'], a: 0,
+              ex: "Au CERN, le laboratoire européen de physique, où Tim Berners-Lee voulait partager des documents entre chercheurs." },
+            { q: 'Internet (1983) et le Web (1989) : lequel est apparu en premier ?', c: ["Internet, et le Web s'appuie dessus", 'Le Web, et Internet est venu ensuite', 'Les deux sont nés le même jour', "Ils sont nés à cinquante ans d'écart"], a: 0,
+              ex: "Le Web est né six ans après Internet : il utilise le réseau qui existait déjà." }
+          ] }, done));
+        },
+        notions: ['web_histoire'] },
+      { id: 'm5s3', label: "Décortiquer l'adresse du site (sur ton poste)", target: 'mon_pc',
+        run() {
+          quiz({ title: '🧭 Les adresses du Web', notion: 'url', questions: [
+            { t: 'tri', q: 'Voici deux adresses de pages :<br><code>https://www.creperie-arvag.bzh/carte/galettes.html</code><br><code>http://mairie-brest.bzh/horaires.html</code><br>Range chaque morceau :', cats: ['Protocole', 'Nom de domaine', 'Chemin de la page'],
+              items: [['https', 0], ['http', 0], ['www.creperie-arvag.bzh', 1], ['mairie-brest.bzh', 1], ['/carte/galettes.html', 2], ['/horaires.html', 2]],
+              hint: 'Le protocole est avant « :// », le nom de domaine va jusqu\'au premier « / ».', ex: "Protocole :// nom de domaine / chemin de la page. Le nom de domaine est traduit en adresse IP par le DNS !" },
+            { q: 'Laquelle de ces pages est <b>sécurisée</b> ?', c: ['https://www.iroisenet.bzh/compte', 'http://www.iroisenet.bzh/compte', 'http://securite.iroisenet.bzh/compte', 'http://www.iroisenet.bzh/https/compte'], a: 0,
+              fb: [null, "Le protocole est http, sans s : les échanges circulent en clair.", "Le mot « securite » dans le nom ne protège rien : le protocole est http.", "« https » est ici dans le chemin, pas au début : le protocole reste http."],
+              ex: "Seul le protocole <b>https</b>, au début de l'adresse, chiffre les échanges. Le navigateur affiche alors un cadenas 🔒." },
+            { q: 'Que garantit le protocole HTTPS ?', c: ['Les échanges avec le serveur sont chiffrés', 'Le site est forcément honnête et sans arnaque', 'La page se charge deux fois plus vite', "Le site a été validé par l'État"], a: 0,
+              fb: [null, "Non ! Un faux site peut lui aussi être en https. Le cadenas protège l'échange, pas contre un menteur.", 'HTTPS ne rend pas la page plus rapide.', "Personne ne « valide » les sites : HTTPS chiffre simplement l'échange."],
+              ex: "HTTPS chiffre (crypte) les échanges : personne ne peut les lire en route. Mais un site d'arnaque peut aussi être en https." }
+          ] }, done);
+        },
+        notions: ['url'] },
+      { id: 'm5s4', label: 'Inspecter les requêtes HTTP du site (sur ton poste)', target: 'mon_pc',
+        run() {
+          say([['klervi', "(au téléphone) Ouvre le site de la crêperie dans ton navigateur, avec les <b>outils de développement</b> (F12). L'onglet Réseau montre chaque requête envoyée au serveur. Clique partout !"]], () => browserLab({
+            title: '🌐 Navigateur — outils de développement (F12)', site: CREPERIE,
+            tasks: [
+              { label: 'Clique sur « La carte du jour », puis ouvre sa requête dans l\'onglet Réseau', test: o => o.opened.some(r => r.path === '/carte.php') },
+              { label: 'Clique sur « Nos horaires » : quel code le serveur renvoie-t-il ?', test: o => o.log.some(r => r.status === 404) },
+              { label: 'Affiche le code source de la page d\'accueil', test: o => o.source.includes('/index.html') }
+            ],
+            onDone: () => quiz({ title: '📨 Ce que dit l\'onglet Réseau', notion: 'http', questions: [
+              { t: 'input', q: 'Dans la requête de la carte du jour, quel est le <b>nom</b> du paramètre passé au serveur ?', a: ['jour'], ph: 'nom du paramètre',
+                hint: "Les paramètres sont après le « ? », sous la forme nom=valeur.", ex: "Dans <code>/carte.php?jour=mardi</code>, le paramètre s'appelle <b>jour</b>." },
+              { t: 'input', q: 'Et quelle est la <b>valeur</b> de ce paramètre ?', a: ['mardi'], ph: 'valeur',
+                ex: "jour=<b>mardi</b> : le serveur s'en sert pour fabriquer la carte du bon jour. Essaie <code>?jour=dimanche</code> dans la barre d'adresse, tu verras !" },
+              { q: 'Quelle méthode HTTP le navigateur utilise-t-il pour demander une page ?', c: ['GET', 'POST', 'PING', 'DNS'], a: 0,
+                fb: [null, 'POST sert surtout à envoyer un formulaire.', "ping est une commande de test du réseau, pas une méthode HTTP.", "Le DNS est l'annuaire d'Internet, pas une méthode HTTP."],
+                ex: '<b>GET</b> veut dire « donne-moi cette page ». <b>POST</b> sert à envoyer des données, par exemple un formulaire.' },
+              { q: 'Pour les horaires, le serveur a répondu <b>404 Not Found</b>. Que signifie ce code ?', c: ["La page demandée n'existe pas", 'Le serveur web est complètement éteint', 'Le DNS ne connaît pas ce nom de site', 'La fibre de la crêperie est coupée'], a: 0,
+                fb: [null, "Un serveur éteint ne répondrait rien du tout. Ici, il répond… pour dire que la page n'existe pas.", "Le DNS a bien trouvé le serveur, puisque le serveur a répondu.", "Les autres pages du site s'affichent : la connexion fonctionne."],
+                ex: "Le lien demande <code>horaires.htm</code>, mais le fichier s'appelle <code>horaires.html</code>. On va corriger ça avec Klervi." }
+            ] }, done)
+          }));
+        },
+        notions: ['http'] },
+      { id: 'm5s5', label: 'Qui fait quoi ? Le client et le serveur (avec Klervi)', target: 'klervi',
+        run() {
+          say([
+            ['klervi', "Alors, tu as vu ? Le navigateur, c'est le <b>client</b> : il envoie des requêtes. En face, le <b>serveur</b> de la salle des machines répond."],
+            ['klervi', "La page d'accueil est un fichier tout prêt. Mais la carte du jour, le serveur la <b>fabrique</b> à chaque requête, avec un programme en PHP. Et le diaporama, lui, c'est du JavaScript, exécuté chez le client."]
+          ], () => quiz({ title: '🤝 Client ou serveur ?', notion: 'clientserveur', questions: [
+            { t: 'tri', q: 'Qui fait quoi, quand on visite le site de la crêperie ?', cats: ['Le client (navigateur)', 'Le serveur'],
+              items: [['Envoyer la requête HTTP', 0], ['Stocker les fichiers du site', 1], ['Fabriquer la carte du jour en PHP', 1], ["Afficher la page à l'écran", 0], ['Exécuter le JavaScript du diaporama', 0], ['Renvoyer le code 404', 1]],
+              hint: 'Le serveur stocke, fabrique et répond. Le navigateur demande, affiche et exécute le JavaScript.', ex: "Le serveur stocke ou fabrique les pages ; le client les demande, les affiche et exécute leur JavaScript." },
+            { q: "Dans le code source, tu as vu le JavaScript du diaporama, mais jamais le code PHP de la carte. Pourquoi ?", c: ["Le serveur l'exécute et n'envoie que le résultat", 'Le code PHP est chiffré par HTTPS avant de partir', "Le navigateur l'efface tout de suite par sécurité", "Il est caché à l'intérieur de la feuille de style CSS"], a: 0,
+              ex: "Le PHP est exécuté sur le <b>serveur</b> : le navigateur ne reçoit que la page HTML fabriquée. Le JavaScript, lui, est envoyé au navigateur, qui l'exécute." },
+            { q: "Sur le Web, qui prend l'initiative de l'échange ?", c: ['Le client, en envoyant une requête', 'Le serveur, en envoyant ses pages à tout le monde', 'Le routeur de Brest', 'Le serveur DNS'], a: 0,
+              ex: "C'est toujours le client qui demande. Le serveur ne fait que répondre." }
+          ] }, done));
+        },
+        notions: ['clientserveur'] },
+      { id: 'm5s6', label: 'Réparer la page dans l\'éditeur de Klervi', target: 'pc_klervi',
+        run() {
+          htmlEditor({
+            title: '🎨 Éditeur de Klervi — index.html et style.css',
+            intro: "La page d'accueil de la crêperie. Le <b>HTML</b> (à gauche) décrit le contenu, le <b>CSS</b> (en dessous) décrit le style. L'aperçu se met à jour quand tu tapes.",
+            html: '<h1>Crêperie Ar Vag</h1>\n<p>Galettes et crêpes sur le port de Brest depuis 1987.</p>\n<h2>Infos pratiques</h2>\n<p>Ouvert du mardi au dimanche, midi et soir.</p>\n<p><a href="horaires.htm">Nos horaires</a></p>\n',
+            css: 'body { font-family: sans-serif; background: #fdf6e3; }\nh1 { color: #1f4e8c; }\np { color: #333333; }\n',
+            tasks: [
+              { label: 'Corriger le lien « Nos horaires » : il doit mener à <code>horaires.html</code>',
+                hint: 'Dans la balise <code>&lt;a href="…"&gt;</code>, remplace horaires.htm par horaires.html.',
+                test: d => { const a = [...d.querySelectorAll('a')].map(x => (x.getAttribute('href') || '').trim().replace(/^\//, '')); return a.includes('horaires.html') && !a.includes('horaires.htm'); } },
+              { label: 'Ajouter un lien vers la carte du jour : <code>carte.php?jour=mardi</code>',
+                hint: 'Ajoute une ligne : <code>&lt;p&gt;&lt;a href="carte.php?jour=mardi"&gt;La carte du jour&lt;/a&gt;&lt;/p&gt;</code>',
+                test: d => [...d.querySelectorAll('a')].some(x => /carte\.php/.test(x.getAttribute('href') || '') && x.textContent.trim()) },
+              { label: 'Mettre le titre <code>h1</code> en rouge, <b>en modifiant le CSS</b> (pas le HTML)',
+                hint: 'Dans le CSS, remplace <code>h1 { color: #1f4e8c; }</code> par <code>h1 { color: red; }</code>.',
+                test: (d, w) => { const h = d.querySelector('h1'); if (!h || h.hasAttribute('style') || d.querySelector('font')) return false; const m = w.getComputedStyle(h).color.match(/\d+/g); return !!m && +m[0] >= 150 && +m[1] < 110 && +m[2] < 110; } }
+            ],
+            onDone: () => quiz({ title: '🎨 Contenu ou style ?', notion: 'html_css', questions: [
+              { t: 'tri', q: 'Dans une page web, range chaque élément :', cats: ['Contenu (HTML)', 'Style (CSS)'],
+                items: [['Le texte du titre', 0], ['La couleur du titre', 1], ['Un lien vers la carte', 0], ['La police de caractères', 1], ['Une photo de galette', 0], ['La couleur du fond de la page', 1]],
+                ex: "Le HTML dit <b>quoi</b> afficher, le CSS dit <b>comment</b> l'afficher." },
+              { q: 'Quelle balise HTML crée un lien hypertexte ?', c: ['&lt;a href="…"&gt;', '&lt;h1&gt;', '&lt;p&gt;', '&lt;lien vers="…"&gt;'], a: 0,
+                ex: '<code>&lt;a href="adresse"&gt;texte du lien&lt;/a&gt;</code> : href contient l\'URL de la page visée.' }
+            ] }, done)
+          });
+        },
+        notions: ['html_css'] },
+      { id: 'm5s7', label: 'Faire le point avec Klervi', target: 'klervi',
+        run() {
+          say([
+            ['klervi', "Le patron de la crêperie est ravi : les horaires s'affichent et le titre est aux couleurs de la maison. Kenavo, la page 404 !"],
+            ['klervi', "Trois questions, et je te laisse déjeuner."]
+          ], () => quiz({ title: '🕸️ Le bilan de Klervi', notion: 'hypertexte', questions: [
+            { q: "Quel programme affiche la page web chez l'utilisateur ?", c: ['Le navigateur', 'Le serveur DNS', 'La box', 'Le routeur de Brest'], a: 0, ex: "Le navigateur (Firefox, Chrome, Safari…) reçoit le HTML et le CSS, et affiche la page." },
+            { q: 'Qui normalise HTML et CSS pour que les pages s\'affichent partout pareil ?', c: ['Le W3C, un consortium mondial', 'Google, qui possède le Web', 'Le CERN, qui contrôle tous les sites', 'Chaque navigateur, à sa façon'], a: 0, ex: 'Le W3C (World Wide Web Consortium) normalise les formats du Web.' },
+            { q: 'Le Web peut se dessiner comme un graphe. Que représentent les flèches ?', c: ['Les liens hypertextes entre pages', 'Les câbles de fibre entre routeurs', 'Les paquets perdus en chemin', 'Les adresses IP des serveurs'], a: 0, ex: 'Chaque page est un sommet, chaque lien hypertexte une flèche : c\'est la toile du Web.' }
+          ] }, done));
+        } }
+    ]
+  },
+
+  /* ====================== MISSION 6 (partie 3 : le Web) ====================== */
+  {
+    id: 'm6', partie: 3, title: 'Chercher, protéger, publier', when: 'Mardi · 14h00 · Brest',
+    story: "L'après-midi, les appels changent : on ne te demande plus « pourquoi Internet ne marche pas ? », mais « est-ce que je peux faire confiance à ce que je vois sur le Web ? ». Moteurs de recherche, faux mails, cookies, droit d'auteur : à toi de jouer.",
+    goals: ['Comprendre comment un moteur de recherche indexe et classe les pages', 'Mener une analyse critique des résultats d\'un moteur de recherche', "Repérer l'hameçonnage en examinant l'adresse d'un lien", 'Régler les cookies, l\'historique et la confidentialité d\'un navigateur', "Connaître le droit d'auteur, les licences et les enjeux de la publication"],
+    onStart() { S.ring = true; },
+    steps: [
+      { id: 'm6s1', label: 'Décrocher le téléphone (le CDI appelle)', target: 'telephone',
+        run() {
+          S.ring = false;
+          say([
+            ['cdi', "Re-bonjour, c'est Mme Quéré, au CDI ! Les 2nde préparent un exposé sur les phares d'Ouessant. Ils tapent « phare Ouessant »…"],
+            ['cdi', "… et le premier résultat, c'est une publicité pour des croisières ! Comment un moteur de recherche décide-t-il de l'ordre des résultats ?"],
+            ['erwan', "Bonne question. Un moteur commence par <b>indexer</b> les pages : fais-le à la main, sur ton poste, avec quatre pages. Tu comprendras tout."]
+          ], done);
+        },
+        skip() { S.ring = false; } },
+      { id: 'm6s2', label: 'Indexer quatre pages à la main (sur ton poste)', target: 'mon_pc',
+        run() {
+          indexLab({
+            title: '🔎 Indexation à la main', notion: 'moteur',
+            pages: [
+              { id: 'P1', text: "Le phare du Créac'h, à Ouessant, guide les bateaux pendant la tempête." },
+              { id: 'P2', text: 'La crêperie Ar Vag sert des crêpes face au port de Brest.' },
+              { id: 'P3', text: 'À Ouessant, on mange des crêpes après la visite du phare.' },
+              { id: 'P4', text: 'La tempête a coupé la liaison radio entre Brest et Ouessant.' }
+            ],
+            index: { phare: ['P1', 'P3'], Ouessant: ['P1', 'P3', 'P4'], crêpes: ['P2', 'P3'], tempête: ['P1', 'P4'], Brest: ['P2', 'P4'] },
+            query: ['phare', 'Ouessant'],
+            onDone: done
+          });
+        },
+        notions: ['moteur'] },
+      { id: 'm6s3', label: 'Classer les pages par popularité (avec Soizic)', target: 'soizic',
+        run() {
+          say([
+            ['soizic', "Indexer, c'est bien. Mais quand mille pages contiennent « phare Ouessant », laquelle mettre en premier ?"],
+            ['soizic', "Les moteurs regardent la <b>popularité</b> : une page vers laquelle beaucoup d'autres pages font un lien est sans doute intéressante. Regarde ce graphe."]
+          ], () => quiz({ title: '🔎 Popularité et classement', notion: 'moteur', wide: true, questions: () => [
+            { t: 'input', q: `${POP_GRAPH()}Chaque flèche est un lien hypertexte d'une page vers une autre. Combien de liens <b>arrivent</b> sur la page D (mairie d'Ouessant) ?`, a: ['3', 'trois'], ph: 'un nombre',
+              hint: 'Compte uniquement les flèches dont la pointe touche D.', ex: 'A, C et E font un lien vers D : 3 liens entrants.' },
+            { t: 'order', q: `${POP_GRAPH()}Classe ces pages de la <b>plus populaire</b> à la <b>moins populaire</b> (nombre de liens reçus) :`, items: ["D · Mairie d'Ouessant", 'E · Office de tourisme', 'A · Encyclopédie'],
+              hint: 'Compte les flèches qui arrivent sur chaque page.', ex: 'D reçoit 3 liens, E en reçoit 2, A en reçoit 1. B et C n\'en reçoivent aucun.' },
+            { q: `${SERP_HTML}Aucune page ne fait de lien vers B, le site de croisières. Pourquoi apparaît-il en premier ?`, c: ["Il a payé : c'est un lien promotionnel", "C'est la page la plus populaire du Web", 'Le moteur classe les pages par ordre alphabétique', "C'est la page la plus récente sur Ouessant"], a: 0,
+              fb: [null, 'Aucun lien ne mène à B : elle n\'est pas populaire du tout.', "« Croisières » ne vient pas en premier dans l'alphabet, et ce n'est pas le critère.", "La date n'explique pas sa place : regarde la petite mention au-dessus du titre."],
+              ex: "La mention « Annonce » signale un <b>lien promotionnel</b> : le site a payé pour être vu en premier." },
+            { q: 'Pour un exposé, quelle est la meilleure attitude face aux résultats ?', c: ['Comparer plusieurs résultats et vérifier leurs sources', "Prendre le premier résultat, puisque le moteur l'a classé en tête", 'Choisir la page qui contient le plus souvent le mot cherché', 'Ne garder que les annonces, qui sont vérifiées par le moteur'], a: 0,
+              ex: "Le classement dépend de la popularité, de la pertinence… et de la publicité. On compare, on vérifie qui a écrit la page." }
+          ] }, done));
+        },
+        notions: ['moteur'] },
+      { id: 'm6s4', label: 'Le mail inquiétant de Tanguy (sur ton poste)', target: 'mon_pc',
+        onEnter() { S.ring = true; },
+        run() {
+          S.ring = false;
+          say([
+            ['tanguy', "Allô ? C'est Tanguy ! J'ai reçu un mail d'IroiseNet : ma ligne va être coupée si je ne mets pas à jour ma carte bancaire tout de suite !"],
+            ['erwan', "(à voix basse) IroiseNet n'envoie jamais ce genre de mail. Fais-le-toi transférer et examine le lien… <b>sans cliquer</b>."]
+          ], () => mailLab({
+            title: '📧 Mail transféré par Tanguy',
+            from: 'Service client IroiseNet &lt;support@iroisenet-facture.com&gt;', subject: '⚠️ DERNIER AVIS avant coupure de votre ligne',
+            body: "<p>Cher client,</p><p>Suite à un incident de paiement, <b>votre ligne sera coupée sous 24 h</b>. Pour l'éviter, mettez à jour immédiatement votre carte bancaire dans votre espace client :</p><p class=\"mail-link-p\">{lien}</p><p>Cordialement,<br>Le service client IroiseNet</p>",
+            linkText: 'https://www.iroisenet.bzh/espace-client', linkReal: 'http://iroisenet-bzh.secure-paiement.ru/login.php',
+            onDone: () => quiz({ title: '🎣 Vrai ou faux mail ?', notion: 'hameconnage', questions: [
+              { q: 'Vers quel site le lien mène-t-il <b>vraiment</b> ?', c: ['iroisenet-bzh.secure-paiement.ru', 'www.iroisenet.bzh', 'iroisenet-facture.com', 'espace-client.iroisenet-facture.com'], a: 0,
+                fb: [null, "C'est le texte affiché, pas la vraie destination du lien !", "C'est l'adresse de l'expéditeur, pas celle du lien.", "Ce site n'apparaît nulle part dans le lien."],
+                ex: "Le nom de domaine se lit juste avant le premier « / » : <code>secure-paiement.ru</code>. Rien à voir avec iroisenet.bzh !" },
+              { q: 'Comment appelle-t-on cette arnaque ?', c: ["L'hameçonnage", 'Le déni de service', 'Le pair-à-pair', 'La neutralité du Net'], a: 0, ex: "L'hameçonnage (phishing) : un faux mail et une fausse page pour voler des informations." },
+              { q: 'Quel conseil donner à Tanguy ?', c: ["Ne pas cliquer, et taper soi-même l'adresse d'IroiseNet", 'Cliquer vite pour éviter la coupure, puis changer de mot de passe', "Répondre au mail pour demander si c'est vraiment IroiseNet", 'Transférer le mail à tous ses contacts pour les prévenir'], a: 0,
+                ex: "On ne clique pas, on ne répond pas. Pour vérifier son compte, on tape soi-même l'adresse du vrai site." },
+              { q: 'La fausse page de paiement affiche un cadenas (https). Est-elle sûre pour autant ?', c: ['Non, HTTPS chiffre mais ne prouve rien', "Oui, le cadenas prouve que le site est bien celui d'IroiseNet", 'Oui, une page chiffrée ne peut pas être une arnaque', 'Non, le cadenas veut dire que la page est piratée'], a: 0,
+                ex: "Le cadenas dit seulement que l'échange est chiffré… avec l'escroc ! C'est le <b>nom de domaine</b> qu'il faut vérifier." }
+            ] }, done)
+          }));
+        },
+        notions: ['hameconnage'] },
+      { id: 'm6s5', label: 'Régler le navigateur de Nolwenn (sur ton poste)', target: 'mon_pc',
+        run() {
+          say([
+            ['nolwenn', "Bonjour ! Depuis que j'ai cherché des chaussures sur Internet, je vois des pubs de chaussures sur tous les sites. Même sur la météo !"],
+            ['nolwenn', "Et je partage l'ordinateur avec mon fils : je ne veux pas qu'il voie mes recherches de cadeaux de Noël. Vous pouvez régler mon navigateur ?"],
+            ['moi', "Je prends la main à distance sur votre navigateur. On commence par regarder qui vous piste."]
+          ], () => settingsLab({ title: '🍪 Paramètres du navigateur de Nolwenn', onDone: () => quiz({ title: '🍪 Cookies et confidentialité', notion: 'cookies', questions: [
+            { q: "Un cookie, c'est…", c: ["Un petit fichier qu'un site dépose chez toi", 'Un virus qui efface le contenu du disque dur', 'Un programme qui accélère la connexion Wi-Fi', "Une publicité qui s'ouvre dans une fenêtre"], a: 0,
+              ex: "Un cookie est un petit fichier texte : pratique pour rester connecté ou garder un panier, mais aussi pour pister." },
+            { q: 'Pourquoi Nolwenn voyait-elle des pubs de chaussures partout ?', c: ['Des cookies tiers la suivaient de site en site', 'Son ordinateur gardait ses mots de passe en mémoire', 'Le moteur de recherche lisait ses mails chaque matin', 'Le serveur DNS envoyait ses recherches à tous les sites'], a: 0,
+              ex: "Les <b>cookies tiers</b> appartiennent à des régies publicitaires présentes sur de nombreux sites : elles reconnaissent Nolwenn partout." },
+            { q: 'La navigation privée, que fait-elle vraiment ?', c: ["Elle n'enregistre pas l'historique sur ce poste", 'Elle rend totalement invisible sur Internet', 'Elle cache ton adresse IP à tous les sites', 'Elle empêche ton fournisseur de voir tes requêtes'], a: 0,
+              ex: "Elle n'efface les traces que sur l'ordinateur. Les sites visités et ton fournisseur d'accès voient toujours tes requêtes." }
+          ] }, done) }));
+        },
+        notions: ['cookies'] },
+      { id: 'm6s6', label: 'Publier sur le site de la crêperie (avec Klervi)', target: 'klervi',
+        run() {
+          say([
+            ['klervi', "Dernier chantier : le patron de la crêperie veut enrichir son site. Il m'a envoyé une liste… et je ne suis pas sûre que tout soit permis."],
+            ['klervi', "Une photo du phare trouvée sur Internet, des photos de clients, une musique achetée en ligne… Aide-moi à trier."]
+          ], () => quiz({ title: '©️ A-t-on le droit de publier ?', notion: 'juridique', questions: [
+            { t: 'tri', q: 'Peut-on publier ces contenus sur le site de la crêperie ?', cats: ['Oui', 'Non (ou pas sans accord)'],
+              items: [["Une photo du phare trouvée avec un moteur de recherche d'images", 1], ["Une photo du phare sous licence CC BY, en citant l'auteur", 0], ['Une photo de clients prise en salle, sans leur accord', 1], ['Une photo de galettes prise par le patron lui-même', 0], ['Le logo d\'une grande marque recopié pour décorer la carte', 1]],
+              hint: "Qui est l'auteur ? Que dit la licence ? Les personnes photographiées sont-elles d'accord ?", ex: "Une œuvre appartient à son auteur ; une licence comme CC BY autorise la réutilisation en citant l'auteur ; une photo de personnes demande leur accord." },
+            { q: 'Une image trouvée sur le Web est-elle libre de droits ?', c: ["Non, son auteur garde le droit d'auteur", 'Oui, tout ce qui est publié en ligne est public', "Oui, si on la recadre ou qu'on change ses couleurs", 'Oui, à condition de la publier sur un site gratuit'], a: 0,
+              ex: "Être visible en ligne ne veut pas dire être libre : il faut une licence ou l'accord de l'auteur." },
+            { q: "La <b>licence</b> d'une photo ou d'un logiciel, c'est…", c: ["Le texte qui dit ce qu'on a le droit d'en faire", "Le prix qu'il faut payer avant de pouvoir l'acheter", "Le nom de l'auteur, écrit obligatoirement en dessous", 'Le format du fichier, par exemple jpg ou png'], a: 0,
+              ex: 'La licence fixe les droits : copier, modifier, partager, vendre… Par exemple, CC BY = réutilisation permise en citant l\'auteur.' },
+            { q: 'Le patron a acheté une musique en ligne pour son téléphone. Peut-il la diffuser sur son site ?', c: ['Non, il a acheté un usage privé', "Oui, puisqu'il l'a payée, elle lui appartient", 'Oui, si la musique dure moins de trente secondes', 'Oui, à condition de baisser beaucoup le volume'], a: 0,
+              ex: "Il a acheté un <b>droit d'usage</b> (l'écouter lui-même), pas le droit de la diffuser. Une œuvre a une valeur : la diffuser sans accord prive l'auteur de revenus." }
+          ] }, () => quiz({ title: "📢 Publier, et pour combien de temps ?", notion: 'publication', questions: [
+            { q: "Un vieil article sur la faillite de l'ancien patron (2009) ressort toujours dans les moteurs de recherche. Que peut-il demander ?", c: ["Son déréférencement (droit à l'oubli)", 'Rien, une information publiée en ligne est éternelle', "La coupure d'Internet dans tout le Finistère", 'La suppression de toutes les copies du Web en un clic'], a: 0,
+              ex: "Le <b>droit à l'oubli</b> permet de demander au moteur de ne plus afficher le lien. Mais l'article, lui, peut encore exister ailleurs." },
+            { q: 'Avant de publier une photo de toi en soirée, que faut-il savoir ?', c: ['Elle peut être copiée et rester en ligne longtemps', 'Elle disparaît automatiquement au bout de 24 heures', 'Seuls tes amis proches pourront la voir, pour toujours', 'Elle sera effacée partout dès que tu fermes ton compte'], a: 0,
+              ex: "Une fois publiée, une information peut être copiée, partagée, et rester accessible des années." },
+            { q: 'Un site affirme que « les phares d\'Ouessant vont être démolis l\'an prochain ». Que faire avant de le partager ?', c: ["Vérifier la source et chercher d'autres sites sérieux", "Le partager tout de suite, puisque c'est écrit sur le Web", "Le croire, s'il est en tête du moteur de recherche", 'Le partager, si le site a un cadenas https'], a: 0,
+              ex: "Sur le Web, ni la qualité ni la véracité ne sont garanties : on vérifie la source avant de croire ou de partager." }
+          ] }, done)));
+        },
+        notions: ['juridique', 'publication'] },
+      { id: 'm6s7', label: 'Bilan de fin de stage avec Gwenaëlle', target: 'gwen',
+        run() {
+          say([
+            ['gwen', "{nom}, deux jours de stage, et tu as tenu la hotline, réparé un site et déjoué une arnaque. Chapeau !"],
+            ['gwen', "Un tout dernier contrôle sur le Web, et je signe ton rapport de stage."]
+          ], () => quiz({ title: '🏁 Le contrôle Web de Gwenaëlle', notion: 'hypertexte', questions: [
+            { q: 'Dans <code>https://www.iroisenet.bzh/aide.html</code>, quel est le nom de domaine ?', c: ['www.iroisenet.bzh', 'https', 'aide.html', 'https://www.iroisenet'], a: 0, ex: 'Protocole : https ; nom de domaine : www.iroisenet.bzh ; chemin : /aide.html.' },
+            { q: "Qui exécute le code PHP d'un site ?", c: ['Le serveur', 'Le navigateur', 'La box', 'Le DNS'], a: 0, ex: "Le PHP tourne sur le serveur ; le JavaScript, lui, tourne dans le navigateur." },
+            { q: 'Le CSS sert à…', c: ['définir le style de la page', 'écrire le contenu de la page', 'envoyer la page au serveur', 'chiffrer les échanges'], a: 0, ex: 'HTML = contenu, CSS = style.' },
+            { q: 'Un moteur de recherche classe les pages notamment selon…', c: ['leur popularité et leur pertinence', 'la date de création de chaque site', "le nombre d'images sur chaque page", "l'ordre alphabétique de leur adresse"], a: 0, ex: 'Popularité (liens reçus), pertinence (mots de la requête)… et parfois publicité (liens promotionnels).' },
+            { q: 'Un lien affiche « www.iroisenet.bzh ». Que faire avant de cliquer ?', c: ['Survoler le lien pour voir sa vraie adresse', 'Cliquer dessus pour voir où il mène vraiment', 'Faire confiance au texte, qui est vérifié', "Le transférer à un ami pour qu'il teste"], a: 0, ex: "Le texte d'un lien peut cacher une autre adresse : on la vérifie en survolant." }
+          ] }, done));
+        } }
+    ]
   }
 ];
 
@@ -735,7 +1169,100 @@ const INCIDENTS = [
       { q: 'La neutralité du Net signifie que…', c: ['les paquets passent quel que soit leur contenu', 'les vidéos passent avant les e-mails', "chaque opérateur choisit librement les sites qu'il préfère ralentir", "Internet n'appartient à aucun pays"], a: 0, ex: 'Les routeurs transmettent les paquets sans tenir compte de leur contenu.' },
       { q: "Un déni de service, c'est…", c: ['saturer un site avec énormément de messages', "refuser de payer son abonnement Internet à l'opérateur", "couper le Wi-Fi d'un voisin", 'oublier de redémarrer sa box'], a: 0, ex: 'Des milliers de machines envoient des messages pour rendre un site inaccessible : c\'est un délit.' },
       { q: 'Le site de la mairie subit un déni de service. Que faut-il faire ?', c: ["Filtrer l'attaque et porter plainte", "Attaquer l'attaquant à son tour", 'Fermer Internet dans toute la ville', 'Ne rien faire, ça passera'], a: 0, ex: "On se protège et on porte plainte : se faire justice soi-même est illégal." }
+    ] },
+
+  /* ---- partie 3 : le Web ---- */
+  { id: 'web_404', title: 'La page de la piscine est introuvable', unlock: 'm5s5', notion: 'http',
+    pick() { return busy('kerbrat') || S.net.ddos || S.net.routerDown ? null : { client: 'kerbrat' }; },
+    caller: () => 'kerbrat', at: () => 'mon_pc',
+    call: "Je veux les horaires de la piscine sur le site de la mairie, mais j'ai une page blanche avec « 404 Not Found ». Internet est en panne ?",
+    tools: [['ping mairie-brest.bzh', 'ping mairie-brest.bzh'], ['nslookup mairie-brest.bzh', 'nslookup mairie-brest.bzh'], ['ping wikipedia.fr', 'ping wikipedia.fr']],
+    observe: () => "Dans la barre d'adresse de M. Kerbrat : <code>https://mairie-brest.bzh/horaires-pisicne.html</code>",
+    causes: [{ t: "L'adresse de la page contient une faute : la page n'existe pas", ok: true },
+      { t: 'Le serveur DNS est en panne', fb: 'nslookup trouve bien mairie-brest.bzh : le DNS fonctionne.' },
+      { t: 'Le serveur de la mairie est éteint', fb: "Le serveur répond au ping, et il a même renvoyé une page d'erreur : il est allumé." },
+      { t: 'La box de M. Kerbrat est débranchée', fb: 'Il accède à wikipedia.fr : sa connexion fonctionne.' }],
+    fixes: [{ t: "Corriger l'adresse : « piscine » et non « pisicne »", ok: true },
+      { t: 'Redémarrer le serveur de la mairie', fb: 'Le serveur fonctionne : il a répondu 404, ce qui veut dire « je n\'ai pas cette page ».' },
+      { t: 'Changer le serveur DNS de M. Kerbrat', fb: 'Le DNS a bien trouvé le serveur : le problème est dans le chemin de la page.' }],
+    explain: "404 est un <b>code de réponse HTTP</b> : le serveur répond bien, mais la page demandée n'existe pas à cette adresse. On vérifie toujours l'URL." },
+
+  { id: 'form_http', title: 'Payer sur une page « non sécurisée » ?', unlock: 'm5s4', notion: 'url',
+    pick() { return busy('legall') ? null : {}; },
+    caller: () => 'legall', at: () => 'mon_pc',
+    call: "Je commande des croquettes pour mon chat sur Internet. Le site me demande ma carte bancaire, mais le navigateur écrit « Non sécurisé ». C'est grave ?",
+    observe: () => "Dans la barre d'adresse : <code>http://croquettes-du-port.bzh/paiement</code>, sans cadenas, avec la mention « Non sécurisé ».",
+    causes: [{ t: 'La page est en http : les échanges ne sont pas chiffrés', ok: true },
+      { t: 'Sa box est mal branchée', fb: 'La page s\'affiche : la connexion fonctionne. Le message parle de la sécurité de la page.' },
+      { t: 'Le serveur DNS est en panne', fb: 'Le site a été trouvé et s\'affiche : le DNS fonctionne.' },
+      { t: 'Son ordinateur a un virus', fb: "Rien ne l'indique : le navigateur signale simplement que la page n'utilise pas https." }],
+    fixes: [{ t: 'Lui conseiller de ne pas payer sur une page en http', ok: true },
+      { t: "Désactiver l'avertissement du navigateur", fb: "L'avertissement a raison : sans https, le numéro de carte circulerait en clair." },
+      { t: "Payer quand même, le site a l'air sérieux", fb: "Sans https, n'importe qui sur le chemin des paquets pourrait lire le numéro de carte." }],
+    explain: "Une page qui demande un mot de passe ou une carte bancaire doit être en <b>https</b> (cadenas). En http, les échanges circulent en clair." },
+
+  { id: 'quiz_web', quiz: true, max: 3, title: 'Révision : histoire du Web et URL', unlock: 'm5s3', notion: 'web_histoire',
+    pick() { return busy('klervi') ? null : {}; },
+    caller: () => 'klervi', at: () => 'klervi',
+    call: "{nom}, une petite révision ? Les clients me posent souvent ces questions sur le Web.",
+    bank: [
+      { q: 'Qui a créé le Web, en 1989 au CERN ?', c: ['Tim Berners-Lee', 'Ted Nelson', 'Bill Gates', 'Steve Jobs, chez Apple'], a: 0, ex: "Tim Berners-Lee, au CERN. Ted Nelson avait inventé l'hypertexte en 1965." },
+      { q: "Qu'a inventé Ted Nelson en 1965 ?", c: ["L'hypertexte", 'Le protocole TCP/IP', 'Le premier navigateur', 'Le langage PHP'], a: 0, ex: "Le concept d'hypertexte : un texte avec des renvois vers d'autres contenus." },
+      { q: 'Comment s\'appelait le premier navigateur grand public (1993) ?', c: ['Mosaic', 'Firefox', 'Cyclades', 'ArpaNet'], a: 0, ex: 'Mosaic, en 1993, quand le Web passe dans le domaine public.' },
+      { q: 'Dans <code>http://meteo-iroise.bzh/vent.html</code>, quel est le protocole ?', c: ['http', 'meteo-iroise.bzh', 'vent.html', 'bzh'], a: 0, ex: 'Le protocole est avant « :// ». Ici http : la page n\'est pas sécurisée.' },
+      { q: 'Quelle adresse correspond à une page sécurisée ?', c: ['https://ent.lycee-lacroixrouge.bzh', 'http://ent.lycee-lacroixrouge.bzh', 'http://secure.lycee-lacroixrouge.bzh', 'http://ent-https.lycee-lacroixrouge.bzh'], a: 0, ex: 'Seul le protocole https, au tout début, signale une page sécurisée.' },
+      { q: 'En 1995, quels langages permettent des sites interactifs et dynamiques ?', c: ['JavaScript et PHP', 'HTML et CSS', 'Python et Scratch Junior', 'DNS et NTP'], a: 0, ex: 'JavaScript (interactif, côté client) et PHP (dynamique, côté serveur).' }
+    ] },
+
+  { id: 'quiz_clientserveur', quiz: true, max: 3, title: 'Révision : requêtes HTTP', unlock: 'm5s5', notion: 'http',
+    pick() { return busy('soizic') ? null : {}; },
+    caller: () => 'soizic', at: () => 'soizic',
+    call: "{nom}, sur mon écran je vois passer des milliers de requêtes HTTP. Tu sais les lire ?",
+    bank: [
+      { q: 'Dans <code>GET /meteo.php?ville=brest&amp;jour=lundi</code>, combien de paramètres sont passés ?', c: ['2', '1', '3', '0'], a: 0, ex: 'ville=brest et jour=lundi : deux paramètres, séparés par &amp;.' },
+      { q: 'Dans <code>GET /recherche.php?mot=phare</code>, quelle est la valeur du paramètre ?', c: ['phare', 'mot', 'recherche.php', 'GET'], a: 0, ex: 'Le paramètre s\'appelle mot et vaut phare.' },
+      { q: 'Le code de réponse <b>200</b> signifie…', c: ['OK, voici la page', "La page n'existe pas", 'Erreur du serveur', 'Accès interdit'], a: 0, ex: '200 = OK. 404 = page introuvable. 500 = erreur du serveur.' },
+      { q: 'Quel programme envoie les requêtes HTTP ?', c: ['Le navigateur (client)', 'Le serveur web', 'Le routeur de Brest', 'Le serveur de temps (NTP)'], a: 0, ex: "Le client prend toujours l'initiative : il envoie la requête, le serveur répond." },
+      { q: 'Où est exécuté le JavaScript d\'une page web ?', c: ['Dans le navigateur', 'Sur le serveur', 'Dans la box', 'Dans le serveur DNS'], a: 0, ex: 'Le JavaScript est envoyé avec la page et exécuté par le navigateur, sur ton ordinateur.' },
+      { q: 'Une page de résultats de recherche est différente pour chaque requête. Elle est…', c: ['fabriquée par le serveur à la demande', 'stockée à l\'avance dans un fichier HTML', 'écrite par le navigateur seul', 'envoyée par le serveur DNS'], a: 0, ex: 'Le serveur la crée dynamiquement (en PHP par exemple) selon les paramètres reçus.' }
+    ] },
+
+  { id: 'quiz_html', quiz: true, max: 3, title: 'Révision : HTML et CSS', unlock: 'm5s6', notion: 'html_css',
+    pick() { return busy('klervi') ? null : {}; },
+    caller: () => 'klervi', at: () => 'pc_klervi',
+    call: "{nom}, viens voir mon écran : petit test de HTML et de CSS !",
+    bank: [
+      { q: 'Quelle balise HTML sert au titre principal d\'une page ?', c: ['&lt;h1&gt;', '&lt;p&gt;', '&lt;a&gt;', '&lt;img&gt;'], a: 0, ex: '&lt;h1&gt; est le titre principal, &lt;h2&gt; un sous-titre.' },
+      { q: 'Quelle ligne CSS met tous les paragraphes en bleu ?', c: ['p { color: blue; }', '&lt;p color="blue"&gt;', 'paragraphe = bleu partout', 'color: p blue;'], a: 0, ex: 'Sélecteur (p), puis entre accolades la propriété et sa valeur.' },
+      { q: 'Dans <code>&lt;a href="carte.html"&gt;Menu&lt;/a&gt;</code>, que voit le visiteur ?', c: ['Le mot « Menu », cliquable', 'Le mot « carte.html »', 'Une image de menu', 'Rien, le lien est invisible'], a: 0, ex: 'Le texte entre les balises est affiché ; href contient la page visée.' },
+      { q: 'On veut changer la couleur de fond de tout le site. On modifie…', c: ['le CSS', 'le HTML de chaque page', 'le serveur DNS', "l'adresse IP du serveur"], a: 0, ex: 'Le style est dans le CSS : une seule ligne change tout le site.' },
+      { q: 'Quelle information relève du <b>contenu</b> (HTML) ?', c: ['Le texte de la carte des crêpes', 'La couleur du titre', 'La taille des caractères', 'La marge laissée autour de chaque image'], a: 0, ex: 'Le texte est du contenu ; couleur, taille et marges sont du style (CSS).' },
+      { q: 'Quelle balise insère une image ?', c: ['&lt;img src="galette.jpg"&gt;', '&lt;a href="galette.jpg"&gt;', '&lt;h1&gt;galette.jpg&lt;/h1&gt;', '&lt;image-css&gt;galette.jpg&lt;/image-css&gt;'], a: 0, ex: '&lt;img&gt; affiche l\'image dont l\'adresse est dans src.' }
+    ] },
+
+  { id: 'quiz_moteur', quiz: true, max: 3, title: 'Révision : moteurs de recherche', unlock: 'm6s3', notion: 'moteur',
+    pick() { return busy('maelys') ? null : {}; },
+    caller: () => 'maelys', at: () => 'maelys',
+    call: "{nom}, une cliente me demande comment marche un moteur de recherche. Aide-moi à préparer ma réponse !",
+    bank: [
+      { q: 'Que font les robots d\'un moteur de recherche ?', c: ['Ils parcourent le Web en suivant les liens', 'Ils écrivent les pages des sites', 'Ils réparent les liens cassés', 'Ils bloquent tous les sites dangereux pour les enfants'], a: 0, ex: 'Les robots collectent les pages en suivant les liens, de page en page.' },
+      { q: "L'annuaire inversé associe à chaque mot…", c: ['la liste des pages qui le contiennent', 'sa définition dans le dictionnaire', "l'adresse IP de son auteur", 'le nombre de fois où les internautes le cherchent'], a: 0, ex: 'Mot → liste des URL des pages où il apparaît : c\'est l\'index.' },
+      { q: "La popularité d'une page dépend surtout…", c: ['des liens qui mènent vers elle', 'de sa couleur de fond', 'de la longueur de son adresse', "du nombre de photos et de vidéos qu'elle contient"], a: 0, ex: 'Une page vers laquelle beaucoup de pages font un lien est jugée populaire.' },
+      { q: 'Un résultat marqué « Annonce » est…', c: ['un lien promotionnel payé', 'le résultat le plus fiable', 'une page officielle de l\'État', 'une page vérifiée par le moteur'], a: 0, ex: "Le site a payé pour apparaître : ce n'est pas un gage de qualité." },
+      { q: 'Pourquoi deux moteurs donnent-ils des résultats différents ?', c: ['Ils indexent et classent chacun à leur façon', 'Un des deux est forcément en panne', 'Internet change de forme selon le moteur', 'Ils ne cherchent pas du tout sur le même Internet'], a: 0, ex: 'Chaque moteur a ses robots, son index et ses critères de classement.' },
+      { q: 'Certains moteurs de recherche promettent…', c: ['de ne pas garder de traces de tes recherches', "d'effacer du Web toutes les pages qui te déplaisent", 'de vérifier que tout est vrai', 'de fonctionner sans Internet'], a: 0, ex: 'Ils s\'engagent à ne pas conserver tes recherches. À comparer avant de choisir !' }
+    ] },
+
+  { id: 'quiz_securite', quiz: true, max: 3, title: 'Révision : naviguer en sécurité', unlock: 'm6s5', notion: 'cookies',
+    pick() { return busy('erwan') ? null : {}; },
+    caller: () => 'erwan', at: () => 'erwan',
+    call: "{nom}, après le mail de Tanguy, on révise la sécurité. Prêt(e) ?",
+    bank: [
+      { q: 'Quel réglage limite le pistage publicitaire de site en site ?', c: ['Bloquer les cookies tiers', 'Agrandir la taille du texte', 'Changer de fond d\'écran', 'Utiliser le Wi-Fi plutôt que la 4G'], a: 0, ex: 'Les cookies tiers servent à suivre ta navigation sur de nombreux sites.' },
+      { q: 'Un site inconnu veut accéder à ta position. Que régler ?', c: ['Demander l\'autorisation à chaque fois', 'Toujours autoriser, pour gagner du temps', 'Désactiver le Wi-Fi de la maison', 'Effacer ses mots de passe'], a: 0, ex: 'On garde la main sur l\'accès à la caméra, au micro et à la position.' },
+      { q: 'Tu reçois une pièce jointe inattendue « facture.pdf.exe ». Que faire ?', c: ["Ne pas l'ouvrir : c'est un programme", "L'ouvrir tout de suite pour vérifier le montant de la facture", "La transférer à tes amis", 'La renommer en facture.pdf'], a: 0, ex: "Le vrai type du fichier est .exe : c'est un programme, peut-être malveillant." },
+      { q: 'Effacer son historique, cela supprime…', c: ['la liste des sites visités sur ce navigateur', "toutes les traces de tes visites chez ton fournisseur d'accès", 'les sites eux-mêmes', 'tes publications sur les réseaux sociaux'], a: 0, ex: "L'historique est local : les sites et ton fournisseur gardent leurs propres traces." },
+      { q: 'Un lien dit « www.banque.fr », mais en le survolant on lit « banque-fr.secur.xyz ». C\'est…', c: ['sans doute un hameçonnage', 'une page officielle de ta banque', 'un simple bug du navigateur', 'une page plus rapide'], a: 0, ex: 'Le nom de domaine réel ne correspond pas : on ne clique pas.' },
+      { q: 'Un site douteux ouvre des fenêtres sans arrêt. Quel réglage aide ?', c: ['Interdire ses programmes (JavaScript)', 'Augmenter le volume', 'Passer en mode avion pendant toute la visite du site', 'Changer d\'adresse IP'], a: 0, ex: 'On peut interdire au navigateur d\'exécuter les programmes d\'un site.' }
     ] }
 ];
-
-

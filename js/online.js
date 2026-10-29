@@ -4,27 +4,29 @@
      poste en retapant son prénom (avec l'initiale du nom) et sa classe ;
    - envoie ses résultats à l'espace enseignant (prof.html) ;
    - bloque l'écran quand l'enseignant le demande ;
-   - ouvre la partie 2 quand l'enseignant la débloque ;
+   - ouvre la partie 2 (puis la partie 3) quand l'enseignant la débloque ;
    - efface la partie si l'enseignant supprime la progression de l'élève.
    Sans configuration (js/firebase-config.js), hors ligne ou depuis une clé USB,
-   le jeu fonctionne comme avant et la partie 2 est libre.
+   le jeu fonctionne comme avant et toutes les parties sont libres.
    --------------------------------------------------------------------- */
 const FB_VERSION = '10.12.2';
 const FB_BASE = window.FIREBASE_SDK_BASE || `https://www.gstatic.com/firebasejs/${FB_VERSION}/`;
-const ONLINE = { on: false, ok: false, locked: false, msg: '', part2: false };
+const ONLINE = { on: false, ok: false, locked: false, msg: '', parts: {} };
 const classeId = c => String(c || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'sans-classe';
 /* identifiant d'une partie : « 2nde-4__lucas-m » (accents, points et majuscules ignorés) */
 const partieKey = (nom, classe) => `${classeId(classe)}__${classeId(nom)}`;
 const RESET_SEEN = 'stagiaire-snt-reset-vu';
-/* la partie 2 est libre hors ligne ; en ligne, elle attend le feu vert de l'enseignant */
-const part2Open = () => !ONLINE.on || ONLINE.part2;
+/* hors ligne, toutes les parties sont libres ; en ligne, les parties 2 et 3 attendent le feu vert
+   de l'enseignant (champs « partie2 » et « partie3 » des documents de contrôle) */
+const PARTS = [2, 3];
+const partOpen = n => n <= 1 || !ONLINE.on || !!ONLINE.parts[n];
 
 (function () {
   const cfg = window.FIREBASE_CONFIG;
   let readyDone;
   ONLINE.ready = new Promise(r => { readyDone = r; });
   if (!cfg || !cfg.projectId || !/^https?:$/.test(location.protocol)) { readyDone(); return; }
-  ONLINE.on = true; // mode en ligne prévu : la partie 2 attend l'enseignant
+  ONLINE.on = true; // mode en ligne prévu : les parties 2 et 3 attendent l'enseignant
   let F, db, key = null, lastSent = '', lastTime = 0, sending = false, again = false;
   const ctl = {};
   let unsubClasse = null, unsubReset = null;
@@ -47,7 +49,7 @@ const part2Open = () => !ONLINE.on || ONLINE.part2;
       if (typeof refreshHUD === 'function' && S) refreshHUD();
     })
     .catch(e => {
-      // Firebase injoignable : le jeu repasse en mode hors ligne (partie 2 libre)
+      // Firebase injoignable : le jeu repasse en mode hors ligne (parties libres)
       console.warn('Mode en ligne indisponible :', e);
       ONLINE.on = false;
       readyDone();
@@ -75,9 +77,11 @@ const part2Open = () => !ONLINE.on || ONLINE.part2;
     const on = all.filter(d => d.bloque);
     ONLINE.locked = on.length > 0;
     ONLINE.msg = (on.find(d => d.message) || {}).message || '';
-    const was = ONLINE.part2;
-    ONLINE.part2 = all.some(d => d.partie2);
-    if (ONLINE.part2 !== was && typeof part2Changed === 'function') part2Changed(ONLINE.part2);
+    PARTS.forEach(n => {
+      const was = !!ONLINE.parts[n];
+      ONLINE.parts[n] = all.some(d => d['partie' + n]);
+      if (ONLINE.parts[n] !== was && typeof partChanged === 'function') partChanged(n, ONLINE.parts[n]);
+    });
     const el = document.getElementById('lock-screen');
     if (!el) return;
     el.hidden = !ONLINE.locked;

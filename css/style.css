@@ -165,7 +165,7 @@ table.mac { width: auto; margin-top: 8px; }
 .ts-pitch { color: #3b4558; }
 #ts-form { display: flex; flex-direction: column; gap: 10px; margin: 16px 0 10px; text-align: left; }
 #ts-form label { display: flex; flex-direction: column; font-weight: 600; font-size: .9em; gap: 4px; }
-#ts-form input { font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; }
+#ts-form input, #ts-form select { font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; }
 #ts-continue { width: 100%; }
 .ts-help { color: var(--muted); font-size: .85em; margin-top: 14px; }
 .shake { animation: ring .3s 2; border-color: var(--red) !important; }

@@ -1288,11 +1288,13 @@ function startScreen() {
   $('#ts-continue').hidden = !saved;
   if (saved) { $('#ts-name').value = saved.name || ''; $('#ts-class').value = saved.classe || ''; $('#ts-continue').textContent = `▶ Continuer (${saved.name || 'partie'} · mission ${Math.min(saved.m + 1, MISSIONS.length)})`; }
   const getNames = () => [$('#ts-name').value.trim(), $('#ts-class').value.trim()];
-  const needName = () => { $('#ts-name').focus(); $('#ts-name').classList.add('shake'); setTimeout(() => $('#ts-name').classList.remove('shake'), 500); };
+  const needField = sel => { $(sel).focus(); $(sel).classList.add('shake'); setTimeout(() => $(sel).classList.remove('shake'), 500); };
+  const needName = () => needField('#ts-name');
   $('#ts-form').onsubmit = ev => {
     ev.preventDefault();
     const [name, classe] = getNames();
     if (!name) { needName(); return; }
+    if (!classe) { needField('#ts-class'); return; }
     if (saved && !confirm('Une partie existe déjà dans ce navigateur. La remplacer par une nouvelle partie ?')) return;
     S = newState(name, classe); ts.hidden = true; save(); refreshHUD(); missionIntro();
   };
@@ -1307,6 +1309,7 @@ function startScreen() {
   $('#ts-code').onclick = () => {
     const [name, classe] = getNames();
     if (!name) { needName(); return; }
+    if (!classe) { needField('#ts-class'); return; }
     const code = prompt('Code de reprise noté à la fin de la partie 1 (ex : P2-…) :');
     if (!code) return;
     const st = readCode(code, name);

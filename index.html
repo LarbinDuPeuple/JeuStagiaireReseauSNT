@@ -48,7 +48,13 @@
     <p class="ts-pitch">Lundi, 8h30, port de commerce de Brest. Premier jour de stage chez <b>IroiseNet</b>, le fournisseur d'accès à Internet du Finistère. Le technicien est <b>bloqué à Ouessant</b> par la tempête… et le téléphone de la hotline sonne déjà.</p>
     <form id="ts-form">
       <label>Prénom <input id="ts-name" maxlength="30" autocomplete="off" placeholder="ex : Nolwenn"></label>
-      <label>Classe <input id="ts-class" maxlength="20" autocomplete="off" placeholder="ex : 2nde 3"></label>
+      <label>Classe <select id="ts-class">
+        <option value="">Choisis ta classe</option>
+        <option>2nde 3</option>
+        <option>2nde 4</option>
+        <option>2nde 5</option>
+        <option>2nde 6</option>
+      </select></label>
       <button class="btn primary big">▶ Nouvelle partie</button>
     </form>
     <div class="ts-btns">

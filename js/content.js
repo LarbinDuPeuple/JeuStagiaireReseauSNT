@@ -641,5 +641,100 @@ const INCIDENTS = [
     fixes: [{ t: 'Expliquer, et couper la caméra pour alléger', ok: true },
       { t: "Lui conseiller de passer en Bluetooth jusqu'au continent", fb: "Le Bluetooth ne porte qu'à quelques mètres : il ne traversera pas la mer d'Iroise !" },
       { t: "Redémarrer le serveur DNS d'IroiseNet", fb: "Le DNS fonctionne : le problème vient du réseau physique." }],
-    explain: "Les mails supportent d'arriver avec un peu de retard, pas la visio. Sur un réseau physique lent et irrégulier, l'absence de garantie temporelle se voit tout de suite." }
+    explain: "Les mails supportent d'arriver avec un peu de retard, pas la visio. Sur un réseau physique lent et irrégulier, l'absence de garantie temporelle se voit tout de suite." },
+
+  { id: 'wifi_cle', title: 'La tablette refuse le Wi-Fi', unlock: 'm2s3', notion: 'box',
+    pick() { return busy('nolwenn') ? null : { client: 'nolwenn' }; },
+    caller: () => 'nolwenn', at: () => 'mon_pc',
+    call: "Ma nouvelle tablette ne veut pas se connecter au Wi-Fi ! Mon PC, lui, marche très bien.",
+    tools: [['ipconfig', 'ipconfig'], ['ping box', 'ping 192.168.1.1'], ['ping wikipedia.fr', 'ping wikipedia.fr']],
+    observe: () => "Sur la tablette, le message dit : « <b>Mot de passe incorrect</b> ». Nolwenn : « J'ai tapé le code de la box… enfin, je crois. »",
+    causes: [{ t: 'La clé Wi-Fi a été mal saisie', ok: true },
+      { t: 'La box est éteinte', fb: 'Son PC est connecté et la box répond au ping : elle est allumée.' },
+      { t: 'Le serveur DNS est en panne', fb: 'Son PC trouve wikipedia.fr sans problème : le DNS fonctionne.' },
+      { t: 'La fibre du quartier est coupée', fb: 'Son PC accède à Internet : la fibre fonctionne.' }],
+    fixes: [{ t: "Lui faire retaper la clé Wi-Fi, écrite sur l'étiquette de la box", ok: true },
+      { t: 'Supprimer la clé Wi-Fi pour que tout le monde se connecte', fb: "Sans clé, n'importe quel voisin pourrait utiliser sa connexion !" },
+      { t: "Changer l'adresse IP de la box", fb: "L'adresse de la box n'y est pour rien : la tablette est refusée à cause de la clé." }],
+    explain: "La clé Wi-Fi protège le réseau de la maison : sans la bonne clé, un appareil est refusé. C'est aussi ce qui empêche un voisin de s'y connecter." },
+
+  /* tickets « quiz » : un collègue vérifie une notion (3 questions tirées au hasard dans la banque) */
+  { id: 'quiz_physique', quiz: true, max: 3, title: 'Révision : réseaux et histoire', unlock: 'm2s3', notion: 'physique',
+    pick() { return busy('loic') ? null : {}; },
+    caller: () => 'loic', at: () => 'loic',
+    call: "{nom}, tu as deux minutes ? Je range l'établi et je vérifie que tu as retenu l'essentiel sur les réseaux.",
+    bank: [
+      { q: 'Lequel de ces réseaux est <b>sans fil</b> ?', c: ['Fibre optique', 'Ethernet', 'Wi-Fi', 'ADSL'], a: 2, ex: 'Le Wi-Fi utilise des ondes radio, comme la 4G, la 5G ou le Bluetooth.' },
+      { q: 'Lequel de ces réseaux est <b>obsolète</b> ?', c: ['Modem 56k', 'Fibre optique', '5G', 'Wi-Fi'], a: 0, ex: 'Le modem 56k passait par la ligne téléphonique : très lent, il a disparu.' },
+      { q: 'Quel réseau physique est le <b>plus rapide</b> ?', c: ['Fibre optique', 'Ligne téléphonique 56k', 'Bluetooth', 'ADSL'], a: 0, ex: 'La fibre transporte la lumière dans du verre : c\'est aujourd\'hui le plus rapide.' },
+      { q: 'En quelle année naît Internet, quand tous les réseaux adoptent TCP/IP ?', c: ['1983', '1950', '1971', '2001'], a: 0, ex: 'En 1983, ArpaNet et les autres réseaux adoptent le même protocole : TCP/IP.' },
+      { q: 'Comment s\'appelait le réseau français des années 1970 qui a inventé les paquets indépendants ?', c: ['Cyclades', 'ArpaNet', 'Minitel', 'Ethernet'], a: 0, ex: 'Cyclades, en France, et ArpaNet, aux États-Unis, sont les ancêtres d\'Internet.' },
+      { q: 'Internet fonctionne-t-il seulement avec la fibre ?', c: ['Non, il marche sur tout type de réseau physique', 'Oui, ses protocoles exigent obligatoirement de la fibre', 'Oui, sauf sur les îles', 'Non, uniquement en Wi-Fi'], a: 0, ex: 'Internet est logiciel : ses protocoles fonctionnent sur la fibre, le cuivre, la radio…' }
+    ] },
+
+  { id: 'quiz_ip', quiz: true, max: 3, title: 'Révision : adresses IP', unlock: 'm2s3', notion: 'ip',
+    pick() { return busy('erwan') ? null : {}; },
+    caller: () => 'erwan', at: () => 'erwan',
+    call: "{nom}, petit test avant le prochain appel : à la hotline, on parle adresses IP toute la journée !",
+    bank: [
+      { q: 'Laquelle de ces adresses IPv4 est <b>valide</b> ?', c: ['192.168.1.300', '10.0.0.12', '172.16.4', '192.168.1.1.5'], a: 1, ex: 'Une adresse IPv4, ce sont 4 nombres de 0 à 255. 300 est trop grand, et il faut exactement 4 nombres.' },
+      { q: "Quelle commande affiche l'adresse IP de ton ordinateur sous Windows ?", c: ['ping', 'nslookup', 'ipconfig', 'tracert'], a: 2, ex: 'ipconfig affiche l\'adresse IP, la passerelle et le serveur DNS.' },
+      { q: 'Dans une maison, quel appareil sert de <b>passerelle</b> vers Internet ?', c: ['La box', 'Le PC du salon', 'Le serveur DNS', 'La console'], a: 0, ex: 'La box est un routeur : elle relie le réseau de la maison à Internet.' },
+      { q: 'Combien de nombres compte une adresse IPv4 ?', c: ['2', '4', '6', '8'], a: 1, ex: 'Quatre nombres de 0 à 255, séparés par des points : 192.168.1.23.' },
+      { q: 'Une adresse IP sert à…', c: ['identifier un appareil sur le réseau', 'traduire un nom de site en adresse', "donner l'heure aux ordinateurs", 'chiffrer les mots de passe du Wi-Fi'], a: 0, ex: "Comme une adresse postale, l'adresse IP indique à qui livrer les paquets." },
+      { q: 'Que signifie <b>IP</b> ?', c: ['Internet Protocol', 'Internal Password', 'Information Publique', 'Interface de Partage'], a: 0, ex: 'IP, pour Internet Protocol : le protocole qui adresse et achemine les paquets.' }
+    ] },
+
+  { id: 'quiz_dns', quiz: true, max: 3, title: "Révision : l'annuaire DNS", unlock: 'm2s6', notion: 'dns',
+    pick() { return busy('maelys') ? null : {}; },
+    caller: () => 'maelys', at: () => 'maelys',
+    call: "{nom}, les clients me posent sans arrêt des questions sur le DNS. Voyons si tu saurais leur répondre !",
+    bank: [
+      { q: 'Que fait le DNS ?', c: ['Il traduit un nom de site en adresse IP', 'Il donne une adresse IP à chaque box', 'Il remet les paquets dans le bon ordre', 'Il bloque tous les sites dangereux'], a: 0, ex: "Le DNS est l'annuaire d'Internet : nom ↔ adresse IP." },
+      { q: "Un site s'ouvre avec son adresse IP, mais pas avec son nom. Quel service est en panne ?", c: ['Le DNS', 'La box', 'Le câble', 'Le site'], a: 0, ex: "Par adresse IP oui, par nom non : c'est le DNS qui ne traduit plus." },
+      { q: 'Quelle commande interroge le DNS ?', c: ['ipconfig', 'nslookup', 'ping', 'tracert'], a: 1, ex: 'nslookup wikipedia.fr donne l\'adresse IP ; nslookup suivi d\'une adresse donne le nom.' },
+      { q: '<code>nslookup 203.0.113.80</code> répond « lycee-lacroixrouge.bzh ». Dans quel sens as-tu utilisé le DNS ?', c: ["de l'adresse IP vers le nom", "du nom de domaine vers l'adresse IP", 'de la box vers le serveur', 'du serveur vers la box'], a: 0, ex: "Le DNS fonctionne dans les deux sens : nom → adresse, et adresse → nom." },
+      { q: 'Le DNS est assuré par…', c: ['un seul ordinateur géant caché aux États-Unis', 'de nombreux serveurs répartis dans le monde', 'la box de chaque maison', 'le navigateur web'], a: 1, ex: 'Un grand nombre de serveurs DNS, répartis sur le réseau, sont mis à jour en permanence.' },
+      { q: 'Pourquoi utilise-t-on des noms comme wikipedia.fr plutôt que des adresses IP ?', c: ['Ils sont plus faciles à retenir', 'Ils rendent la connexion plus rapide', 'Ils protègent contre les virus', 'Ils sont obligatoires en France'], a: 0, ex: 'Les humains retiennent les noms, les machines utilisent les adresses : le DNS fait le lien.' }
+    ] },
+
+  { id: 'quiz_routage', quiz: true, max: 3, title: 'Révision : le routage', unlock: 'm4s1', notion: 'routage',
+    pick() { return busy('soizic') ? null : {}; },
+    caller: () => 'soizic', at: () => 'soizic',
+    call: "{nom}, viens voir la supervision ! Je vérifie que tu sais comment voyagent nos paquets.",
+    bank: [
+      { q: "Un routeur connaît-il le chemin complet jusqu'au destinataire ?", c: ['Non, seulement le prochain routeur voisin', 'Oui, il possède la carte complète de tout Internet', 'Oui, mais seulement pour la France', "Non, c'est la box qui le connaît"], a: 0, ex: 'Chaque routeur n\'a qu\'une carte locale : il envoie le paquet au voisin le mieux placé.' },
+      { q: "Que se passe-t-il quand le compteur de sauts d'un paquet arrive à 0 ?", c: ['Le paquet est détruit', 'Le paquet repart au début', 'Le paquet est livré quand même', 'Le compteur repart à 30'], a: 0, ex: 'Le paquet est détruit, pour ne pas encombrer le réseau.' },
+      { q: 'La fibre entre Morlaix et Rennes est coupée. Que font les routeurs ?', c: ['Ils trouvent un autre chemin', 'Ils arrêtent tout le trafic', 'Ils attendent la réparation', "Ils renvoient les paquets à l'émetteur"], a: 0, ex: 'Les tables de routage s\'ajustent : les paquets passent par Quimper et Nantes.' },
+      { q: 'Quelle commande affiche la liste des routeurs traversés ?', c: ['tracert', 'ipconfig', 'nslookup', 'ping'], a: 0, ex: 'tracert affiche chaque routeur traversé jusqu\'au destinataire.' },
+      { q: 'Comment un routeur choisit-il où envoyer un paquet ?', c: ['Il consulte sa table de routage', 'Il demande au serveur DNS', 'Il tire un voisin au hasard', 'Il suit le câble le plus long'], a: 0, ex: 'La table de routage indique, pour chaque destination, le voisin à qui passer le paquet.' },
+      { q: 'Pourquoi chaque paquet a-t-il un compteur de sauts ?', c: ['Pour ne pas tourner en rond sans fin', 'Pour mesurer la vitesse de la fibre', "Pour compter les clients d'IroiseNet", 'Pour savoir quand le paquet est parti'], a: 0, ex: 'Un paquet qui tourne en rond finit détruit au lieu d\'encombrer le réseau.' }
+    ] },
+
+  { id: 'quiz_tcp', quiz: true, max: 3, title: 'Révision : IP et TCP', unlock: 'm4s2', notion: 'tcp',
+    pick() { return busy('erwan') ? null : {}; },
+    caller: () => 'erwan', at: () => 'erwan',
+    call: "{nom}, IP ou TCP ? Les clients confondent toujours. Et toi ?",
+    bank: [
+      { q: 'Quel protocole remet les paquets dans le bon ordre ?', c: ['TCP', 'IP', 'DNS', 'NTP'], a: 0, ex: 'TCP numérote les paquets, les remet dans l\'ordre et redemande ceux qui manquent.' },
+      { q: 'Quel protocole donne une adresse à chaque machine et achemine les paquets ?', c: ['IP', 'TCP', 'DNS', 'HTTP'], a: 0, ex: 'IP adresse et achemine ; TCP fiabilise.' },
+      { q: 'Un paquet est perdu en route. Que fait TCP ?', c: ["Il le redemande à l'émetteur", 'Il le recrée seul', 'Il annule tout le message', 'Il prévient le serveur DNS'], a: 0, ex: 'Avec TCP, un paquet manquant est redemandé : le message finit par arriver complet.' },
+      { q: 'Pourquoi une visio peut-elle saccader alors que la connexion est fiable ?', c: ["Rien ne garantit l'heure d'arrivée des paquets", 'TCP détruit toujours en premier les paquets de vidéo', "Les vidéos n'utilisent jamais de paquets", 'Le DNS ralentit les appels vidéo le soir'], a: 0, ex: "Fiable ne veut pas dire « à l'heure » : c'est l'absence de garantie temporelle." },
+      { q: 'Pour envoyer une page web, TCP…', c: ['découpe et numérote les paquets', 'choisit à chaque routeur le chemin des paquets', 'traduit le nom du site', "donne l'heure aux ordinateurs"], a: 0, ex: 'Le chemin, ce sont les routeurs (IP) ; TCP s\'occupe de l\'ordre et des paquets manquants.' },
+      { q: "Pendant un appel vidéo, que vaut-il mieux faire d'un paquet très en retard ?", c: ['Le laisser tomber et continuer', "Bloquer toute la conversation pour l'attendre", "Recommencer l'appel du début", "Le renvoyer à l'émetteur"], a: 0, ex: 'Mieux vaut perdre une image que perdre le fil de la conversation.' }
+    ] },
+
+  { id: 'quiz_usages', quiz: true, max: 3, title: "Révision : règles et usages d'Internet", unlock: 'm4s3', notion: 'neutralite',
+    pick() { return busy('maelys') ? null : {}; },
+    caller: () => 'maelys', at: () => 'maelys',
+    call: "{nom}, pair-à-pair, neutralité du Net, déni de service… les clients posent aussi ces questions-là !",
+    bank: [
+      { q: 'Dans un réseau pair-à-pair…', c: ['chaque ordinateur envoie et reçoit', 'un seul serveur central distribue tous les fichiers', 'seule la box peut envoyer', 'il faut un câble entre chaque PC'], a: 0, ex: "Pas de serveur central : chaque pair reçoit ET envoie." },
+      { q: "Partager un film récent en pair-à-pair, sans l'accord de ses auteurs, c'est…", c: ['interdit', 'autorisé', 'obligatoire', 'conseillé'], a: 0, ex: "Le droit d'auteur l'interdit, même si le pair-à-pair lui-même est légal." },
+      { q: 'Lequel de ces usages du pair-à-pair est <b>légal</b> ?', c: ["Télécharger la mise à jour d'un jeu", 'Partager une série', 'Diffuser un album piraté', 'Recopier un film vu au cinéma'], a: 0, ex: 'Mises à jour de jeux, logiciels libres : le pair-à-pair a des usages légaux.' },
+      { q: 'La neutralité du Net signifie que…', c: ['les paquets passent quel que soit leur contenu', 'les vidéos passent avant les e-mails', "chaque opérateur choisit librement les sites qu'il préfère ralentir", "Internet n'appartient à aucun pays"], a: 0, ex: 'Les routeurs transmettent les paquets sans tenir compte de leur contenu.' },
+      { q: "Un déni de service, c'est…", c: ['saturer un site avec énormément de messages', "refuser de payer son abonnement Internet à l'opérateur", "couper le Wi-Fi d'un voisin", 'oublier de redémarrer sa box'], a: 0, ex: 'Des milliers de machines envoient des messages pour rendre un site inaccessible : c\'est un délit.' },
+      { q: 'Le site de la mairie subit un déni de service. Que faut-il faire ?', c: ["Filtrer l'attaque et porter plainte", "Attaquer l'attaquant à son tour", 'Fermer Internet dans toute la ville', 'Ne rien faire, ça passera'], a: 0, ex: "On se protège et on porte plainte : se faire justice soi-même est illégal." }
+    ] }
 ];
+

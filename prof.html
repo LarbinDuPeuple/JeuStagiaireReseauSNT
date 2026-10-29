@@ -45,6 +45,10 @@
   .live-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .btn.lock { background: var(--red); border-color: var(--red); color: #fff; font-weight: 600; }
   .btn.unlock { background: var(--green); border-color: var(--green); color: #fff; font-weight: 600; }
+  .btn.open { background: #fff; border-color: var(--green); color: var(--green); font-weight: 600; }
+  .del { border: 0; background: none; cursor: pointer; font-size: 1em; opacity: .55; padding: 2px 4px; }
+  .del:hover { opacity: 1; }
+  .tag { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #fff4d9; color: var(--amber); font-size: .8em; font-weight: 600; }
   .login { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
   .login label { display: flex; flex-direction: column; font-size: .9em; font-weight: 600; gap: 3px; }
   .login input, #lock-msg { font: inherit; padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; }
@@ -74,6 +78,11 @@
         <button class="btn" id="lock-all"></button>
         <input id="lock-msg" maxlength="120" placeholder="Message affiché pendant la pause (facultatif)" style="flex:1;min-width:220px">
         <button class="btn" id="logout">Se déconnecter</button>
+      </div>
+      <div class="live-bar" style="margin-top:8px">
+        <button class="btn" id="p2-class"></button>
+        <button class="btn" id="p2-all"></button>
+        <span class="muted">La partie 2 reste fermée tant que tu ne l'as pas débloquée. En attendant, les élèves enchaînent les appels de la hotline.</span>
       </div>
       <div id="lock-state"></div>
       <div id="live-err"></div>
@@ -170,7 +179,7 @@ function render() {
   renderLocks();
   if (!classes.length) return;
   if (!classes.includes(cur)) cur = classes[0];
-  $('#tabs').innerHTML = classes.map(c => `<button aria-pressed="${c === cur}" data-c="${esc(c)}">${live.on && live.locks[classeId(c)] ? '🛑 ' : ''}${esc(c)} (${list.filter(r => (r.classe || 'Sans classe') === c).length})</button>`).join('');
+  $('#tabs').innerHTML = classes.map(c => `<button aria-pressed="${c === cur}" data-c="${esc(c)}">${live.on && ctlOf(classeId(c)).bloque ? '🛑 ' : ''}${esc(c)} (${list.filter(r => (r.classe || 'Sans classe') === c).length})</button>`).join('');
   $('#tabs').querySelectorAll('button').forEach(b => b.onclick = () => { cur = b.dataset.c; render(); });
   const rs = list.filter(r => (r.classe || 'Sans classe') === cur);
   const get = SORTS[sortK];
@@ -190,10 +199,10 @@ function render() {
       <div><b>${avg(rs, r => r.satisfaction)} %</b>satisfaction (moyenne)</div>
     </div>
     <div class="wrap"><table>
-      <thead><tr>${live.on ? '<th></th>' : ''}${th('nom', 'Élève')}${th('missions', 'Missions')}${th('score', 'Score')}${th('satisfaction', 'Satisf.')}${th('tickets', 'Tickets')}${th('pct', 'Réponses justes')}${th('caps', 'Capacités BO')}<th>Points à retravailler</th>${th('date', 'Rapport du')}</tr></thead>
+      <thead><tr>${live.on ? '<th></th>' : ''}${th('nom', 'Élève')}${th('missions', 'Missions')}${th('score', 'Score')}${th('satisfaction', 'Satisf.')}${th('tickets', 'Tickets')}${th('pct', 'Réponses justes')}${th('caps', 'Capacités BO')}<th>Points à retravailler</th>${th('date', 'Rapport du')}<th class="noprint"></th></tr></thead>
       <tbody>${rs.map(r => `<tr>${live.on ? `<td title="${enLigne(r) ? 'En jeu' : 'Hors ligne'}"><span class="dot ${enLigne(r) ? 'on' : ''}"></span></td>` : ''}
         <td><b>${esc(r.nom)}</b>${r.valide ? '' : ' <span class="warn" title="Le fichier a été modifié après l\'export">⚠️ modifié</span>'}</td>
-        <td class="num">${r.missions} / ${NB_MISSIONS}${r.fini ? ' ✅' : ''}</td>
+        <td class="num">${r.missions} / ${NB_MISSIONS}${r.fini ? ' ✅' : r.missions === 2 ? '<br><span class="tag">partie 1 finie</span>' : ''}</td>
         <td class="num">${r.score}</td>
         <td class="num">${r.satisfaction} %</td>
         <td class="num">${r.ticketsOk} / ${r.tickets}</td>
@@ -201,13 +210,15 @@ function render() {
         <td class="caps" title="${esc(CAPS.map((c, i) => (r.capacites && r.capacites[i] ? '✅ ' : '⬜ ') + c).join('\n'))}">${(r.capacites || []).map(v => v ? '🟩' : '⬜').join('')} ${nbCaps(r)}/7</td>
         <td>${(r.erreurs || []).filter(e => e[1] > 0).slice(0, 3).map(([n, k]) => `${esc(n)} (${k})`).join(', ') || '<span class="muted">—</span>'}</td>
         <td class="muted">${new Date(r.date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
-      </tr>`).join('') || `<tr><td colspan="10" class="muted">Aucun élève de cette classe pour l'instant.</td></tr>`}</tbody>
+        <td class="noprint"><button class="del" data-k="${esc(keyOf(r))}" title="Supprimer la progression de cet élève">🗑️</button></td>
+      </tr>`).join('') || `<tr><td colspan="11" class="muted">Aucun élève de cette classe pour l'instant.</td></tr>`}</tbody>
     </table></div>
     <h3>Capacités du BO validées dans la classe</h3>
     <div class="capbar">${CAPS.map((c, i) => `<div>${esc(c)}<div class="g"><span style="width:${capRate[i]}%"></span></div></div><div class="num" style="padding-top:2px">${capRate[i]} %</div>`).join('')}</div>
     <h3>Notions les plus ratées</h3>
     <p>${topErr.length ? topErr.map(([n, k]) => `${esc(n)} : ${k} erreur${k > 1 ? 's' : ''}`).join(' · ') : '<span class="muted">Aucune erreur enregistrée.</span>'}</p>
     <p class="muted noprint">Clique sur un titre de colonne pour trier. Survole les carrés des capacités pour voir leur détail.</p>`;
+  $('#view').querySelectorAll('button.del').forEach(btn => btn.onclick = () => deleteStudent(btn.dataset.k));
   $('#view').querySelectorAll('th[data-k]').forEach(t => t.onclick = () => {
     const k = t.dataset.k;
     if (sortK === k) sortDir = -sortDir; else { sortK = k; sortDir = k === 'nom' ? 1 : -1; }
@@ -215,6 +226,13 @@ function render() {
   });
 }
 
+/* supprime un élève : du tableau, et en ligne, efface aussi sa partie (elle redémarre au début) */
+function deleteStudent(k) {
+  if (live.on) { liveDelete(k); return; }
+  const r = reports.find(x => keyOf(x) === k);
+  if (!r || !confirm(`Retirer ${r.nom} (${r.classe}) de la liste ?`)) return;
+  reports = reports.filter(x => keyOf(x) !== k); persist(); render();
+}
 $('#print').onclick = () => window.print();
 $('#clear').onclick = () => { if (live.on) { clearClass(); return; } if (confirm('Effacer tous les rapports importés sur cet ordinateur ?')) { reports = []; persist(); render(); $('#import-msg').textContent = ''; } };
 $('#csv').onclick = () => {
@@ -231,18 +249,28 @@ $('#csv').onclick = () => {
 /* ---------- suivi en direct (Firebase) ---------- */
 const CLASSES = ['2nde 3', '2nde 4', '2nde 5', '2nde 6'];
 const classeId = c => String(c || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'sans-classe';
-const live = { on: false, reports: [], locks: {} };
-const enLigne = r => r.majMs && Date.now() - r.majMs < 150000;
+const live = { on: false, reports: [], ctl: {} };
+const ctlOf = id => live.ctl[id] || {};
+const enLigne = r => r.majMs && Date.now() - r.majMs < 240000;
 function renderLocks() {
   if (!live.on) return;
   const id = classeId(cur || CLASSES[0]);
-  const lc = !!live.locks[id], la = !!live.locks.toutes;
-  $('#lock-class').textContent = lc ? `▶ Débloquer la ${cur}` : `🛑 Bloquer la ${cur || CLASSES[0]}`;
+  const name = cur || CLASSES[0];
+  const lc = !!ctlOf(id).bloque, la = !!ctlOf('toutes').bloque;
+  $('#lock-class').textContent = lc ? `▶ Débloquer la ${name}` : `🛑 Bloquer la ${name}`;
   $('#lock-class').className = 'btn ' + (lc ? 'unlock' : 'lock');
   $('#lock-all').textContent = la ? '▶ Débloquer toutes les classes' : '🛑 Bloquer toutes les classes';
   $('#lock-all').className = 'btn ' + (la ? 'unlock' : 'lock');
-  const on = Object.keys(live.locks).filter(k => live.locks[k]);
-  $('#lock-state').innerHTML = on.length ? `<p class="locked-banner">Jeux en pause : ${on.map(k => k === 'toutes' ? 'toutes les classes' : esc((CLASSES.find(c => classeId(c) === k)) || k)).join(', ')}</p>` : '';
+  const pc = !!ctlOf(id).partie2, pa = !!ctlOf('toutes').partie2;
+  $('#p2-class').textContent = pc ? `🔒 Refermer la partie 2 (${name})` : `🔓 Débloquer la partie 2 (${name})`;
+  $('#p2-class').className = 'btn ' + (pc ? '' : 'open');
+  $('#p2-all').textContent = pa ? '🔒 Refermer la partie 2 (toutes)' : '🔓 Partie 2 pour toutes les classes';
+  $('#p2-all').className = 'btn ' + (pa ? '' : 'open');
+  const label = k => k === 'toutes' ? 'toutes les classes' : esc(CLASSES.find(c => classeId(c) === k) || k);
+  const keys = Object.keys(live.ctl).filter(k => !k.startsWith('reset-'));
+  const on = keys.filter(k => live.ctl[k].bloque), p2 = keys.filter(k => live.ctl[k].partie2);
+  $('#lock-state').innerHTML = (on.length ? `<p class="locked-banner">Jeux en pause : ${on.map(label).join(', ')}</p>` : '')
+    + (p2.length ? `<p class="muted" style="margin:8px 0 0">🔓 Partie 2 ouverte : ${p2.map(label).join(', ')}</p>` : '');
 }
 (function () {
   const cfg = window.FIREBASE_CONFIG;
@@ -288,16 +316,25 @@ function renderLocks() {
         render();
       }, e => { $('#live-err').innerHTML = `<p class="locked-banner">Lecture impossible (${esc(e.code || e.message)}). Vérifie l'adresse e-mail dans les règles Firestore.</p>`; }));
       unsubs.push(F.onSnapshot(F.collection(db, 'controle'), snap => {
-        live.locks = {};
-        snap.forEach(d => { live.locks[d.id] = !!d.data().bloque; });
+        live.ctl = {};
+        snap.forEach(d => { live.ctl[d.id] = d.data(); });
         render();
       }));
       tick = setInterval(render, 30000);
     });
-    const setLock = (id, on) => F.setDoc(F.doc(db, 'controle', id), { bloque: on, message: on ? $('#lock-msg').value.trim().slice(0, 120) : '', maj: F.serverTimestamp() })
-      .catch(e => alert('Impossible de modifier la pause : ' + (e.code || e.message)));
-    $('#lock-class').onclick = () => { const id = classeId(cur); setLock(id, !live.locks[id]); };
-    $('#lock-all').onclick = () => setLock('toutes', !live.locks.toutes);
+    const setCtl = (id, patch) => F.setDoc(F.doc(db, 'controle', id), Object.assign(patch, { maj: F.serverTimestamp() }), { merge: true })
+      .catch(e => alert('Modification impossible : ' + (e.code || e.message)));
+    const setLock = (id, on) => setCtl(id, { bloque: on, message: on ? $('#lock-msg').value.trim().slice(0, 120) : '' });
+    $('#lock-class').onclick = () => { const id = classeId(cur); setLock(id, !ctlOf(id).bloque); };
+    $('#lock-all').onclick = () => setLock('toutes', !ctlOf('toutes').bloque);
+    $('#p2-class').onclick = () => { const id = classeId(cur); setCtl(id, { partie2: !ctlOf(id).partie2 }); };
+    $('#p2-all').onclick = () => setCtl('toutes', { partie2: !ctlOf('toutes').partie2 });
+    window.liveDelete = k => {
+      const r = live.reports.find(x => keyOf(x) === k);
+      if (!r || !confirm(`Supprimer la progression de ${r.nom} (${r.classe}) ?\n\nSa ligne disparaît du tableau et sa partie repart au début (dès que son jeu est ouvert).`)) return;
+      Promise.all(r.ids.flatMap(id => [F.deleteDoc(F.doc(db, 'eleves', id)), F.setDoc(F.doc(db, 'controle', 'reset-' + id), { reset: F.serverTimestamp() })]))
+        .catch(e => alert('Suppression incomplète : ' + (e.code || e.message)));
+    };
     window.clearClass = () => {
       const rs = live.reports.filter(r => (r.classe || 'Sans classe') === cur);
       if (!rs.length || !confirm(`Effacer définitivement les données des ${rs.length} élèves de ${cur} ?`)) return;

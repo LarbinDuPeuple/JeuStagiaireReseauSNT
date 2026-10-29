@@ -972,16 +972,16 @@ function missionComplete() {
   const b = openModal({ title: `✅ Mission ${S.m + 1} accomplie !`, closable: false });
   b.innerHTML = `<div class="mission-card"><h3>${m.title}</h3><p>Score : <b>${S.score}</b> · Satisfaction des clients : <b>${Math.round(S.sat)} %</b></p>
     <h4>📒 Notions acquises</h4><ul>${notions.map(n => `<li>${NOTIONS[n].icon} ${NOTIONS[n].title}</li>`).join('')}</ul>
-    ${last ? '<p>🎉 Tu as terminé ton stage ! Voici ton rapport.</p>' : endPart1 ? `<div class="goal">🏁 <b>Fin de la partie 1.</b> Note ton <b>code de reprise</b> : il te permettra de reprendre la partie 2 sur n'importe quel ordinateur. Si ton professeur le demande, enregistre aussi ton rapport.<div class="code">${resumeCode()}</div></div><p>En attendant la prochaine séance, tu peux continuer à répondre aux tickets de la hotline.</p>` : '<p>Prends une minute pour relire les fiches de ton carnet avant de continuer.</p>'}</div>
-    <div class="actions">${last ? '<button class="btn primary" id="next">Voir mon rapport de stage</button>' : endPart1 ? '<button class="btn" id="send">📤 Enregistrer mon rapport</button><button class="btn" id="stay">Continuer la hotline</button><button class="btn primary" id="next">Commencer la partie 2</button>' : '<button class="btn primary" id="next">Mission suivante →</button>'}</div>`;
-  b.querySelector('#next').onclick = () => {
+    ${last ? '<p>🎉 Tu as terminé ton stage ! Voici ton rapport.</p>' : endPart1 ? `<div class="goal">🏁 <b>Fin de la partie 1.</b> Note ton <b>code de reprise</b> : il te permettra de reprendre la partie 2 sur n'importe quel ordinateur. Si ton professeur le demande, enregistre aussi ton rapport.<div class="code">${resumeCode()}</div></div><p>${part2Open() ? 'Tu peux commencer la partie 2 tout de suite, ou continuer à répondre aux tickets de la hotline.' : "🔒 La partie 2 s'ouvrira quand ton professeur la débloquera. En attendant, les appels s'enchaînent à la hotline !"}</p>` : '<p>Prends une minute pour relire les fiches de ton carnet avant de continuer.</p>'}</div>
+    <div class="actions">${last ? '<button class="btn primary" id="next">Voir mon rapport de stage</button>' : endPart1 ? `<button class="btn" id="send">📤 Enregistrer mon rapport</button><button class="btn ${part2Open() ? '' : 'primary'}" id="stay">Continuer la hotline</button>${part2Open() ? '<button class="btn primary" id="next">Commencer la partie 2</button>' : ''}` : '<button class="btn primary" id="next">Mission suivante →</button>'}</div>`;
+  if (b.querySelector('#next')) b.querySelector('#next').onclick = () => {
     closeModal(true);
     if (last) { S.finished = true; save(); refreshHUD(); report(); }
     else { S.m++; S.s = 0; S.sp = {}; S.pause = false; save(); refreshHUD(); missionIntro(); }
     if (window.onlineTick) onlineTick(true);
   };
   if (endPart1) b.querySelector('#send').onclick = () => exportRapport(S.m + 1);
-  if (endPart1) b.querySelector('#stay').onclick = () => { closeModal(true); S.m++; S.s = 0; S.sp = {}; S.pause = true; save(); refreshHUD(); if (window.onlineTick) onlineTick(true); };
+  if (endPart1) b.querySelector('#stay').onclick = () => { closeModal(true); S.m++; S.s = 0; S.sp = {}; S.pause = true; S.nextInc = S.t + 5; save(); refreshHUD(); if (window.onlineTick) onlineTick(true); };
 }
 
 function idleAction(id) {
@@ -999,6 +999,16 @@ function idleAction(id) {
   toast(`ℹ️ ${esc(e.name)}`, '');
 }
 
+function startPart2() {
+  if (!S.pause || !part2Open()) return;
+  S.pause = false; S.nextInc = null; save(); refreshHUD(); missionIntro();
+}
+/* appelé par le mode en ligne quand l'enseignant ouvre (ou referme) la partie 2 */
+function part2Changed(open) {
+  if (!S || !$('#title-screen').hidden) return;
+  if (open && S.pause) { sfx.step(); toast('🔓 Ton professeur a débloqué la <b>partie 2</b> ! Termine ton ticket, puis clique sur « Commencer la partie 2 » à droite.', 'ok', 9000); }
+  refreshHUD();
+}
 function interact(id) {
   if (uiBusy() || !EBY[id] || EBY[id].deco) return;
   const opts = [];
@@ -1011,7 +1021,10 @@ function interact(id) {
     const tg = currentTargets();
     if (tg.includes(id)) opts.push({ label: `⭐ <b>Mission</b> : ${st.label}`, fn: () => { (st.notions || []).forEach(unlock); st.run(id); } });
   }
-  if (S.pause && id === 'gwen') opts.push({ label: '▶ <b>Commencer la partie 2</b>', fn: () => { S.pause = false; save(); refreshHUD(); missionIntro(); } });
+  if (S.pause && id === 'gwen') {
+    if (part2Open()) opts.push({ label: '▶ <b>Commencer la partie 2</b>', fn: startPart2 });
+    else opts.push({ label: '🔒 <b>Partie 2</b> : pas encore ouverte', fn: () => say([['gwen', "Pas encore ! On attend le feu vert de ton professeur pour la partie 2. En attendant, la hotline a besoin de toi."]]) });
+  }
   if (!opts.length) { idleAction(id); return; }
   if (opts.length === 1) { opts[0].fn(); return; }
   const e = EBY[id];
@@ -1026,15 +1039,21 @@ const INCIDENTS_BY = {};
 INCIDENTS.forEach(i => { INCIDENTS_BY[i.id] = i; });
 const busy = id => S.tickets.some(t => t.ctx.client === id || t.reportAt === id || t.fixAt === id || t.caller === id);
 const INC_CFG = { off: null, calme: [200, 300, 1], normal: [110, 170, 1], intense: [60, 100, 2] };
+/* fin de partie 1 ou fin du jeu : les appels s'enchaînent (5 s entre deux) pour patienter */
+const waiting = () => S.pause || S.finished;
+const WAIT_GAP = 5;
+INCIDENTS.forEach(i => { i.apply = i.apply || (() => {}); i.revert = i.revert || (() => {}); });
 const PATIENCE = 240;
 
 function scheduleIncidents() {
-  const cfg = INC_CFG[S.settings.inc];
-  if (!cfg || S.finished || !reached(INCIDENTS[0].unlock) || !$('#title-screen').hidden) return;
-  if (S.nextInc === null) { S.nextInc = S.t + 40; return; }
+  const wait = waiting();
+  const cfg = wait && S.settings.inc !== 'off' ? [WAIT_GAP, WAIT_GAP, 1] : INC_CFG[S.settings.inc];
+  if (!cfg || !reached(INCIDENTS[0].unlock) || !$('#title-screen').hidden) return;
+  if (S.nextInc === null) { S.nextInc = S.t + (wait ? WAIT_GAP : 40); return; }
   if (S.t < S.nextInc || uiBusy()) return;
   if (S.tickets.length >= cfg[2] || S.tickets.some(t => INCIDENTS_BY[t.id].exclusive)) return;
-  const cands = INCIDENTS.filter(i => reached(i.unlock) && (S.seen[i.id] || 0) < 2 && !S.tickets.some(t => t.id === i.id) && !(i.exclusive && S.tickets.length));
+  // en attente, plus de limite de répétition : on privilégie seulement les tickets les moins vus
+  const cands = INCIDENTS.filter(i => reached(i.unlock) && (wait || (S.seen[i.id] || 0) < (i.max || 2)) && !S.tickets.some(t => t.id === i.id) && !(i.exclusive && S.tickets.length));
   if (!cands.length) { S.nextInc = S.t + 30; return; }
   const minSeen = Math.min(...cands.map(i => S.seen[i.id] || 0));
   const pool = shuffle(cands.filter(i => (S.seen[i.id] || 0) === minSeen)).concat(shuffle(cands));
@@ -1062,11 +1081,21 @@ function spawnIncident(inc, c) {
   while ($('#calls').children.length > 2) $('#calls').firstChild.remove();
   setTimeout(() => card.remove(), 14000);
   unlock(inc.notion);
-  if (S.incTotal === 1) toast('💡 Premier ticket ! Va sur place, observe, teste, puis choisis la cause. Ton carnet a une fiche « Méthode de la hotline ».', 'info', 7000);
+  if (S.incTotal === 1 && !inc.quiz) toast('💡 Premier ticket ! Va sur place, observe, teste, puis choisis la cause. Ton carnet a une fiche « Méthode de la hotline ».', 'info', 7000);
   unlock('diagnostic');
   save(); refreshHUD();
 }
+/* ticket « quiz » : un collègue vérifie que tu as bien compris (3 questions tirées au hasard) */
+function quizTicket(t) {
+  const inc = INCIDENTS_BY[t.id];
+  quiz({ title: `🎫 ${inc.title}`, notion: inc.notion, intro: `<b>${esc(PEOPLE[t.caller].name)} :</b> « ${fill(inc.call)} »`, questions: shuffle(inc.bank.slice()).slice(0, 3) }, () => {
+    const b = openModal({ title: `🎫 ${inc.title}` });
+    b.innerHTML = '<div class="after"></div>';
+    resolveTicket(t, b.querySelector('.after'));
+  });
+}
 function openTicket(t) {
+  if (INCIDENTS_BY[t.id].quiz) { quizTicket(t); return; }
   const inc = INCIDENTS_BY[t.id], p = PEOPLE[t.caller];
   const b = openModal({ title: `🎫 ${inc.title}`, wide: true });
   curNotion = 'diagnostic';
@@ -1127,10 +1156,11 @@ function resolveTicket(t, el) {
   S.tickets = S.tickets.filter(x => x.uid !== t.uid);
   const fast = S.t - t.t0 < 90;
   addScore(50 + (fast ? 25 : 0)); addSat(t.late ? 4 : 8); S.incOk++;
+  if (waiting()) S.nextInc = S.t + WAIT_GAP;
   if (inc.notion) unlock(inc.notion);
   sfx.step();
   const p = PEOPLE[t.caller];
-  el.insertAdjacentHTML('beforeend', `<div class="q-fb ok">🎉 <b>Problème résolu${fast ? ' en un temps record (+25)' : ''} !</b> ${esc(p.name)} : « Merci, vous me sauvez ! »<br><br>💡 ${inc.explain}</div><div class="actions"><button class="btn primary" id="tk-done">Retour au travail</button></div>`);
+  el.insertAdjacentHTML('beforeend', `<div class="q-fb ok">🎉 <b>${inc.quiz ? 'Révision terminée' : 'Problème résolu'}${fast ? ' en un temps record (+25)' : ''} !</b> ${esc(p.name)} : « ${inc.quiz ? 'Parfait, tu es prêt(e) pour les clients !' : 'Merci, vous me sauvez !'} »${inc.explain ? `<br><br>💡 ${inc.explain}` : ''}</div><div class="actions"><button class="btn primary" id="tk-done">Retour au travail</button></div>`);
   el.querySelector('#tk-done').onclick = () => closeModal();
   save(); refreshHUD();
 }
@@ -1157,8 +1187,8 @@ function refreshHUD() {
   $('#hud-sat-txt').textContent = sat + ' %';
   $('#hud-notions').textContent = S.notions.length;
   let html;
-  if (S.finished) html = '<h3>🏁 Stage terminé</h3><p class="muted">Bravo ! Tu peux revoir ton rapport ou continuer la hotline.</p><button class="btn small" onclick="report()">📄 Mon rapport de stage</button>';
-  else if (S.pause) html = `<h3>☕ Fin de la partie 1</h3><p class="small">Ton code de reprise :</p><div class="code">${resumeCode()}</div><p class="muted small">Continue à répondre aux tickets. Pour lancer la partie 2, parle à Gwenaëlle.</p>`;
+  if (S.finished) html = '<h3>🏁 Stage terminé</h3><p class="muted">Bravo ! Tu peux revoir ton rapport. Les appels continuent : la hotline compte sur toi.</p><button class="btn small" onclick="report()">📄 Mon rapport de stage</button>';
+  else if (S.pause) html = `<h3>☕ Fin de la partie 1</h3><p class="small">Ton code de reprise :</p><div class="code">${resumeCode()}</div>${part2Open() ? '<button class="btn primary small" onclick="startPart2()">▶ Commencer la partie 2</button>' : "<p class=\"muted small\">🔒 La partie 2 n'est pas encore ouverte : ton professeur la débloquera. En attendant, réponds aux appels !</p>"}`;
   else {
     html = `<h3>🎯 ${m.title}</h3><ol class="steps">`;
     m.steps.forEach((st, i) => {
@@ -1185,7 +1215,7 @@ function updateHint() {
 }
 
 /* ---------------------------------------------------------------------
-   Code de reprise (pour changer de poste entre les deux séances)
+   Code de reprise (pour changer de poste entre la partie 1 et la partie 2)
    --------------------------------------------------------------------- */
 const ALPHA = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 function checksum(str) { let h = 7; for (const ch of str) h = (h * 31 + ch.charCodeAt(0)) % 1021; return ALPHA[h % 32] + ALPHA[Math.floor(h / 32) % 32]; }
@@ -1349,6 +1379,8 @@ function startScreen() {
     if (!st) { alert("Code invalide. Vérifie le code et écris ton prénom exactement comme lors de la partie 1."); return; }
     S = newState(name, classe); ts.hidden = true;
     jumpTo(PART2, st);
+    // partie 2 pas encore ouverte par l'enseignant : on attend à la hotline
+    if (!part2Open()) { closeModal(true); S.pause = true; S.nextInc = S.t + WAIT_GAP; save(); refreshHUD(); }
   };
 }
 

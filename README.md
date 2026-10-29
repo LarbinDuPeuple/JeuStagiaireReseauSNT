@@ -1,11 +1,11 @@
 # 🌊 Le Stagiaire du Bout du Monde
 
-Jeu sérieux pour navigateur, en vue isométrique, pour **deux séances de SNT en 2nde** sur le thème **Internet**.
+Jeu sérieux pour navigateur, en vue isométrique, pour la SNT en 2nde, thème **Internet**, en **deux parties** d'environ 1 h (sur une ou deux séances).
 
 > Lundi, 8h30, port de commerce de Brest. Premier jour de stage chez IroiseNet, le fournisseur d'accès à Internet du Finistère. Le technicien est bloqué à Ouessant par la tempête… et le téléphone de la hotline sonne déjà.
 
 **▶ Jouer :** https://jeustagiaire-snt.web.app/
-**📄 Fiche enseignant :** [FICHE_ENSEIGNANT.md](FICHE_ENSEIGNANT.md) (déroulé des deux séances, capacités du programme, corrigé)
+**📄 Fiche enseignant :** [FICHE_ENSEIGNANT.md](FICHE_ENSEIGNANT.md) (déroulé des deux parties, capacités du programme, corrigé)
 
 ## Contenu
 
@@ -16,7 +16,7 @@ Jeu sérieux pour navigateur, en vue isométrique, pour **deux séances de SNT e
 | 2 | 3. Le voyage des paquets | routage de proche en proche, tables locales, panne, compteur de sauts (`tracert`) |
 | 2 | 4. TCP à la rescousse | rôles d'IP et de TCP, fiabilité et absence de garantie temporelle |
 
-Pendant le jeu, **9 tickets** de la hotline tombent au hasard (box éteinte, DNS en panne, routeur de Morlaix coupé, déni de service, pair-à-pair, neutralité du Net, NTP…). Le jeu propose aussi un carnet de 13 fiches, une carte du réseau, une invite de commandes simulée, un **code de reprise** entre les deux séances et un rapport de stage imprimable.
+Pendant le jeu, **16 tickets** de la hotline se débloquent au fil des missions : 10 pannes à diagnostiquer (box éteinte, DNS en panne, routeur de Morlaix coupé, déni de service, pair-à-pair, neutralité du Net, NTP, clé Wi-Fi…) et 6 quiz de révision posés par les collègues (réseaux physiques, adresses IP, DNS, routage, IP et TCP, usages). Quand un élève a fini une partie, les appels s'enchaînent toutes les 5 secondes pour l'occuper en attendant les autres. Le jeu propose aussi un carnet de 13 fiches, une carte du réseau, une invite de commandes simulée, un **code de reprise** entre les deux parties et un rapport de stage imprimable.
 
 ## Commandes
 

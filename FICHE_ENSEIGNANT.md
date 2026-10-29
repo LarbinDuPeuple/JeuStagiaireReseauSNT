@@ -1,7 +1,7 @@
 # Fiche enseignant : « Le Stagiaire du Bout du Monde »
 
 **Niveau :** 2nde, SNT, thème **Internet**
-**Durée :** deux séances de 1 h 30, chacune avec **1 h de jeu** et 20 à 30 min d'intro, de débrief et de trace écrite
+**Durée :** deux **parties** d'environ 1 h de jeu, plus 20 à 30 min d'intro, de débrief et de trace écrite. Selon la vitesse de la classe : une partie par séance, ou les deux dans la même séance (c'est toi qui débloques la partie 2, voir « Espace enseignant »).
 **Modalité :** individuel ou binôme, un poste avec un navigateur récent (Chrome, Firefox, Edge). Aucune installation, aucun compte. **Lien du jeu :** https://jeustagiaire-snt.web.app/
 Fonctionne aussi hors ligne : on peut ouvrir `index.html` directement depuis une clé USB ou le réseau du lycée.
 
@@ -15,10 +15,10 @@ Le jeu reprend le moteur du « Stagiaire Réseau » (STI2D) : vue isométrique, 
 |---|---|---|---|
 | 1 | 1. Bienvenue au bout du monde | Frise historique, tri des réseaux physiques sur l'établi, ordre de grandeur du trafic | 15 min |
 | 1 | 2. Allô, la hotline ? | `ipconfig` à distance chez une cliente, analyse des appareils connectés à sa box (un voisin squatte son Wi-Fi), `nslookup` dans les deux sens | 25 min |
-| 1 | Tickets | Box éteinte, horloge déréglée (NTP), panne de DNS au CDI, machine à café | le reste de l'heure |
+| 1 | Tickets | Box éteinte, horloge déréglée (NTP), panne de DNS au CDI, clé Wi-Fi, machine à café ; quiz de révision : réseaux physiques, adresses IP, DNS | le reste de l'heure |
 | 2 | 3. Le voyage des paquets | Router un paquet de Brest à Paris en lisant les tables locales, `tracert`, panne de fibre Morlaix–Rennes, paquet qui tourne en rond jusqu'à destruction | 30 min |
 | 2 | 4. TCP à la rescousse | Reconstituer un message comme TCP (paquets désordonnés et perdus), visio qui saccade, contrôle final | 20 min |
-| 2 | Tickets | Routeur de Morlaix en panne, déni de service sur le site de la mairie, pair-à-pair, neutralité du Net, visio lente à Ouessant | le reste de l'heure |
+| 2 | Tickets | Routeur de Morlaix en panne, déni de service sur le site de la mairie, pair-à-pair, neutralité du Net, visio lente à Ouessant ; quiz de révision : routage, IP et TCP, usages | le reste de l'heure |
 
 ## Capacités du programme couvertes (BO, thème Internet)
 
@@ -36,7 +36,7 @@ Exemples d'activités du BO repris : déterminer l'adresse IP d'un équipement e
 
 ## Déroulé proposé
 
-### Séance 1 (partie 1)
+### Partie 1
 
 | Temps | Phase | Élèves | Enseignant |
 |---|---|---|---|
@@ -44,17 +44,17 @@ Exemples d'activités du BO repris : déterminer l'adresse IP d'un équipement e
 | 0:10 – 1:10 | Jeu, partie 1 | Missions 1 et 2, puis tickets | Circuler, faire verbaliser : « c'est quoi la passerelle ? », « que fait le DNS ? ». |
 | 1:10 – 1:30 | Débrief et trace écrite | **Noter le code de reprise** (fin de la mission 2) ; compléter la 1re moitié de la fiche résumé Internet | Synthèse au tableau : adresse IP, box = passerelle, DNS dans les deux sens. |
 
-### Séance 2 (partie 2)
+### Partie 2 (même séance ou séance suivante)
 
 | Temps | Phase | Élèves | Enseignant |
 |---|---|---|---|
-| 0:00 – 0:15 | Rappel ou activité débranchée | Version courte de « La course aux paquets », ou rappel oral de la partie 1 | Faire le lien : un routeur ne connaît que ses voisins. |
+| 0:00 – 0:15 | Rappel ou activité débranchée (si nouvelle séance) | Version courte de « La course aux paquets », ou rappel oral de la partie 1 | Faire le lien : un routeur ne connaît que ses voisins. |
 | 0:15 – 1:15 | Jeu, partie 2 | Même poste : « Continuer ». Autre poste : « J'ai un code de reprise ». Missions 3 et 4, puis tickets | Insister sur le compteur de sauts et sur « fiable mais pas à l'heure ». |
 | 1:15 – 1:30 | Bilan | Rapport de stage (imprimer ou PDF) ; fin de la fiche résumé | Synthèse : IP achemine, TCP fiabilise, les routeurs décident de proche en proche. |
 
 **Changement de poste :** la sauvegarde est stockée dans le navigateur. À la fin de la partie 1, le jeu affiche un **code de reprise** (ex. `P2-9G-29-M-4-3-4-2Q`) qui conserve le score. Il est lié au prénom : l'élève doit retaper exactement le même prénom.
 
-**Élève qui finit la partie 1 en avance :** il peut continuer à répondre aux tickets (bouton « Continuer la hotline »). La partie 2 se lance en parlant à Gwenaëlle ; demandez-leur d'attendre la séance suivante.
+**Élève qui finit une partie en avance :** les appels de la hotline s'enchaînent alors toutes les 5 secondes (pannes et quiz de révision des missions déjà faites), pour qu'il ne s'ennuie pas pendant que les autres terminent. Avec le mode en ligne, la **partie 2 reste fermée** tant que tu ne l'as pas débloquée dans l'espace enseignant ; l'élève reçoit alors un message et lance la partie 2 d'un clic. Sans le mode en ligne, la partie 2 est libre : il la lance en parlant à Gwenaëlle.
 
 ## Différenciation
 
@@ -70,13 +70,17 @@ Menu ⚙️, puis **Mode enseignant**, code **`IROISE`**. Il permet de reprendre
 
 Page **https://jeustagiaire-snt.web.app/prof.html** (ou `prof.html` dans le dossier du jeu).
 
-1. En fin de séance, chaque élève clique sur **« 📤 Enregistrer mon rapport »** : à la fin de la partie 1, à la fin du jeu, ou à tout moment par le menu ⚙️ puis « Rapport de stage ». Le fichier s'appelle `rapport_<classe>_<prénom>.json`.
+1. En fin de partie, chaque élève clique sur **« 📤 Enregistrer mon rapport »** : à la fin de la partie 1, à la fin du jeu, ou à tout moment par le menu ⚙️ puis « Rapport de stage ». Le fichier s'appelle `rapport_<classe>_<prénom>.json`.
 2. Les élèves déposent ce fichier dans l'ENT (casier, devoir ou espace de dépôt).
 3. Tu télécharges tous les fichiers, puis tu les glisses d'un coup sur la page enseignant.
 
 La page trie les élèves par classe (un onglet par classe), avec pour chacun : missions faites, score, satisfaction, tickets, taux de bonnes réponses, capacités du BO validées et points à retravailler. Pour chaque classe, elle affiche aussi les moyennes, le taux de validation de chaque capacité et les notions les plus ratées. Export CSV (tableur) et impression possibles. Si un élève réimporte un rapport plus avancé, il remplace l'ancien.
 
 Sans le mode en ligne, rien n'est envoyé sur Internet : les rapports importés restent dans le navigateur de l'ordinateur de l'enseignant. Un fichier modifié à la main par un élève est signalé « ⚠️ modifié ».
+
+**Supprimer un élève :** bouton 🗑️ au bout de sa ligne. En ligne, sa progression est effacée et son jeu repart au début dès qu'il est ouvert.
+
+**Débloquer la partie 2 (mode en ligne) :** bouton « 🔓 Débloquer la partie 2 » pour la classe affichée, ou pour toutes les classes. Tant qu'elle est fermée, les élèves qui ont fini la partie 1 enchaînent les appels de la hotline.
 
 **Mode en ligne (facultatif) :** une fois Firebase configuré (voir [FIREBASE.md](FIREBASE.md)), l'espace enseignant affiche les élèves **en direct**, sans import de fichiers, et propose **« 🛑 Bloquer la classe »** ou **« Bloquer toutes les classes »**, avec un message. Les jeux de la classe affichent alors « Pause ! » et le temps est figé jusqu'au déblocage.
 
@@ -114,6 +118,9 @@ Questions de sortie suggérées (5 min) :
 | Une lettre inquiétante (Tanguy) | logiciel installé par le cousin | partage pair-à-pair d'un film | expliquer : P2P légal, partage d'œuvres sans droits illégal |
 | Idée du commercial (Gwenaëlle) | ralentir une plateforme | contraire à la neutralité du Net | — |
 | La visio rame à Ouessant (Annaïg) | ping de plus d'1 s, liaison radio | réseau physique lent | expliquer, couper la caméra |
+| La tablette refuse le Wi-Fi (Nolwenn) | PC connecté, tablette « mot de passe incorrect » | clé Wi-Fi mal saisie | retaper la clé (étiquette de la box) |
+
+Les **6 quiz de révision** (Loïc : réseaux physiques et histoire ; Erwan : adresses IP, puis IP et TCP ; Maëlys : DNS, puis usages ; Soizic : routage) posent 3 questions tirées dans une banque de 6. Ils se débloquent avec les missions correspondantes.
 
 ## Écarts au programme et points de vigilance
 
@@ -121,5 +128,5 @@ Questions de sortie suggérées (5 min) :
 - **Simplifications :** les tables de routage sont calculées par la distance la plus courte ; les vrais protocoles de routage ne sont pas au programme.
 - **Adresses fictives :** IroiseNet, les clients et les domaines en `.bzh` sont inventés. Les adresses `203.0.113.x` et `198.51.100.x` sont des plages réservées à la documentation. Seule `wikipedia.fr` est un vrai nom ; son adresse réelle peut différer de celle du jeu : un vrai `nslookup` en classe fait une bonne comparaison.
 - **Ouessant :** la liaison radio de l'île est une situation inventée pour le scénario.
-- **Pair-à-pair, neutralité du Net, déni de service** sont surtout traités par des tickets aléatoires (au plus deux fois chacun). La fiche du carnet et une question du contrôle final les garantissent pour tous, mais un débrief oral reste utile.
-- **Planning :** deux séances de jeu au lieu d'une pour le thème Internet. Cela décale le Web d'une semaine, ou demande de condenser le Web.
+- **Pair-à-pair, neutralité du Net, déni de service** sont surtout traités par des tickets aléatoires et le quiz de révision « règles et usages ». La fiche du carnet et une question du contrôle final les garantissent pour tous, mais un débrief oral reste utile.
+- **Planning :** environ deux heures de jeu au total pour le thème Internet. Sur deux séances, cela décale le Web d'une semaine ; si la classe avance vite, les deux parties tiennent dans une même séance.

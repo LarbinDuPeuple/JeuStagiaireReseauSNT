@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Espace enseignant · Le Stagiaire du Bout du Monde</title>
+<style>
+  :root { --bg: #eef3f8; --panel: #fff; --ink: #1d2733; --muted: #5d6b7a; --line: #d6dee8; --blue: #2b6fd6; --green: #1f9d55; --amber: #c98a06; --red: #c43d3d; --shadow: 0 6px 24px rgba(20, 40, 70, .12); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { background: #12324f; color: #fff; padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; }
+  header h1 { margin: 0; font-size: 1.15em; }
+  header a { color: #cfe3ff; }
+  main { max-width: 1250px; margin: 0 auto; padding: 18px 16px 40px; }
+  .card { background: var(--panel); border-radius: 16px; box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 16px; }
+  #drop { display: block; margin: 12px 0 8px; border: 2px dashed var(--line); border-radius: 14px; padding: 22px; text-align: center; color: var(--muted); cursor: pointer; }
+  #drop.over { border-color: var(--blue); background: #f2f7ff; color: var(--ink); }
+  .btn { font: inherit; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 7px 12px; cursor: pointer; }
+  .btn:hover { border-color: var(--blue); }
+  .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn.danger { color: var(--red); }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tabs button { font: inherit; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .tabs button[aria-pressed="true"] { background: #12324f; border-color: #12324f; color: #fff; }
+  .muted { color: var(--muted); }
+  .stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 14px; }
+  .stats div { background: #f4f7fb; border-radius: 12px; padding: 8px 14px; min-width: 120px; }
+  .stats b { display: block; font-size: 1.3em; }
+  .wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .93em; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #f4f7fb; white-space: nowrap; cursor: pointer; user-select: none; position: sticky; top: 0; }
+  th[data-k]:hover { color: var(--blue); }
+  td.num { text-align: right; white-space: nowrap; }
+  .caps { white-space: nowrap; letter-spacing: 1px; }
+  .warn { color: var(--red); font-weight: 600; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: .85em; font-weight: 600; }
+  .pill.ok { background: #e3f6ea; color: var(--green); } .pill.mid { background: #fff4d9; color: var(--amber); } .pill.ko { background: #fde7e7; color: var(--red); }
+  .capbar { display: grid; grid-template-columns: 1fr 70px; gap: 4px 10px; font-size: .9em; }
+  .capbar .g { background: #e8eef5; border-radius: 6px; height: 14px; margin-top: 3px; overflow: hidden; }
+  .capbar .g span { display: block; height: 100%; background: var(--green); }
+  details summary { cursor: pointer; font-weight: 600; }
+  @media print { header, #import, .bar, .noprint { display: none !important; } body { background: #fff; } .card { box-shadow: none; padding: 0; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎓 Espace enseignant · Le Stagiaire du Bout du Monde</h1>
+  <a href="index.html">Retour au jeu</a>
+</header>
+<main>
+  <section class="card" id="import">
+    <h2 style="margin-top:0">Importer les rapports des élèves</h2>
+    <p class="muted">Chaque élève clique sur « 📤 Enregistrer mon rapport » (fin de partie, ou menu ⚙️ puis Rapport de stage) et dépose le fichier <code>rapport_….json</code> dans l'ENT. Télécharge-les, puis glisse-les tous ici d'un coup. Rien n'est envoyé sur Internet : tout reste sur cet ordinateur.</p>
+    <label id="drop">📂 Glisse les fichiers ici, ou clique pour les choisir
+      <input type="file" id="files" accept=".json,application/json" multiple hidden>
+    </label>
+    <p id="import-msg" class="muted"></p>
+  </section>
+
+  <section class="card" id="results" hidden>
+    <div class="bar">
+      <div class="tabs" id="tabs"></div>
+      <span style="flex:1"></span>
+      <button class="btn" id="csv">⬇️ Exporter la classe (CSV)</button>
+      <button class="btn" id="print">🖨️ Imprimer</button>
+      <button class="btn danger" id="clear">🗑️ Tout effacer</button>
+    </div>
+    <div id="view"></div>
+  </section>
+</main>
+<script>
+const CAPS = [
+  'Distinguer le rôle des protocoles IP et TCP',
+  'Caractériser les principes du routage et ses limites',
+  "Distinguer la fiabilité de transmission et l'absence de garantie temporelle",
+  'Retrouver une adresse IP à partir d\'une adresse symbolique et inversement',
+  "Décrire l'intérêt des réseaux pair-à-pair et leurs usages illicites",
+  'Caractériser quelques types de réseaux physiques',
+  "Caractériser l'ordre de grandeur du trafic et son évolution"
+];
+const NB_MISSIONS = 4;
+const STORE = 'stagiaire-snt-prof-v1';
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// même signature que dans le jeu (js/game.js, signRapport)
+function signRapport(o) {
+  const str = 'IROISE|' + JSON.stringify(o);
+  let h = 0x811c9dc5;
+  for (const ch of str) { h ^= ch.charCodeAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(36);
+}
+
+let reports = [];
+try { reports = JSON.parse(localStorage.getItem(STORE) || '[]'); } catch (e) { reports = []; }
+let cur = null, sortK = 'nom', sortDir = 1;
+const keyOf = r => (r.classe + '|' + r.nom).toLowerCase().trim();
+function persist() { try { localStorage.setItem(STORE, JSON.stringify(reports)); } catch (e) { /* stockage indisponible */ } }
+
+function addReport(o) {
+  if (!o || o.jeu !== 'stagiaire-bout-du-monde') return 'bad';
+  const { sig, ...rest } = o;
+  const r = Object.assign({}, rest, { valide: sig === signRapport(rest) });
+  const i = reports.findIndex(x => keyOf(x) === keyOf(r));
+  if (i < 0) { reports.push(r); return 'new'; }
+  // on garde le rapport le plus avancé, puis le plus récent
+  const a = reports[i];
+  if (r.missions > a.missions || (r.missions === a.missions && r.date > a.date)) { reports[i] = r; return 'upd'; }
+  return 'old';
+}
+async function importFiles(list) {
+  const n = { new: 0, upd: 0, old: 0, bad: 0 };
+  for (const f of list) {
+    try { n[addReport(JSON.parse(await f.text()))]++; } catch (e) { n.bad++; }
+  }
+  persist();
+  $('#import-msg').textContent = `${n.new} nouveau(x) rapport(s), ${n.upd} mis à jour, ${n.old} déjà à jour${n.bad ? `, ${n.bad} fichier(s) illisible(s)` : ''}.`;
+  render();
+}
+const drop = $('#drop');
+$('#files').onchange = e => { importFiles([...e.target.files]); e.target.value = ''; };
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => importFiles([...e.dataTransfer.files]));
+
+const pct = r => r.reponsesOk + r.reponsesKo ? Math.round(100 * r.reponsesOk / (r.reponsesOk + r.reponsesKo)) : 0;
+const nbCaps = r => (r.capacites || []).filter(Boolean).length;
+const pill = (v, ok, mid) => `<span class="pill ${v >= ok ? 'ok' : v >= mid ? 'mid' : 'ko'}">${v} %</span>`;
+const avg = (rs, f) => rs.length ? Math.round(rs.reduce((s, r) => s + f(r), 0) / rs.length) : 0;
+const SORTS = { nom: r => r.nom.toLowerCase(), missions: r => r.missions, score: r => r.score, satisfaction: r => r.satisfaction, tickets: r => r.ticketsOk, pct, caps: nbCaps, date: r => r.date };
+
+function render() {
+  const classes = [...new Set(reports.map(r => r.classe || 'Sans classe'))].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }));
+  $('#results').hidden = !reports.length;
+  if (!reports.length) return;
+  if (!classes.includes(cur)) cur = classes[0];
+  $('#tabs').innerHTML = classes.map(c => `<button aria-pressed="${c === cur}" data-c="${esc(c)}">${esc(c)} (${reports.filter(r => (r.classe || 'Sans classe') === c).length})</button>`).join('');
+  $('#tabs').querySelectorAll('button').forEach(b => b.onclick = () => { cur = b.dataset.c; render(); });
+  const rs = reports.filter(r => (r.classe || 'Sans classe') === cur);
+  const get = SORTS[sortK];
+  rs.sort((a, b) => { const x = get(a), y = get(b); return (x > y ? 1 : x < y ? -1 : 0) * sortDir; });
+  const capRate = CAPS.map((_, i) => rs.length ? Math.round(100 * rs.filter(r => r.capacites && r.capacites[i]).length / rs.length) : 0);
+  const errs = {};
+  rs.forEach(r => (r.erreurs || []).forEach(([n, k]) => { if (k > 0) errs[n] = (errs[n] || 0) + k; }));
+  const topErr = Object.entries(errs).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const th = (k, t) => `<th data-k="${k}">${t}${sortK === k ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
+  $('#view').innerHTML = `
+    <h2 style="margin:4px 0">${esc(cur)}</h2>
+    <div class="stats">
+      <div><b>${rs.length}</b>élèves</div>
+      <div><b>${rs.filter(r => r.missions >= 2).length} / ${rs.length}</b>partie 1 finie</div>
+      <div><b>${rs.filter(r => r.fini).length} / ${rs.length}</b>jeu terminé</div>
+      <div><b>${avg(rs, pct)} %</b>réponses justes (moyenne)</div>
+      <div><b>${avg(rs, r => r.satisfaction)} %</b>satisfaction (moyenne)</div>
+    </div>
+    <div class="wrap"><table>
+      <thead><tr>${th('nom', 'Élève')}${th('missions', 'Missions')}${th('score', 'Score')}${th('satisfaction', 'Satisf.')}${th('tickets', 'Tickets')}${th('pct', 'Réponses justes')}${th('caps', 'Capacités BO')}<th>Points à retravailler</th>${th('date', 'Rapport du')}</tr></thead>
+      <tbody>${rs.map(r => `<tr>
+        <td><b>${esc(r.nom)}</b>${r.valide ? '' : ' <span class="warn" title="Le fichier a été modifié après l\'export">⚠️ modifié</span>'}</td>
+        <td class="num">${r.missions} / ${NB_MISSIONS}${r.fini ? ' ✅' : ''}</td>
+        <td class="num">${r.score}</td>
+        <td class="num">${r.satisfaction} %</td>
+        <td class="num">${r.ticketsOk} / ${r.tickets}</td>
+        <td class="num">${pill(pct(r), 75, 50)}</td>
+        <td class="caps" title="${esc(CAPS.map((c, i) => (r.capacites && r.capacites[i] ? '✅ ' : '⬜ ') + c).join('\n'))}">${(r.capacites || []).map(v => v ? '🟩' : '⬜').join('')} ${nbCaps(r)}/7</td>
+        <td>${(r.erreurs || []).filter(e => e[1] > 0).slice(0, 3).map(([n, k]) => `${esc(n)} (${k})`).join(', ') || '<span class="muted">—</span>'}</td>
+        <td class="muted">${new Date(r.date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+    <h3>Capacités du BO validées dans la classe</h3>
+    <div class="capbar">${CAPS.map((c, i) => `<div>${esc(c)}<div class="g"><span style="width:${capRate[i]}%"></span></div></div><div class="num" style="padding-top:2px">${capRate[i]} %</div>`).join('')}</div>
+    <h3>Notions les plus ratées</h3>
+    <p>${topErr.length ? topErr.map(([n, k]) => `${esc(n)} : ${k} erreur${k > 1 ? 's' : ''}`).join(' · ') : '<span class="muted">Aucune erreur enregistrée.</span>'}</p>
+    <p class="muted noprint">Clique sur un titre de colonne pour trier. Survole les carrés des capacités pour voir leur détail.</p>`;
+  $('#view').querySelectorAll('th[data-k]').forEach(t => t.onclick = () => {
+    const k = t.dataset.k;
+    if (sortK === k) sortDir = -sortDir; else { sortK = k; sortDir = k === 'nom' ? 1 : -1; }
+    render();
+  });
+}
+
+$('#print').onclick = () => window.print();
+$('#clear').onclick = () => { if (confirm('Effacer tous les rapports importés sur cet ordinateur ?')) { reports = []; persist(); render(); $('#import-msg').textContent = ''; } };
+$('#csv').onclick = () => {
+  const rs = reports.filter(r => (r.classe || 'Sans classe') === cur);
+  const head = ['Élève', 'Classe', 'Missions', 'Jeu terminé', 'Score', 'Satisfaction %', 'Tickets résolus', 'Tickets', 'Réponses justes %', 'Capacités validées', ...CAPS, 'Points à retravailler', 'Date', 'Fichier modifié'];
+  const rows = rs.map(r => [r.nom, r.classe, r.missions, r.fini ? 'oui' : 'non', r.score, r.satisfaction, r.ticketsOk, r.tickets, pct(r), nbCaps(r), ...CAPS.map((_, i) => r.capacites && r.capacites[i] ? 'oui' : 'non'), (r.erreurs || []).map(([n, k]) => `${n} (${k})`).join(' ; '), new Date(r.date).toLocaleString('fr-FR'), r.valide ? 'non' : 'oui']);
+  const csv = '﻿' + [head, ...rows].map(l => l.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = `stagiaire_${cur.replace(/[^A-Za-z0-9]+/g, '-')}.csv`;
+  document.body.append(a); a.click(); a.remove();
+};
+render();
+</script>
+</body>
+</html>

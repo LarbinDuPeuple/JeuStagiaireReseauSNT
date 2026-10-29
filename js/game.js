@@ -972,13 +972,14 @@ function missionComplete() {
   const b = openModal({ title: `✅ Mission ${S.m + 1} accomplie !`, closable: false });
   b.innerHTML = `<div class="mission-card"><h3>${m.title}</h3><p>Score : <b>${S.score}</b> · Satisfaction des clients : <b>${Math.round(S.sat)} %</b></p>
     <h4>📒 Notions acquises</h4><ul>${notions.map(n => `<li>${NOTIONS[n].icon} ${NOTIONS[n].title}</li>`).join('')}</ul>
-    ${last ? '<p>🎉 Tu as terminé ton stage ! Voici ton rapport.</p>' : endPart1 ? `<div class="goal">🏁 <b>Fin de la partie 1.</b> Note ton <b>code de reprise</b> : il te permettra de reprendre la partie 2 sur n'importe quel ordinateur.<div class="code">${resumeCode()}</div></div><p>En attendant la prochaine séance, tu peux continuer à répondre aux tickets de la hotline.</p>` : '<p>Prends une minute pour relire les fiches de ton carnet avant de continuer.</p>'}</div>
-    <div class="actions">${last ? '<button class="btn primary" id="next">Voir mon rapport de stage</button>' : endPart1 ? '<button class="btn" id="stay">Continuer la hotline</button><button class="btn primary" id="next">Commencer la partie 2</button>' : '<button class="btn primary" id="next">Mission suivante →</button>'}</div>`;
+    ${last ? '<p>🎉 Tu as terminé ton stage ! Voici ton rapport.</p>' : endPart1 ? `<div class="goal">🏁 <b>Fin de la partie 1.</b> Note ton <b>code de reprise</b> : il te permettra de reprendre la partie 2 sur n'importe quel ordinateur. Si ton professeur le demande, enregistre aussi ton rapport.<div class="code">${resumeCode()}</div></div><p>En attendant la prochaine séance, tu peux continuer à répondre aux tickets de la hotline.</p>` : '<p>Prends une minute pour relire les fiches de ton carnet avant de continuer.</p>'}</div>
+    <div class="actions">${last ? '<button class="btn primary" id="next">Voir mon rapport de stage</button>' : endPart1 ? '<button class="btn" id="send">📤 Enregistrer mon rapport</button><button class="btn" id="stay">Continuer la hotline</button><button class="btn primary" id="next">Commencer la partie 2</button>' : '<button class="btn primary" id="next">Mission suivante →</button>'}</div>`;
   b.querySelector('#next').onclick = () => {
     closeModal(true);
     if (last) { S.finished = true; save(); refreshHUD(); report(); }
     else { S.m++; S.s = 0; S.sp = {}; S.pause = false; save(); refreshHUD(); missionIntro(); }
   };
+  if (endPart1) b.querySelector('#send').onclick = () => exportRapport(S.m + 1);
   if (endPart1) b.querySelector('#stay').onclick = () => { closeModal(true); S.m++; S.s = 0; S.sp = {}; S.pause = true; save(); refreshHUD(); };
 }
 
@@ -1213,6 +1214,36 @@ const BO_CAPS = [
   ['Caractériser quelques types de réseaux physiques : obsolètes ou actuels, rapides ou lents, filaires ou non.', ['physique']],
   ["Caractériser l'ordre de grandeur du trafic de données sur Internet et son évolution.", ['trafic']]
 ];
+/* rapport exporté pour l'espace enseignant (prof.html) */
+function signRapport(o) {
+  const str = 'IROISE|' + JSON.stringify(o);
+  let h = 0x811c9dc5;
+  for (const ch of str) { h ^= ch.charCodeAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(36);
+}
+function rapportData(done) {
+  const o = {
+    jeu: 'stagiaire-bout-du-monde', v: 1,
+    nom: S.name || '', classe: S.classe || '', date: new Date().toISOString(),
+    missions: done != null ? done : S.finished ? MISSIONS.length : S.m, fini: !!S.finished,
+    score: S.score, satisfaction: Math.round(S.sat), ticketsOk: S.incOk, tickets: S.incTotal,
+    reponsesOk: S.quizOk, reponsesKo: S.quizKo, minutes: Math.round(S.t / 60),
+    capacites: BO_CAPS.map(([, ns]) => ns.every(n => S.notions.includes(n))),
+    erreurs: Object.entries(S.errors).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([n, k]) => [NOTIONS[n] ? NOTIONS[n].title : n, k])
+  };
+  o.sig = signRapport(o);
+  return o;
+}
+function exportRapport(done) {
+  const o = rapportData(typeof done === 'number' ? done : null);
+  const slug = t => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'eleve';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(o, null, 1)], { type: 'application/json' }));
+  a.download = `rapport_${slug(o.classe)}_${slug(o.nom)}.json`;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast(`📤 Rapport enregistré : <b>${esc(a.download)}</b>. Dépose-le là où ton professeur te l'indique.`, 'ok', 6000);
+}
 function report() {
   const dur = Math.round(S.t / 60);
   const acc = S.quizOk + S.quizKo ? Math.round(100 * S.quizOk / (S.quizOk + S.quizKo)) : 0;
@@ -1227,7 +1258,8 @@ function report() {
     <h4>Missions</h4><ul>${MISSIONS.map((m, i) => `<li>${(S.finished || i < S.m) ? '✅' : i === S.m ? '⏳' : '⬜'} Partie ${m.partie} · Mission ${i + 1} — ${m.title}</li>`).join('')}</ul>
     <h4>Capacités du programme (thème Internet)</h4><ul class="caps">${BO_CAPS.map(([t, ns]) => `<li>${ns.every(n => S.notions.includes(n)) ? '✅' : '⬜'} ${t}</li>`).join('')}</ul>
     <h4>Points à retravailler</h4><p>${errs.length ? errs.slice(0, 5).map(([n, k]) => `${NOTIONS[n] ? NOTIONS[n].title : n} (${k} erreur${k > 1 ? 's' : ''})`).join(' · ') : 'Aucune erreur : bravo !'}</p>
-  </div><div class="actions"><button class="btn" id="rp-print">🖨️ Imprimer / PDF</button><button class="btn primary" id="rp-close">Fermer</button></div>`;
+  </div><div class="actions"><button class="btn" id="rp-send">📤 Enregistrer mon rapport (pour le prof)</button><button class="btn" id="rp-print">🖨️ Imprimer / PDF</button><button class="btn primary" id="rp-close">Fermer</button></div>`;
+  b.querySelector('#rp-send').onclick = exportRapport;
   b.querySelector('#rp-print').onclick = () => window.print();
   b.querySelector('#rp-close').onclick = () => closeModal();
 }

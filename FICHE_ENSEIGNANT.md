@@ -40,7 +40,7 @@ Exemples d'activités du BO repris : déterminer l'adresse IP d'un équipement e
 
 | Temps | Phase | Élèves | Enseignant |
 |---|---|---|---|
-| 0:00 – 0:10 | Lancement | Ouvrir le jeu, saisir prénom et classe | Accroche : « Que se passe-t-il entre le moment où tu tapes wikipedia.fr et l'affichage ? ». Montrer les commandes (clic, ZQSD, E, T, C). |
+| 0:00 – 0:10 | Lancement | Ouvrir le jeu, saisir son prénom et choisir sa classe (2nde 3 à 6) | Accroche : « Que se passe-t-il entre le moment où tu tapes wikipedia.fr et l'affichage ? ». Montrer les commandes (clic, ZQSD, E, T, C). |
 | 0:10 – 1:10 | Jeu, partie 1 | Missions 1 et 2, puis tickets | Circuler, faire verbaliser : « c'est quoi la passerelle ? », « que fait le DNS ? ». |
 | 1:10 – 1:30 | Débrief et trace écrite | **Noter le code de reprise** (fin de la mission 2) ; compléter la 1re moitié de la fiche résumé Internet | Synthèse au tableau : adresse IP, box = passerelle, DNS dans les deux sens. |
 
@@ -65,6 +65,20 @@ Exemples d'activités du BO repris : déterminer l'adresse IP d'un équipement e
 ## Mode enseignant
 
 Menu ⚙️, puis **Mode enseignant**, code **`IROISE`**. Il permet de reprendre directement à n'importe quelle mission : démonstration au vidéoprojecteur, élève absent, poste changé sans code.
+
+## Espace enseignant : rapports par classe
+
+Page **https://larbindupeuple.github.io/JeuStagiaireReseauSNT/prof.html** (ou `prof.html` dans le dossier du jeu).
+
+1. En fin de séance, chaque élève clique sur **« 📤 Enregistrer mon rapport »** : à la fin de la partie 1, à la fin du jeu, ou à tout moment par le menu ⚙️ puis « Rapport de stage ». Le fichier s'appelle `rapport_<classe>_<prénom>.json`.
+2. Les élèves déposent ce fichier dans l'ENT (casier, devoir ou espace de dépôt).
+3. Tu télécharges tous les fichiers, puis tu les glisses d'un coup sur la page enseignant.
+
+La page trie les élèves par classe (un onglet par classe), avec pour chacun : missions faites, score, satisfaction, tickets, taux de bonnes réponses, capacités du BO validées et points à retravailler. Pour chaque classe, elle affiche aussi les moyennes, le taux de validation de chaque capacité et les notions les plus ratées. Export CSV (tableur) et impression possibles. Si un élève réimporte un rapport plus avancé, il remplace l'ancien.
+
+Rien n'est envoyé sur Internet : les rapports restent dans le navigateur de l'ordinateur de l'enseignant. Un fichier modifié à la main par un élève est signalé « ⚠️ modifié ».
+
+**Bloquer les écrans pour capter l'attention :** le jeu n'a pas de serveur, il ne peut donc pas être bloqué à distance. Utilise le logiciel de gestion de salle du lycée s'il existe (Veyon, NetSupport, Italc…), ou la consigne « écran éteint ». La partie est sauvegardée en continu : éteindre l'écran ne fait rien perdre.
 
 ## Évaluation
 

@@ -32,3 +32,5 @@ HTML, CSS et JavaScript, sans dépendance ni étape de build : il suffit d'ouvri
 - `js/game.js` : moteur (rendu isométrique, simulation réseau, mini-jeux de routage et de TCP, interface). Il est adapté du moteur du [Stagiaire Réseau](https://github.com/LarbinDuPeuple/JeuStagiaireReseau).
 
 Mode enseignant (reprendre à une mission) : menu ⚙️, code `IROISE`.
+
+Espace enseignant (rapports des élèves triés par classe) : [`prof.html`](https://larbindupeuple.github.io/JeuStagiaireReseauSNT/prof.html). Voir la fiche enseignant.

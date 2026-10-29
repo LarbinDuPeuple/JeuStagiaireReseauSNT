@@ -9,14 +9,22 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # tant que le secret n'est pas ajouté, on ne tente pas le déploiement
       - id: secret
         run: echo "ok=${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}" >> "$GITHUB_OUTPUT"
       - if: steps.secret.outputs.ok == 'true'
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
-          projectId: jeustagiaire-snt
+        name: Publier sur Firebase Hosting
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          set +e
+          npx --yes firebase-tools@13 deploy --only hosting --project jeustagiaire-snt --non-interactive > "$RUNNER_TEMP/out.txt" 2>&1
+          code=$?
+          cat "$RUNNER_TEMP/out.txt"
+          rm -f "$RUNNER_TEMP/sa.json"
+          # en cas d'échec, l'erreur apparaît directement dans le résumé du run
+          if [ $code -ne 0 ]; then echo "::error::$(grep -iE 'error|denied|permission|not found' "$RUNNER_TEMP/out.txt" | tail -5 | tr '\n' ' ' | cut -c1-900)"; fi
+          exit $code

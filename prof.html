@@ -317,10 +317,11 @@ function renderLocks() {
       live.on = !!prof;
       $('#login').hidden = !!prof; $('#live-on').hidden = !prof; $('#import').hidden = !!prof;
       if (!prof) { live.reports = []; render(); return; }
-      unsubs.push(F.onSnapshot(F.collection(db, 'eleves'), snap => {
+      unsubs.push(F.onSnapshot(F.collection(db, 'parties'), snap => {
         const by = new Map();
         snap.forEach(d => {
           const x = d.data();
+          delete x.etat;
           const r = Object.assign({}, x, { erreurs: (x.erreurs || []).map(e => [e.n, e.k]), majMs: x.maj ? x.maj.toMillis() : 0, valide: true, ids: [d.id] });
           r.date = new Date(r.majMs || Date.now()).toISOString();
           const k = keyOf(r), o = by.get(k);
@@ -351,13 +352,13 @@ function renderLocks() {
     window.liveDelete = k => {
       const r = live.reports.find(x => keyOf(x) === k);
       if (!r || !confirm(`Supprimer la progression de ${r.nom} (${r.classe}) ?\n\nSa ligne disparaît du tableau et sa partie repart au début (dès que son jeu est ouvert).`)) return;
-      Promise.all(r.ids.flatMap(id => [F.deleteDoc(F.doc(db, 'eleves', id)), F.setDoc(F.doc(db, 'controle', 'reset-' + id), { reset: F.serverTimestamp() })]))
+      Promise.all(r.ids.flatMap(id => [F.deleteDoc(F.doc(db, 'parties', id)), F.setDoc(F.doc(db, 'controle', 'reset-' + id), { reset: F.serverTimestamp() })]))
         .catch(e => alert('Suppression incomplète : ' + (e.code || e.message)));
     };
     window.clearClass = () => {
       const rs = live.reports.filter(r => (r.classe || 'Sans classe') === cur);
       if (!rs.length || !confirm(`Effacer définitivement les données des ${rs.length} élèves de ${cur} ?`)) return;
-      Promise.all(rs.flatMap(r => r.ids).map(id => F.deleteDoc(F.doc(db, 'eleves', id)))).catch(e => alert('Effacement incomplet : ' + (e.code || e.message)));
+      Promise.all(rs.flatMap(r => r.ids).map(id => F.deleteDoc(F.doc(db, 'parties', id)))).catch(e => alert('Effacement incomplet : ' + (e.code || e.message)));
     };
   }).catch(e => { $('#login-msg').textContent = 'Mode en ligne indisponible (' + e.message + ').'; });
 })();

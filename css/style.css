@@ -251,3 +251,5 @@ svg.map g.rt.nb:hover circle { fill: #e8f0ff; }
 #lock-screen .lock-msg { background: rgba(255, 255, 255, .12); border-radius: 12px; padding: 10px 14px; font-weight: 600; }
 #lock-screen .muted { color: #b9cde3; font-size: .95em; }
 
+
+.ts-online { margin: 0; font-size: .85em; color: #4b5b6b; text-align: center; }

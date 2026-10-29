@@ -33,16 +33,20 @@ Compte environ 10 minutes. Firebase est gratuit à cette échelle (offre « Spar
 2. Firebase affiche un objet `firebaseConfig = { apiKey: …, authDomain: …, projectId: …, … }`.
 3. Colle ces valeurs dans [`js/firebase-config.js`](js/firebase-config.js), à la place de `null`. Ces valeurs ne sont pas secrètes : c'est l'étape 3.3 qui protège les données.
 
+## Mettre à jour les règles
+
+Quand le jeu évolue, il peut falloir recoller les règles : console Firebase > **Firestore Database > Règles**, remplace tout par le contenu de [`firestore.rules`](firestore.rules) (avec ton adresse à la place de `EMAIL_DU_PROF`), puis **Publier**.
+
 ## Utilisation en classe
 
-- Les élèves ouvrent le jeu sur https://jeustagiaire-snt.web.app (publié automatiquement à chaque mise à jour du dépôt, voir `.github/workflows/firebase-hosting.yml`). Leur progression est envoyée automatiquement (au plus toutes les 20 secondes).
+- Les élèves ouvrent le jeu sur https://jeustagiaire-snt.web.app (publié automatiquement à chaque mise à jour du dépôt, voir `.github/workflows/firebase-hosting.yml`). Ils tapent leur prénom avec l'initiale du nom et leur classe : leur partie est sauvegardée en ligne et se retrouve sur n'importe quel poste. Leur progression est envoyée automatiquement (au plus toutes les 20 secondes).
 - Tu ouvres https://jeustagiaire-snt.web.app/prof.html et tu te connectes. La pastille verte indique les élèves en jeu.
 - **🛑 Bloquer la 2nde X** : tous les jeux de la classe affichent « Pause ! » avec ton message. Le temps de jeu et les tickets sont figés. **▶ Débloquer** relance tout. Il faut une à deux secondes pour que l'écran change.
 - Le jeu ne marche en ligne que par le lien https. Ouvert depuis une clé USB ou un fichier, il reste hors ligne.
 
 ## Données personnelles (RGPD)
 
-- Seuls sont stockés : le **prénom** tapé par l'élève, sa **classe** et ses résultats dans le jeu. Pas de nom de famille, pas d'adresse e-mail, pas de compte élève.
+- Seuls sont stockés : le **prénom et l'initiale** tapés par l'élève, sa **classe**, sa partie et ses résultats dans le jeu. Pas de nom de famille, pas d'adresse e-mail, pas de compte élève.
 - Seul ton compte peut lire ces données ; chaque élève ne peut écrire que sa propre fiche.
 - Bouton **« Effacer les données de la classe »** dans l'espace enseignant, à utiliser en fin d'année.
 - Comme il s'agit de données d'élèves mineurs hébergées chez un prestataire (Google), signale ce traitement au DPO de l'établissement avant de l'utiliser.

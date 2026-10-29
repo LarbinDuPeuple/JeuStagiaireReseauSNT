@@ -84,7 +84,7 @@ function newState(name = '', classe = '') {
     net: { dnsUp: true, boxOff: {}, cut: null, routerDown: null, ddos: false },
     px: 8.5, py: 12.5, score: 0, sat: 70, t: 0, errors: {}, quizOk: 0, quizKo: 0, ring: false,
     notions: [], tickets: [], seen: {}, incOk: 0, incTotal: 0, incLate: 0, nextInc: null, uid: 1,
-    finished: false, pause: false, settings: { inc: 'normal', sound: true }
+    finished: false, pause: false, debut: Date.now(), settings: { inc: 'normal', sound: true }
   };
 }
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* stockage indisponible */ } }
@@ -972,7 +972,7 @@ function missionComplete() {
   const b = openModal({ title: `✅ Mission ${S.m + 1} accomplie !`, closable: false });
   b.innerHTML = `<div class="mission-card"><h3>${m.title}</h3><p>Score : <b>${S.score}</b> · Satisfaction des clients : <b>${Math.round(S.sat)} %</b></p>
     <h4>📒 Notions acquises</h4><ul>${notions.map(n => `<li>${NOTIONS[n].icon} ${NOTIONS[n].title}</li>`).join('')}</ul>
-    ${last ? '<p>🎉 Tu as terminé ton stage ! Voici ton rapport.</p>' : endPart1 ? `<div class="goal">🏁 <b>Fin de la partie 1.</b> Note ton <b>code de reprise</b> : il te permettra de reprendre la partie 2 sur n'importe quel ordinateur. Si ton professeur le demande, enregistre aussi ton rapport.<div class="code">${resumeCode()}</div></div><p>${part2Open() ? 'Tu peux commencer la partie 2 tout de suite, ou continuer à répondre aux tickets de la hotline.' : "🔒 La partie 2 s'ouvrira quand ton professeur la débloquera. En attendant, les appels s'enchaînent à la hotline !"}</p>` : '<p>Prends une minute pour relire les fiches de ton carnet avant de continuer.</p>'}</div>
+    ${last ? '<p>🎉 Tu as terminé ton stage ! Voici ton rapport.</p>' : endPart1 ? `<div class="goal">🏁 <b>Fin de la partie 1.</b> ${ONLINE.on ? 'Ta partie est sauvegardée en ligne.' : `Note ton <b>code de reprise</b> : il te permettra de reprendre la partie 2 sur n'importe quel ordinateur. Si ton professeur le demande, enregistre aussi ton rapport.<div class="code">${resumeCode()}</div>`}</div><p>${part2Open() ? 'Tu peux commencer la partie 2 tout de suite, ou continuer à répondre aux tickets de la hotline.' : "🔒 La partie 2 s'ouvrira quand ton professeur la débloquera. En attendant, les appels s'enchaînent à la hotline !"}</p>` : '<p>Prends une minute pour relire les fiches de ton carnet avant de continuer.</p>'}</div>
     <div class="actions">${last ? '<button class="btn primary" id="next">Voir mon rapport de stage</button>' : endPart1 ? `<button class="btn" id="send">📤 Enregistrer mon rapport</button><button class="btn ${part2Open() ? '' : 'primary'}" id="stay">Continuer la hotline</button>${part2Open() ? '<button class="btn primary" id="next">Commencer la partie 2</button>' : ''}` : '<button class="btn primary" id="next">Mission suivante →</button>'}</div>`;
   if (b.querySelector('#next')) b.querySelector('#next').onclick = () => {
     closeModal(true);
@@ -1188,7 +1188,7 @@ function refreshHUD() {
   $('#hud-notions').textContent = S.notions.length;
   let html;
   if (S.finished) html = '<h3>🏁 Stage terminé</h3><p class="muted">Bravo ! Tu peux revoir ton rapport. Les appels continuent : la hotline compte sur toi.</p><button class="btn small" onclick="report()">📄 Mon rapport de stage</button>';
-  else if (S.pause) html = `<h3>☕ Fin de la partie 1</h3><p class="small">Ton code de reprise :</p><div class="code">${resumeCode()}</div>${part2Open() ? '<button class="btn primary small" onclick="startPart2()">▶ Commencer la partie 2</button>' : "<p class=\"muted small\">🔒 La partie 2 n'est pas encore ouverte : ton professeur la débloquera. En attendant, réponds aux appels !</p>"}`;
+  else if (S.pause) html = `<h3>☕ Fin de la partie 1</h3>${ONLINE.on ? '' : `<p class="small">Ton code de reprise :</p><div class="code">${resumeCode()}</div>`}${part2Open() ? '<button class="btn primary small" onclick="startPart2()">▶ Commencer la partie 2</button>' : "<p class=\"muted small\">🔒 La partie 2 n'est pas encore ouverte : ton professeur la débloquera. En attendant, réponds aux appels !</p>"}`;
   else {
     html = `<h3>🎯 ${m.title}</h3><ol class="steps">`;
     m.steps.forEach((st, i) => {
@@ -1350,26 +1350,43 @@ function startScreen() {
   ts.hidden = false;
   $('#ts-continue').hidden = !saved;
   if (saved) { $('#ts-name').value = saved.name || ''; $('#ts-class').value = saved.classe || ''; $('#ts-continue').textContent = `▶ Continuer (${saved.name || 'partie'} · mission ${Math.min(saved.m + 1, MISSIONS.length)})`; }
+  if (ONLINE.on) {
+    // en ligne, la partie se retrouve par le prénom : plus besoin de code de reprise
+    $('#ts-code').hidden = true;
+    $('#ts-form').insertAdjacentHTML('beforeend', '<p class="ts-online">☁️ Ta partie est sauvegardée en ligne : sur n\'importe quel ordinateur, retape le même prénom, la même initiale et la même classe pour la retrouver.</p>');
+  }
   const getNames = () => [$('#ts-name').value.trim(), $('#ts-class').value.trim()];
   const needField = sel => { $(sel).focus(); $(sel).classList.add('shake'); setTimeout(() => $(sel).classList.remove('shake'), 500); };
   const needName = () => needField('#ts-name');
-  $('#ts-form').onsubmit = ev => {
+  const resume = (st, nm, cl) => {
+    S = Object.assign(newState(), st);
+    S.net = Object.assign(newState().net, st.net || {});
+    if (nm) S.name = nm; if (cl) S.classe = cl;
+    ts.hidden = true; save(); refreshHUD();
+    if (S.finished) report(); else if (S.s === 0 && !S.pause) missionIntro();
+    else if (!S.pause && MISSIONS[S.m] && S.s >= MISSIONS[S.m].steps.length) missionComplete();
+  };
+  const sameStudent = (st, nm, cl) => st && partieKey(st.name || '', st.classe || '') === partieKey(nm, cl);
+  $('#ts-form').onsubmit = async ev => {
     ev.preventDefault();
     const [name, classe] = getNames();
     if (!name) { needName(); return; }
     if (!classe) { needField('#ts-class'); return; }
-    if (saved && !confirm('Une partie existe déjà dans ce navigateur. La remplacer par une nouvelle partie ?')) return;
+    if (ONLINE.on) {
+      // en ligne : on retrouve la partie de cet élève, sur ce poste ou sur un autre
+      if (!/\S\s+\S/.test(name)) { needName(); toast("✍️ Écris ton prénom <b>et l'initiale de ton nom</b> (ex : Lucas M.) : c'est ce qui te permet de retrouver ta partie.", 'warn', 6000); return; }
+      const btn = ev.target.querySelector('button'); btn.disabled = true; btn.textContent = '⏳ Recherche de ta partie…';
+      const remote = await ONLINE.fetch(name, classe);
+      btn.disabled = false; btn.textContent = '▶ Jouer';
+      const local = sameStudent(saved, name, classe) ? saved : null;
+      const best = [remote, local].filter(Boolean).sort((a, b) => (b.t || 0) - (a.t || 0))[0];
+      if (best) { resume(best); toast(`👋 Re-bonjour ${esc(S.name)} ! Ta partie est retrouvée.`, 'ok', 5000); return; }
+    } else if (sameStudent(saved, name, classe)) { resume(saved, name, classe); return; }
+    else if (saved && !confirm('Une partie existe déjà dans ce navigateur. La remplacer par une nouvelle partie ?')) return;
     S = newState(name, classe); ts.hidden = true; save(); refreshHUD(); missionIntro();
+    if (window.onlineTick) onlineTick(true);
   };
-  $('#ts-continue').onclick = () => {
-    S = Object.assign(newState(), saved);
-    S.net = Object.assign(newState().net, saved.net || {});
-    const [nm, cl] = getNames();
-    if (nm) S.name = nm; if (cl) S.classe = cl;
-    ts.hidden = true; refreshHUD();
-    if (S.finished) report(); else if (S.s === 0 && !S.pause) missionIntro();
-    else if (!S.pause && MISSIONS[S.m] && S.s >= MISSIONS[S.m].steps.length) missionComplete();
-  };
+  $('#ts-continue').onclick = () => { const [nm, cl] = getNames(); resume(saved, nm, cl); };
   $('#ts-code').onclick = () => {
     const [name, classe] = getNames();
     if (!name) { needName(); return; }

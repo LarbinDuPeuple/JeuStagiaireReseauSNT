@@ -1,6 +1,8 @@
 /* ---------------------------------------------------------------------
    Mode en ligne (facultatif, via Firebase)
-   - envoie le rapport de l'élève à l'espace enseignant (prof.html) ;
+   - sauvegarde la partie en ligne : l'élève la retrouve sur n'importe quel
+     poste en retapant son prénom (avec l'initiale du nom) et sa classe ;
+   - envoie ses résultats à l'espace enseignant (prof.html) ;
    - bloque l'écran quand l'enseignant le demande ;
    - ouvre la partie 2 quand l'enseignant la débloque ;
    - efface la partie si l'enseignant supprime la progression de l'élève.
@@ -11,17 +13,21 @@ const FB_VERSION = '10.12.2';
 const FB_BASE = window.FIREBASE_SDK_BASE || `https://www.gstatic.com/firebasejs/${FB_VERSION}/`;
 const ONLINE = { on: false, ok: false, locked: false, msg: '', part2: false };
 const classeId = c => String(c || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'sans-classe';
+/* identifiant d'une partie : « 2nde-4__lucas-m » (accents, points et majuscules ignorés) */
+const partieKey = (nom, classe) => `${classeId(classe)}__${classeId(nom)}`;
 const RESET_SEEN = 'stagiaire-snt-reset-vu';
 /* la partie 2 est libre hors ligne ; en ligne, elle attend le feu vert de l'enseignant */
 const part2Open = () => !ONLINE.on || ONLINE.part2;
 
 (function () {
   const cfg = window.FIREBASE_CONFIG;
-  if (!cfg || !cfg.projectId || !/^https?:$/.test(location.protocol)) return;
+  let readyDone;
+  ONLINE.ready = new Promise(r => { readyDone = r; });
+  if (!cfg || !cfg.projectId || !/^https?:$/.test(location.protocol)) { readyDone(); return; }
   ONLINE.on = true; // mode en ligne prévu : la partie 2 attend l'enseignant
-  let F, db, uid, classe = null, lastSent = '', lastTime = 0, sending = false, again = false;
+  let F, db, key = null, lastSent = '', lastTime = 0, sending = false, again = false;
   const ctl = {};
-  let unsubClasse = null;
+  let unsubClasse = null, unsubReset = null;
 
   Promise.all(['app', 'auth', 'firestore'].map(m => import(`${FB_BASE}firebase-${m}.js`)))
     .then(async ([app, auth, fs]) => {
@@ -33,10 +39,10 @@ const part2Open = () => !ONLINE.on || ONLINE.part2;
         auth.connectAuthEmulator(au, `http://${window.FIREBASE_EMULATOR.host}:${window.FIREBASE_EMULATOR.auth}`, { disableWarnings: true });
         fs.connectFirestoreEmulator(db, window.FIREBASE_EMULATOR.host, window.FIREBASE_EMULATOR.fs);
       }
-      uid = (await auth.signInAnonymously(au)).user.uid;
+      await auth.signInAnonymously(au);
       ONLINE.ok = true;
       listen('toutes', 'toutes');
-      listenReset();
+      readyDone();
       onlineTick(true);
       if (typeof refreshHUD === 'function' && S) refreshHUD();
     })
@@ -44,14 +50,25 @@ const part2Open = () => !ONLINE.on || ONLINE.part2;
       // Firebase injoignable : le jeu repasse en mode hors ligne (partie 2 libre)
       console.warn('Mode en ligne indisponible :', e);
       ONLINE.on = false;
+      readyDone();
       if (typeof refreshHUD === 'function' && S) refreshHUD();
     });
 
-  function listen(docId, key) {
+  /* partie sauvegardée en ligne pour ce prénom et cette classe (null si aucune) */
+  ONLINE.fetch = async (nom, classe) => {
+    await Promise.race([ONLINE.ready, new Promise(r => setTimeout(r, 6000))]);
+    if (!ONLINE.ok) return null;
+    try {
+      const snap = await F.getDoc(F.doc(db, 'parties', partieKey(nom, classe)));
+      return snap.exists() && snap.data().etat ? JSON.parse(snap.data().etat) : null;
+    } catch (e) { console.warn('Lecture de la partie impossible :', e); return null; }
+  };
+
+  function listen(docId, k) {
     return F.onSnapshot(F.doc(db, 'controle', docId), snap => {
-      ctl[key] = snap.exists() ? snap.data() : {};
+      ctl[k] = snap.exists() ? snap.data() : {};
       apply();
-    }, () => { ctl[key] = {}; apply(); });
+    }, () => { ctl[k] = {}; apply(); });
   }
   function apply() {
     const all = Object.values(ctl);
@@ -69,14 +86,16 @@ const part2Open = () => !ONLINE.on || ONLINE.part2;
     if (ONLINE.locked && typeof keys !== 'undefined') keys.clear();
   }
   /* l'enseignant a supprimé la progression de cet élève : on repart de zéro */
-  function listenReset() {
-    F.onSnapshot(F.doc(db, 'controle', 'reset-' + uid), snap => {
+  function listenReset(k) {
+    return F.onSnapshot(F.doc(db, 'controle', 'reset-' + k), snap => {
       const at = snap.exists() && snap.data().reset ? snap.data().reset.toMillis() : 0;
       let seen = 0;
       try { seen = +localStorage.getItem(RESET_SEEN) || 0; } catch (e) { /* rien */ }
       if (!at || at <= seen) return;
+      // la consigne est plus ancienne que cette partie : déjà recommencée ailleurs
+      if (S && S.debut && S.debut > at) { try { localStorage.setItem(RESET_SEEN, String(at)); } catch (e) { /* rien */ } return; }
       try { localStorage.setItem(RESET_SEEN, String(at)); localStorage.removeItem(SAVE_KEY); } catch (e) { /* rien */ }
-      lastSent = ''; S = null;
+      lastSent = ''; key = null; S = null;
       alert('Ton professeur a remis ta partie à zéro. Le jeu va redémarrer.');
       location.reload();
     }, () => {});
@@ -84,12 +103,15 @@ const part2Open = () => !ONLINE.on || ONLINE.part2;
 
   /* appelé par la boucle du jeu (chaque seconde) et à chaque fin de mission */
   window.onlineTick = function (force) {
-    if (!ONLINE.ok || !S || !S.name) return;
-    if (S.classe !== classe) {
-      classe = S.classe;
+    if (!ONLINE.ok || !S || !S.name || !S.classe) return;
+    const k = partieKey(S.name, S.classe);
+    if (k !== key) {
+      key = k; lastSent = '';
       if (unsubClasse) unsubClasse();
+      if (unsubReset) unsubReset();
       delete ctl.classe;
-      unsubClasse = listen(classeId(classe), 'classe');
+      unsubClasse = listen(classeId(S.classe), 'classe');
+      unsubReset = listenReset(k);
     }
     const now = Date.now();
     const r = rapportData();
@@ -97,19 +119,22 @@ const part2Open = () => !ONLINE.on || ONLINE.part2;
       nom: r.nom.slice(0, 30), classe: r.classe.slice(0, 20), missions: r.missions, fini: r.fini,
       score: r.score, satisfaction: r.satisfaction, ticketsOk: r.ticketsOk, tickets: r.tickets,
       reponsesOk: r.reponsesOk, reponsesKo: r.reponsesKo, minutes: r.minutes,
-      capacites: r.capacites, erreurs: r.erreurs.map(([n, k]) => ({ n, k }))
+      capacites: r.capacites, erreurs: r.erreurs.map(([n, k2]) => ({ n, k: k2 }))
     };
     const sig = JSON.stringify(Object.assign({}, data, { minutes: 0 }));
     const changed = sig !== lastSent;
     if (sending) { if (force) again = true; return; }
-    // au plus une écriture par minute (et un signe de vie toutes les 3 min) : 30 élèves restent
+    // au plus une écriture par minute (et une sauvegarde toutes les 3 min) : 30 élèves restent
     // très loin des limites de l'offre gratuite de Firebase
     if (!(force || (changed && now - lastTime > 60000) || now - lastTime > 180000)) return;
     sending = true;
+    data.etat = JSON.stringify(S);
     data.maj = F.serverTimestamp();
-    F.setDoc(F.doc(db, 'eleves', uid), data)
+    F.setDoc(F.doc(db, 'parties', k), data)
       .then(() => { lastSent = sig; lastTime = Date.now(); })
-      .catch(e => { console.warn('Envoi du rapport impossible :', e); lastTime = Date.now(); })
+      .catch(e => { console.warn('Sauvegarde en ligne impossible :', e); lastTime = Date.now(); })
       .finally(() => { sending = false; if (again) { again = false; window.onlineTick(true); } });
   };
+  // l'élève ferme l'onglet ou change de fenêtre : on sauvegarde tout de suite
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') window.onlineTick(true); });
 })();

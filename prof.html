@@ -145,7 +145,7 @@ const CAPS = [
 ];
 const NB_CAPS_INTERNET = 7;
 const NB_MISSIONS = 6;
-/* note de jeu sur 5 : jusqu'où on évalue (et quelles capacités on compte) */
+/* note de jeu sur 6 : jusqu'où on évalue (et quelles capacités on compte) */
 const ETAPES = [{ label: 'la partie 1', missions: 2, caps: 7 }, { label: 'les parties 1 et 2', missions: 4, caps: 7 }, { label: 'les parties 1 à 3', missions: 6, caps: CAPS.length }];
 let etape = 1;
 try { etape = Math.min(ETAPES.length - 1, +(localStorage.getItem('stagiaire-snt-etape') ?? 1)); } catch (e) { /* rien */ }
@@ -198,13 +198,13 @@ const nbCaps = r => (r.capacites || []).slice(0, ETAPES[etape].caps).filter(Bool
 const finie = r => r.fini ? ' ✅' : r.missions === 2 || r.missions === 4 ? `<br><span class="tag">partie ${r.missions / 2} finie</span>` : '';
 const pill = (v, ok, mid) => `<span class="pill ${v >= ok ? 'ok' : v >= mid ? 'mid' : 'ko'}">${v} %</span>`;
 const avg = (rs, f) => rs.length ? Math.round(rs.reduce((s, r) => s + f(r), 0) / rs.length) : 0;
-/* barème : 2 progression + 2 bonnes réponses + 1 tickets résolus (que des taux) */
+/* barème sur 6 : 3 bonnes réponses + 2 progression + 1 tickets résolus (que des taux) */
 function noteJeu(r) {
   const E = ETAPES[etape];
   const prog = Math.min(1, r.missions / E.missions);
   const rep = pct(r) / 100;
   const tick = r.tickets ? r.ticketsOk / r.tickets : 1;
-  const d = { prog: 2 * prog, rep: 2 * rep, tick: 1 * tick };
+  const d = { prog: 2 * prog, rep: 3 * rep, tick: 1 * tick };
   d.total = Math.round(2 * (d.prog + d.rep + d.tick)) / 2;
   return d;
 }
@@ -246,7 +246,7 @@ function render() {
       <div><b>${avg(rs, pct)} %</b>réponses justes (moyenne)</div>
       <div><b>${avg(rs, r => r.satisfaction)} %</b>satisfaction (moyenne)</div>
       ${(t => t.length ? `<div><b>${avg(t, r => r.temps.ouvert)} min</b>de jeu (moyenne), ${avg(t, r => r.temps.ouvert ? 100 * r.temps.ecran / r.temps.ouvert : 100)} % à l'écran</div>` : '')(rs.filter(r => r.temps))}
-      <div><b>${rs.length ? fmt(rs.reduce((t, r) => t + noteJeu(r).total, 0) / rs.length) : '—'} / 5</b>note de jeu (moyenne)</div>
+      <div><b>${rs.length ? fmt(rs.reduce((t, r) => t + noteJeu(r).total, 0) / rs.length) : '—'} / 6</b>note de jeu (moyenne)</div>
     </div>
     <div class="wrap"><table>
       <thead><tr>${live.on ? '<th></th>' : ''}${th('nom', 'Élève')}${th('missions', 'Missions')}${th('score', 'Score')}${th('satisfaction', 'Satisf.')}${th('tickets', 'Tickets')}${th('pct', 'Réponses justes')}${th('caps', 'Capacités BO')}${th('note', 'Note jeu')}${th('temps', 'Temps')}<th>Points à retravailler</th>${th('date', 'Rapport du')}<th class="noprint"></th></tr></thead>
@@ -258,14 +258,14 @@ function render() {
         <td class="num">${r.ticketsOk} / ${r.tickets}</td>
         <td class="num">${pill(pct(r), 75, 50)}</td>
         <td class="caps" title="${esc(CAPS.map((c, i) => (r.capacites && r.capacites[i] ? '✅ ' : '⬜ ') + c).join('\n'))}">${(r.capacites || []).slice(0, ETAPES[etape].caps).map((v, i) => (i === NB_CAPS_INTERNET ? ' ' : '') + (v ? '🟩' : '⬜')).join('')} ${nbCaps(r)}/${ETAPES[etape].caps}</td>
-        <td class="num" title="${(n => `Progression ${fmt(n.prog)}/2 · Bonnes réponses ${fmt(n.rep)}/2 · Tickets ${fmt(n.tick)}/1`)(noteJeu(r))}"><b>${fmt(noteJeu(r).total)}</b> / 5</td>
+        <td class="num" title="${(n => `Bonnes réponses ${fmt(n.rep)}/3 · Progression ${fmt(n.prog)}/2 · Tickets ${fmt(n.tick)}/1`)(noteJeu(r))}"><b>${fmt(noteJeu(r).total)}</b> / 6</td>
         <td class="num">${tpsHTML(r)}</td>
         <td>${(r.erreurs || []).filter(e => e[1] > 0).slice(0, 3).map(([n, k]) => `${esc(n)} (${k})`).join(', ') || '<span class="muted">—</span>'}</td>
         <td class="muted">${new Date(r.date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
         <td class="noprint"><button class="del" data-k="${esc(keyOf(r))}" title="Supprimer la progression de cet élève">🗑️</button></td>
       </tr>`).join('') || `<tr><td colspan="13" class="muted">Aucun élève de cette classe pour l'instant.</td></tr>`}</tbody>
     </table></div>
-    <p class="muted noprint">Note de jeu évaluée sur <select id="etape">${ETAPES.map((e, i) => `<option value="${i}" ${i === etape ? 'selected' : ''}>${e.label}</option>`).join('')}</select> : progression 2 pts (missions faites) + bonnes réponses 2 pts (taux de réussite aux questions) + tickets 1 pt (part des tickets reçus qui ont été résolus). Arrondi au demi-point. Survole une note pour son détail.</p>
+    <p class="muted noprint">Note de jeu évaluée sur <select id="etape">${ETAPES.map((e, i) => `<option value="${i}" ${i === etape ? 'selected' : ''}>${e.label}</option>`).join('')}</select> : bonnes réponses 3 pts (taux de réussite aux questions) + progression 2 pts (missions faites) + tickets 1 pt (part des tickets reçus qui ont été résolus). Arrondi au demi-point. Avec le QCM de fin de séquence sur 14, on obtient une note sur 20. Survole une note pour son détail.</p>
     ${[['Internet', 0, NB_CAPS_INTERNET], ['Le Web', NB_CAPS_INTERNET, CAPS.length]].map(([t, a, z]) => `<h3>Capacités du BO validées dans la classe : thème ${t}</h3>
     <div class="capbar">${CAPS.slice(a, z).map((c, j) => `<div>${esc(c)}<div class="g"><span style="width:${capRate[a + j]}%"></span></div></div><div class="num" style="padding-top:2px">${capRate[a + j]} %</div>`).join('')}</div>`).join('')}
     <h3>Notions les plus ratées</h3>
@@ -292,7 +292,7 @@ $('#print').onclick = () => window.print();
 $('#clear').onclick = () => { if (live.on) { clearClass(); return; } if (confirm('Effacer tous les rapports importés sur cet ordinateur ?')) { reports = []; persist(); render(); $('#import-msg').textContent = ''; } };
 $('#csv').onclick = () => {
   const rs = (live.on ? live.reports : reports).filter(r => (r.classe || 'Sans classe') === cur);
-  const head = ['Élève', 'Classe', 'Missions', 'Jeu terminé', 'Score', 'Satisfaction %', 'Tickets résolus', 'Tickets', 'Réponses justes %', 'Capacités validées', ...CAPS, `Note de jeu /5 (${ETAPES[etape].label})`, 'dont progression /2', 'dont réponses /2', 'dont tickets /1', 'Temps de jeu (min)', "dont à l'écran (min)", 'Sorties du jeu', 'Points à retravailler', 'Date', 'Fichier modifié'];
+  const head = ['Élève', 'Classe', 'Missions', 'Jeu terminé', 'Score', 'Satisfaction %', 'Tickets résolus', 'Tickets', 'Réponses justes %', 'Capacités validées', ...CAPS, `Note de jeu /6 (${ETAPES[etape].label})`, 'dont progression /2', 'dont réponses /3', 'dont tickets /1', 'Temps de jeu (min)', "dont à l'écran (min)", 'Sorties du jeu', 'Points à retravailler', 'Date', 'Fichier modifié'];
   const rows = rs.map(r => [r.nom, r.classe, r.missions, r.fini ? 'oui' : 'non', r.score, r.satisfaction, r.ticketsOk, r.tickets, pct(r), nbCaps(r), ...CAPS.map((_, i) => r.capacites && r.capacites[i] ? 'oui' : 'non'), ...(n => [n.total, n.prog, n.rep, n.tick].map(fmt))(noteJeu(r)), ...(r.temps ? [r.temps.ouvert, r.temps.ecran, r.temps.sorties] : ['', '', '']), (r.erreurs || []).map(([n, k]) => `${n} (${k})`).join(' ; '), new Date(r.date).toLocaleString('fr-FR'), r.valide ? 'non' : 'oui']);
   const csv = '﻿' + [head, ...rows].map(l => l.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
   const a = document.createElement('a');

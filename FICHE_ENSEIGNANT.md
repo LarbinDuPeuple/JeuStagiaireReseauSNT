@@ -140,15 +140,17 @@ Sans le mode en ligne, rien n'est envoyé sur Internet : les rapports importés 
 
 **Fiche résumé (papier) :** distribuée imprimée, remplie pendant le jeu. Entre deux parties, pause pour la corriger à l'oral et reprendre les points mal compris (les tickets et les quiz de révision donnent de bons exemples à reprendre).
 
-**Note de jeu sur 5** (espace enseignant, colonne « Note jeu », aussi dans l'export CSV). Choisis d'abord jusqu'où tu évalues (partie 1, parties 1 et 2, ou parties 1 à 3). La colonne des capacités du BO suit ce choix : 7 capacités Internet, ou 20 avec le Web. Barème, uniquement des taux pour ne pas avantager ceux qui reçoivent plus de tickets :
+**Note de jeu sur 6** (espace enseignant, colonne « Note jeu », aussi dans l'export CSV). Choisis d'abord jusqu'où tu évalues (partie 1, parties 1 et 2, ou parties 1 à 3). La colonne des capacités du BO suit ce choix : 7 capacités Internet, ou 20 avec le Web. Barème, uniquement des taux pour ne pas avantager ceux qui reçoivent plus de tickets :
 
 | Critère | Points | Calcul |
 |---|---|---|
+| Bonnes réponses | 3 | taux de réussite aux questions des missions et des quiz |
 | Progression | 2 | missions faites / missions attendues |
-| Bonnes réponses | 2 | taux de réussite aux questions des missions et des quiz |
 | Tickets | 1 | tickets résolus / tickets reçus |
 
-Total arrondi au demi-point. La satisfaction des clients n'est pas comptée : elle dépend surtout du temps passé. Survole une note pour voir son détail.
+Total arrondi au demi-point. Les bonnes réponses pèsent la moitié de la note.
+
+**Note de la séquence sur 20 :** QCM de fin de séquence sur 14 (14 questions, 1 point chacune, document « QCM de fin de séquence – Internet et Web », avec corrigé) + note de jeu sur 6 (parties 1 à 3). La satisfaction des clients n'est pas comptée : elle dépend surtout du temps passé. Survole une note pour voir son détail.
 
 
 Le **rapport de stage** (menu ⚙️ puis « Rapport de stage », imprimable ou en PDF) indique : score, satisfaction des clients, tickets résolus, taux de bonnes réponses, **capacités du BO validées** et **points à retravailler**. Il peut servir d'évaluation formative ou de trace écrite.

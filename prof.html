@@ -49,6 +49,7 @@
   .del { border: 0; background: none; cursor: pointer; font-size: 1em; opacity: .55; padding: 2px 4px; }
   .del:hover { opacity: 1; }
   .tag { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #fff4d9; color: var(--amber); font-size: .8em; font-weight: 600; }
+  .tag.warn { background: #fdecec; }
   .login { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
   .login label { display: flex; flex-direction: column; font-size: .9em; font-weight: 600; gap: 3px; }
   .login input, #lock-msg { font: inherit; padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; }
@@ -208,7 +209,14 @@ function noteJeu(r) {
   return d;
 }
 const fmt = x => (Math.round(x * 10) / 10).toLocaleString('fr-FR');
-const SORTS = { nom: r => r.nom.toLowerCase(), missions: r => r.missions, score: r => r.score, satisfaction: r => r.satisfaction, tickets: r => r.ticketsOk, pct, caps: nbCaps, date: r => r.date, note: r => noteJeu(r).total };
+/* temps de jeu : ouvert, dont à l'écran (onglet visible, fenêtre active), et nombre de sorties */
+const tpsHTML = r => {
+  const T = r.temps;
+  if (!T) return '<span class="muted">—</span>';
+  const part = T.ouvert ? Math.round(100 * T.ecran / T.ouvert) : 100;
+  return `<span title="Jeu ouvert ${T.ouvert} min, dont ${T.ecran} min à l'écran (${part} %). ${T.sorties} sortie(s) de plus de 10 s : autre onglet, autre fenêtre ou autre logiciel.">${T.ouvert} min<br><span class="tag ${part < 80 || T.sorties >= 5 ? 'warn' : ''}">${T.ecran} min à l'écran · ${T.sorties} sortie${T.sorties > 1 ? 's' : ''}</span></span>`;
+};
+const SORTS = { temps: r => r.temps ? r.temps.ouvert : -1, ecran: r => r.temps && r.temps.ouvert ? r.temps.ecran / r.temps.ouvert : 2, nom: r => r.nom.toLowerCase(), missions: r => r.missions, score: r => r.score, satisfaction: r => r.satisfaction, tickets: r => r.ticketsOk, pct, caps: nbCaps, date: r => r.date, note: r => noteJeu(r).total };
 
 function render() {
   const list = live.on ? live.reports : reports;
@@ -237,10 +245,11 @@ function render() {
       <div><b>${rs.filter(r => r.fini).length} / ${rs.length}</b>jeu terminé</div>
       <div><b>${avg(rs, pct)} %</b>réponses justes (moyenne)</div>
       <div><b>${avg(rs, r => r.satisfaction)} %</b>satisfaction (moyenne)</div>
+      ${(t => t.length ? `<div><b>${avg(t, r => r.temps.ouvert)} min</b>de jeu (moyenne), ${avg(t, r => r.temps.ouvert ? 100 * r.temps.ecran / r.temps.ouvert : 100)} % à l'écran</div>` : '')(rs.filter(r => r.temps))}
       <div><b>${rs.length ? fmt(rs.reduce((t, r) => t + noteJeu(r).total, 0) / rs.length) : '—'} / 5</b>note de jeu (moyenne)</div>
     </div>
     <div class="wrap"><table>
-      <thead><tr>${live.on ? '<th></th>' : ''}${th('nom', 'Élève')}${th('missions', 'Missions')}${th('score', 'Score')}${th('satisfaction', 'Satisf.')}${th('tickets', 'Tickets')}${th('pct', 'Réponses justes')}${th('caps', 'Capacités BO')}${th('note', 'Note jeu')}<th>Points à retravailler</th>${th('date', 'Rapport du')}<th class="noprint"></th></tr></thead>
+      <thead><tr>${live.on ? '<th></th>' : ''}${th('nom', 'Élève')}${th('missions', 'Missions')}${th('score', 'Score')}${th('satisfaction', 'Satisf.')}${th('tickets', 'Tickets')}${th('pct', 'Réponses justes')}${th('caps', 'Capacités BO')}${th('note', 'Note jeu')}${th('temps', 'Temps')}<th>Points à retravailler</th>${th('date', 'Rapport du')}<th class="noprint"></th></tr></thead>
       <tbody>${rs.map(r => `<tr>${live.on ? `<td title="${enLigne(r) ? 'En jeu' : 'Hors ligne'}"><span class="dot ${enLigne(r) ? 'on' : ''}"></span></td>` : ''}
         <td><b>${esc(r.nom)}</b>${r.valide ? '' : ' <span class="warn" title="Le fichier a été modifié après l\'export">⚠️ modifié</span>'}</td>
         <td class="num">${r.missions} / ${NB_MISSIONS}${finie(r)}</td>
@@ -250,10 +259,11 @@ function render() {
         <td class="num">${pill(pct(r), 75, 50)}</td>
         <td class="caps" title="${esc(CAPS.map((c, i) => (r.capacites && r.capacites[i] ? '✅ ' : '⬜ ') + c).join('\n'))}">${(r.capacites || []).slice(0, ETAPES[etape].caps).map((v, i) => (i === NB_CAPS_INTERNET ? ' ' : '') + (v ? '🟩' : '⬜')).join('')} ${nbCaps(r)}/${ETAPES[etape].caps}</td>
         <td class="num" title="${(n => `Progression ${fmt(n.prog)}/2 · Bonnes réponses ${fmt(n.rep)}/2 · Tickets ${fmt(n.tick)}/1`)(noteJeu(r))}"><b>${fmt(noteJeu(r).total)}</b> / 5</td>
+        <td class="num">${tpsHTML(r)}</td>
         <td>${(r.erreurs || []).filter(e => e[1] > 0).slice(0, 3).map(([n, k]) => `${esc(n)} (${k})`).join(', ') || '<span class="muted">—</span>'}</td>
         <td class="muted">${new Date(r.date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
         <td class="noprint"><button class="del" data-k="${esc(keyOf(r))}" title="Supprimer la progression de cet élève">🗑️</button></td>
-      </tr>`).join('') || `<tr><td colspan="12" class="muted">Aucun élève de cette classe pour l'instant.</td></tr>`}</tbody>
+      </tr>`).join('') || `<tr><td colspan="13" class="muted">Aucun élève de cette classe pour l'instant.</td></tr>`}</tbody>
     </table></div>
     <p class="muted noprint">Note de jeu évaluée sur <select id="etape">${ETAPES.map((e, i) => `<option value="${i}" ${i === etape ? 'selected' : ''}>${e.label}</option>`).join('')}</select> : progression 2 pts (missions faites) + bonnes réponses 2 pts (taux de réussite aux questions) + tickets 1 pt (part des tickets reçus qui ont été résolus). Arrondi au demi-point. Survole une note pour son détail.</p>
     ${[['Internet', 0, NB_CAPS_INTERNET], ['Le Web', NB_CAPS_INTERNET, CAPS.length]].map(([t, a, z]) => `<h3>Capacités du BO validées dans la classe : thème ${t}</h3>
@@ -282,8 +292,8 @@ $('#print').onclick = () => window.print();
 $('#clear').onclick = () => { if (live.on) { clearClass(); return; } if (confirm('Effacer tous les rapports importés sur cet ordinateur ?')) { reports = []; persist(); render(); $('#import-msg').textContent = ''; } };
 $('#csv').onclick = () => {
   const rs = (live.on ? live.reports : reports).filter(r => (r.classe || 'Sans classe') === cur);
-  const head = ['Élève', 'Classe', 'Missions', 'Jeu terminé', 'Score', 'Satisfaction %', 'Tickets résolus', 'Tickets', 'Réponses justes %', 'Capacités validées', ...CAPS, `Note de jeu /5 (${ETAPES[etape].label})`, 'dont progression /2', 'dont réponses /2', 'dont tickets /1', 'Points à retravailler', 'Date', 'Fichier modifié'];
-  const rows = rs.map(r => [r.nom, r.classe, r.missions, r.fini ? 'oui' : 'non', r.score, r.satisfaction, r.ticketsOk, r.tickets, pct(r), nbCaps(r), ...CAPS.map((_, i) => r.capacites && r.capacites[i] ? 'oui' : 'non'), ...(n => [n.total, n.prog, n.rep, n.tick].map(fmt))(noteJeu(r)), (r.erreurs || []).map(([n, k]) => `${n} (${k})`).join(' ; '), new Date(r.date).toLocaleString('fr-FR'), r.valide ? 'non' : 'oui']);
+  const head = ['Élève', 'Classe', 'Missions', 'Jeu terminé', 'Score', 'Satisfaction %', 'Tickets résolus', 'Tickets', 'Réponses justes %', 'Capacités validées', ...CAPS, `Note de jeu /5 (${ETAPES[etape].label})`, 'dont progression /2', 'dont réponses /2', 'dont tickets /1', 'Temps de jeu (min)', "dont à l'écran (min)", 'Sorties du jeu', 'Points à retravailler', 'Date', 'Fichier modifié'];
+  const rows = rs.map(r => [r.nom, r.classe, r.missions, r.fini ? 'oui' : 'non', r.score, r.satisfaction, r.ticketsOk, r.tickets, pct(r), nbCaps(r), ...CAPS.map((_, i) => r.capacites && r.capacites[i] ? 'oui' : 'non'), ...(n => [n.total, n.prog, n.rep, n.tick].map(fmt))(noteJeu(r)), ...(r.temps ? [r.temps.ouvert, r.temps.ecran, r.temps.sorties] : ['', '', '']), (r.erreurs || []).map(([n, k]) => `${n} (${k})`).join(' ; '), new Date(r.date).toLocaleString('fr-FR'), r.valide ? 'non' : 'oui']);
   const csv = '﻿' + [head, ...rows].map(l => l.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
@@ -367,6 +377,8 @@ function renderLocks() {
         const by = new Map();
         snap.forEach(d => {
           const x = d.data();
+          // temps passé : lu dans la sauvegarde complète de la partie
+          try { const T = JSON.parse(x.etat || '{}').tps; if (T) x.temps = { ouvert: Math.round(T.ouvert / 60), ecran: Math.round(T.ecran / 60), sorties: T.sorties }; } catch (e) { /* ancienne partie */ }
           delete x.etat;
           const r = Object.assign({}, x, { erreurs: (x.erreurs || []).map(e => [e.n, e.k]), majMs: x.maj ? x.maj.toMillis() : 0, valide: true, ids: [d.id] });
           r.date = new Date(r.majMs || Date.now()).toISOString();

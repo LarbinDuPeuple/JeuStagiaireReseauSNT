@@ -122,7 +122,9 @@ Page **https://jeustagiaire-snt.web.app/prof.html** (ou `prof.html` dans le doss
 2. Les élèves déposent ce fichier dans l'ENT (casier, devoir ou espace de dépôt).
 3. Tu télécharges tous les fichiers, puis tu les glisses d'un coup sur la page enseignant.
 
-La page trie les élèves par classe (un onglet par classe), avec pour chacun : missions faites, score, satisfaction, tickets, taux de bonnes réponses, capacités du BO validées et points à retravailler. Pour chaque classe, elle affiche aussi les moyennes, le taux de validation de chaque capacité et les notions les plus ratées. Export CSV (tableur) et impression possibles. Si un élève réimporte un rapport plus avancé, il remplace l'ancien.
+La page trie les élèves par classe (un onglet par classe), avec pour chacun : missions faites, score, satisfaction, tickets, taux de bonnes réponses, capacités du BO validées et points à retravailler.
+
+**Temps de jeu :** la colonne « Temps » donne le temps pendant lequel le jeu était ouvert, dont le temps **réellement à l'écran** (onglet du jeu affiché et fenêtre active), et le nombre de **sorties** de plus de 10 secondes. Une étiquette rouge signale moins de 80 % du temps à l'écran ou au moins 5 sorties. Le navigateur indique seulement que le jeu n'était plus devant l'élève (autre onglet, autre fenêtre, autre logiciel) : il ne dit pas ce qu'il regardait. Le temps de pause (classe bloquée) n'est pas compté ; la borne d'arcade, si. Pour chaque classe, elle affiche aussi les moyennes, le taux de validation de chaque capacité et les notions les plus ratées. Export CSV (tableur) et impression possibles. Si un élève réimporte un rapport plus avancé, il remplace l'ancien.
 
 Sans le mode en ligne, rien n'est envoyé sur Internet : les rapports importés restent dans le navigateur de l'ordinateur de l'enseignant. Un fichier modifié à la main par un élève est signalé « ⚠️ modifié ».
 

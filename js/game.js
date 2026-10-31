@@ -1380,6 +1380,7 @@ function rapportData(done) {
     missions: done != null ? done : S.finished ? MISSIONS.length : S.m, fini: !!S.finished,
     score: S.score, satisfaction: Math.round(S.sat), ticketsOk: S.incOk, tickets: S.incTotal,
     reponsesOk: S.quizOk, reponsesKo: S.quizKo, minutes: Math.round(S.t / 60),
+    temps: (T => ({ ouvert: Math.round(T.ouvert / 60), ecran: Math.round(T.ecran / 60), sorties: T.sorties }))(S.tps || { ouvert: 0, ecran: 0, sorties: 0 }),
     capacites: BO_CAPS.map(([, ns]) => ns.every(n => S.notions.includes(n))),
     erreurs: Object.entries(S.errors).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([n, k]) => [NOTIONS[n] ? NOTIONS[n].title : n, k])
   };
@@ -1524,6 +1525,21 @@ function startScreen() {
     if (!partOpen(st.part)) { closeModal(true); S.pause = true; S.nextInc = null; save(); refreshHUD(); }
   };
 }
+
+/* temps passé : jeu ouvert, et jeu réellement à l'écran (onglet visible et fenêtre active).
+   Le navigateur ne dit pas ce que l'élève fait ailleurs : seulement que le jeu n'est plus devant lui. */
+const tps = { t: Date.now(), dehors: 0 };
+setInterval(() => {
+  const now = Date.now(), dt = Math.min(120, (now - tps.t) / 1000); tps.t = now;
+  if (!S || !$('#title-screen').hidden || ONLINE.locked) return;
+  const T = S.tps = S.tps || { ouvert: 0, ecran: 0, sorties: 0 };
+  T.ouvert += dt;
+  if (!document.hidden && document.hasFocus()) {
+    // retour dans le jeu après au moins 10 s ailleurs : une sortie de plus
+    if (tps.dehors >= 10) T.sorties++;
+    tps.dehors = 0; T.ecran += dt;
+  } else tps.dehors += dt;
+}, 1000);
 
 let last = performance.now(), hudTimer = 0, saveTimer = 0;
 function loop(now) {

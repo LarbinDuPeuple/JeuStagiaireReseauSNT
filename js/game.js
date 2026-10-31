@@ -85,7 +85,7 @@ let S = null;
 function newState(name = '', classe = '') {
   return {
     v: 1, name, classe, m: 0, s: 0, sp: {},
-    net: { dnsUp: true, boxOff: {}, cut: null, routerDown: null, ddos: false },
+    net: { dnsUp: true, boxOff: {}, cut: null, routerDown: null, ddos: false, dnsFix: {} },
     px: 8.5, py: 12.5, score: 0, sat: 70, t: 0, errors: {}, quizOk: 0, quizKo: 0, ring: false,
     notions: [], tickets: [], seen: {}, incOk: 0, incTotal: 0, incLate: 0, nextInc: null, uid: 1,
     finished: false, pause: false, debut: Date.now(), settings: { inc: 'normal', sound: true }
@@ -142,10 +142,12 @@ Object.entries(ROUTERS).forEach(([id, r]) => { HOST_AT[r.ip] = id; });
 const REVERSE = {};
 Object.entries(DNS_RECORDS).forEach(([n, ip]) => { if (!REVERSE[ip]) REVERSE[ip] = n; });
 
+/* serveur DNS réglé sur l'ordinateur d'un client (corrigeable pendant un diagnostic) */
+const clientDns = cl => (S.net.dnsFix && S.net.dnsFix[cl]) || CLIENTS[cl].dns;
 function resolve(cl, name) {
   name = name.toLowerCase().replace(/\.$/, '');
   if (isIP(name)) return { ip: name };
-  if (!S.net.dnsUp || S.net.boxOff[cl]) return { err: 'timeout' };
+  if (!S.net.dnsUp || S.net.boxOff[cl] || clientDns(cl) !== DNS_IP) return { err: 'timeout' };
   if (!reachRouter(cl, 'brest')) return { err: 'timeout' };
   const ip = DNS_RECORDS[name];
   return ip ? { ip } : { err: 'nx' };
@@ -195,7 +197,7 @@ function execCmd(cl, raw) {
   if (c === 'ipconfig') {
     const L = ['Configuration IP de Windows', '', C.wifi ? 'Carte réseau sans fil Wi-Fi :' : 'Carte Ethernet :', ''];
     if (S.net.boxOff[cl]) { L.push(pad('Statut du média', 'Média déconnecté')); return { lines: L, type: 'ipconfig', ok: false }; }
-    L.push(pad('Adresse IPv4', C.ip), pad('Masque de sous-réseau', '255.255.255.0'), pad('Passerelle par défaut', C.gw), pad('Serveurs DNS', C.dns));
+    L.push(pad('Adresse IPv4', C.ip), pad('Masque de sous-réseau', '255.255.255.0'), pad('Passerelle par défaut', C.gw), pad('Serveurs DNS', clientDns(cl)));
     return { lines: L, type: 'ipconfig', ok: true };
   }
   if (c === 'ping') {
@@ -226,8 +228,8 @@ function execCmd(cl, raw) {
     const q = (args[0] || '').toLowerCase();
     if (!q) return { lines: ['Syntaxe : nslookup <nom ou adresse IP>', 'Exemples : nslookup wikipedia.fr   ou   nslookup 185.15.58.224'] };
     if (S.net.boxOff[cl]) return { lines: ["*** Impossible de joindre le serveur DNS : l'ordinateur n'est pas connecté."], type: 'nslookup', ok: false, query: q };
-    if (!S.net.dnsUp || !reachRouter(cl, 'brest')) return { lines: ['DNS request timed out.', `*** Le délai d'attente de la demande vers ${C.dns} est dépassé.`], type: 'nslookup', ok: false, query: q };
-    const head = ['Serveur :   dns.iroisenet.bzh', `Address:  ${C.dns}`, ''];
+    if (!S.net.dnsUp || !reachRouter(cl, 'brest') || clientDns(cl) !== DNS_IP) return { lines: ['DNS request timed out.', `*** Le délai d'attente de la demande vers ${clientDns(cl)} est dépassé.`], type: 'nslookup', ok: false, query: q };
+    const head = ['Serveur :   dns.iroisenet.bzh', `Address:  ${clientDns(cl)}`, ''];
     if (isIP(q)) {
       const n = REVERSE[q];
       if (!n) return { lines: head.concat([`*** dns.iroisenet.bzh ne parvient pas à trouver ${q} : Non-existent domain`]), type: 'nslookup', ok: false, query: q };
@@ -571,7 +573,7 @@ let modalOnClose = null, modalClosable = true;
 function openModal({ title, wide = false, closable = true, onClose = null } = {}) {
   const m = $('#modal');
   m.className = wide ? 'wide' : '';
-  m.innerHTML = `<div class="m-head"><h2>${title}</h2><div class="m-tools"><button class="btn small m-carnet" title="Ouvrir le carnet (C)">📒 Carnet</button>${closable ? '<button class="m-close" aria-label="Fermer">✕</button>' : ''}</div></div><div class="m-body"></div>`;
+  m.innerHTML = `<div class="m-head"><h2>${title}</h2><div class="m-tools"><button class="btn small m-carnet" title="Ouvrir le mémo (M)">📒 Mémo</button>${closable ? '<button class="m-close" aria-label="Fermer">✕</button>' : ''}</div></div><div class="m-body"></div>`;
   m.querySelector('.m-carnet').onclick = () => carnet(curNotion);
   $('#modal-wrap').hidden = false;
   modalOnClose = onClose; modalClosable = closable;
@@ -637,16 +639,19 @@ function unlock(id) {
   if (!id || !NOTIONS[id] || S.notions.includes(id)) return;
   S.notions.push(id);
   freshNotions.add(id);
-  toast(`📒 Nouvelle fiche dans ton carnet : <b>${NOTIONS[id].title}</b> <small>(touche C)</small>`, 'info', 4500);
+  toast(`📒 Nouvelle fiche dans ton mémo : <b>${NOTIONS[id].title}</b> <small>(touche M)</small>`, 'info', 4500);
   if (carnetOpen()) renderCarnet(null, id);
 }
 
-/* quiz : qcm, ordre, saisie, tri */
+/* quiz : qcm, ordre, saisie, tri.
+   cfg.host : affiché dans un panneau à côté d'un outil (terminal, navigateur…) qui reste utilisable ;
+   à la fin, onDone est appelé sans fermer la fenêtre. */
 function quiz(cfg, onDone) {
   const qs = typeof cfg.questions === 'function' ? cfg.questions() : cfg.questions;
   let i = 0;
   unlock(cfg.notion);
-  const b = openModal({ title: cfg.title, wide: cfg.wide });
+  const b = cfg.host || openModal({ title: cfg.title, wide: cfg.wide });
+  const finish = () => { if (cfg.host) b.innerHTML = `<h3 class="side-title">${cfg.title}</h3><div class="q-fb ok">✔ Toutes les questions sont terminées.</div>`; else closeModal(true); if (onDone) onDone(); };
   curNotion = cfg.notion || null;
   const norm = s => String(s).toLowerCase().replace(/\s+/g, '').replace(/,/g, '.');
   function good(q, fbEl, act, first) {
@@ -657,16 +662,16 @@ function quiz(cfg, onDone) {
     act.innerHTML = '';
     const nb = document.createElement('button');
     nb.className = 'btn primary'; nb.textContent = i < qs.length - 1 ? 'Question suivante →' : 'Terminer ✔';
-    nb.onclick = () => { i++; if (i < qs.length) show(); else { closeModal(true); onDone && onDone(); } };
+    nb.onclick = () => { i++; if (i < qs.length) show(); else finish(); };
     act.append(nb); nb.focus();
   }
   function bad(q, fbEl, msg) {
     S.quizKo++; addScore(-3); recordError(cfg.notion); sfx.ko();
-    fbEl.hidden = false; fbEl.className = 'q-fb ko'; fbEl.innerHTML = `✘ ${msg || q.hint || 'Ce n\'est pas ça.'} <i>📒 Ton carnet peut t'aider : bouton « Carnet » en haut, ou touche C.</i>`;
+    fbEl.hidden = false; fbEl.className = 'q-fb ko'; fbEl.innerHTML = `✘ ${msg || q.hint || 'Ce n\'est pas ça.'} <i>📒 Ton mémo peut t'aider : bouton « Mémo » en haut, ou touche M.</i>`;
   }
   function show() {
     const q = qs[i]; let first = true;
-    b.innerHTML = `${cfg.intro && i === 0 ? `<div class="intro">${cfg.intro}</div>` : ''}<div class="q-count">Question ${i + 1} / ${qs.length}</div><div class="q-text">${fill(q.q)}</div><div class="q-zone"></div><div class="q-fb" hidden></div><div class="q-actions"></div>`;
+    b.innerHTML = `${cfg.host ? `<h3 class="side-title">${cfg.title}</h3>` : ''}${cfg.intro && i === 0 ? `<div class="intro">${cfg.intro}</div>` : ''}<div class="q-count">Question ${i + 1} / ${qs.length}</div><div class="q-text">${fill(q.q)}</div><div class="q-zone"></div><div class="q-fb" hidden></div><div class="q-actions"></div>`;
     const zone = b.querySelector('.q-zone'), fb = b.querySelector('.q-fb'), act = b.querySelector('.q-actions');
     const t = q.t || 'qcm';
     if (t === 'qcm') {
@@ -710,7 +715,7 @@ function quiz(cfg, onDone) {
       zone.innerHTML = `<form class="q-input"><input type="text" autocomplete="off" spellcheck="false" placeholder="${esc(q.ph || '')}"><button class="btn primary">Valider</button></form>`;
       const f = zone.querySelector('form'), inp = f.querySelector('input');
       f.onsubmit = ev => { ev.preventDefault(); if (q.a.some(a => norm(a) === norm(inp.value))) good(q, fb, act, first); else { bad(q, fb); first = false; inp.select(); } };
-      setTimeout(() => inp.focus(), 50);
+      if (!cfg.host) setTimeout(() => inp.focus(), 50);
     } else if (t === 'tri') {
       const pick = {};
       const items = shuffle(q.items.map((s, k) => k));
@@ -742,11 +747,14 @@ function quiz(cfg, onDone) {
 function terminal(cl, opts = {}) {
   const C = CLIENTS[cl];
   const b = openModal({ title: `🖥️ Invite de commandes — ${C.name}`, wide: true });
-  b.innerHTML = `${opts.goal ? `<div class="goal">🎯 ${opts.goal}</div>` : ''}<pre class="term"></pre><form class="term-in"><span>C:\\&gt;</span><input autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="tape une commande (ou « aide »)"></form><div class="term-quick"></div><div class="term-after"></div>`;
+  b.innerHTML = `<div class="tool-split"><div class="tool-main">${opts.goal ? `<div class="goal">🎯 ${opts.goal}</div>` : ''}<pre class="term"></pre><form class="term-in"><span>C:\\&gt;</span><input autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="tape une commande (ou « aide »)"></form><div class="term-quick"></div><div class="term-after"></div></div><div class="side-q" hidden></div></div>`;
   const out = b.querySelector('.term'), f = b.querySelector('form'), inp = f.querySelector('input');
   const quick = opts.quick || ['ipconfig', 'ping wikipedia.fr', 'nslookup wikipedia.fr', 'tracert wikipedia.fr'];
   const hist = []; let hi = 0, busy = false;
-  const api = { flag: false, after(msg, btnLabel, fn) { const a = b.querySelector('.term-after'); a.innerHTML = `<div class="q-fb ok">${msg}</div>`; const btn = document.createElement('button'); btn.className = 'btn primary'; btn.textContent = btnLabel; btn.onclick = () => { closeModal(true); fn(); }; a.append(btn); sfx.ok(); } };
+  const api = { flag: false, after(msg, btnLabel, fn) { const a = b.querySelector('.term-after'); a.innerHTML = `<div class="q-fb ok">${msg}</div>`; const btn = document.createElement('button'); btn.className = 'btn primary'; btn.textContent = btnLabel; btn.onclick = () => { closeModal(true); fn(); }; a.append(btn); sfx.ok(); },
+    // questions dans un panneau à droite : le terminal reste utilisable pour chercher les réponses
+    side(qcfg, fn, keep) { sidePanel(b, qcfg, () => { if (!keep) closeModal(true); if (fn) fn(); }); },
+    note(msg) { b.querySelector('.term-after').innerHTML = msg ? `<div class="q-fb ok">${msg}</div>` : ''; } };
   const print = (l, cls) => { const s = document.createElement('div'); if (cls) s.className = cls; s.textContent = l || '\u00a0'; out.append(s); out.scrollTop = out.scrollHeight; };
   print(cl === 'mon_pc' ? 'IroiseNet — poste de la hotline' : `Prise en main à distance : ${C.name}`); print('Tape « aide » pour voir les commandes disponibles.'); print('');
   function run(cmd) {
@@ -767,21 +775,34 @@ function terminal(cl, opts = {}) {
     if (ev.key === 'ArrowDown') { hi = Math.min(hist.length, hi + 1); inp.value = hist[hi] || ''; ev.preventDefault(); }
   };
   quick.forEach(c => { const btn = document.createElement('button'); btn.className = 'chip'; btn.textContent = c; btn.onclick = () => { run(c); inp.focus(); }; b.querySelector('.term-quick').append(btn); });
+  if (opts.side) api.side(opts.side, opts.onSide, opts.keep);
   setTimeout(() => inp.focus(), 50);
+  return api;
+}
+/* panneau de questions à droite d'un outil */
+function sidePanel(b, qcfg, fn) {
+  const el = b.querySelector('.side-q');
+  el.hidden = false; $('#modal').classList.add('xwide');
+  quiz(Object.assign({}, qcfg, { host: el }), fn);
 }
 
 /* carte des routeurs d'IroiseNet (SVG) */
 function mapSVG(o = {}) {
   const links = o.links || activeLinks();
   const isOn = l => links.some(k => linkKey(k[0], k[1]) === linkKey(l[0], l[1]));
+  // brouillard : seuls les routeurs de o.fog sont visibles (le paquet ne voit que ses voisins)
+  const seen = r => !o.fog || o.fog.includes(r);
   let g = '<text x="20" y="372" font-size="12" fill="var(--muted)">🌊 mer d\'Iroise</text><text x="690" y="250" font-size="12" text-anchor="end" fill="var(--muted)">vers le reste d\'Internet ↗</text>';
+  if (o.fog) g += '<text x="350" y="24" font-size="13" text-anchor="middle" fill="var(--muted)">🌫️ Tu ne vois que les voisins du routeur où se trouve le paquet</text>';
   LINKS.forEach(l => {
+    if (!seen(l[0]) || !seen(l[1])) { if (seen(l[0]) || seen(l[1])) { const A = ROUTERS[seen(l[0]) ? l[0] : l[1]], B = ROUTERS[seen(l[0]) ? l[1] : l[0]]; g += `<line x1="${A.x}" y1="${A.y}" x2="${A.x + (B.x - A.x) * 0.3}" y2="${A.y + (B.y - A.y) * 0.3}" stroke="#c9d2de" stroke-width="3" stroke-dasharray="3 6"/>`; } return; }
     const A = ROUTERS[l[0]], B = ROUTERS[l[1]], on = isOn(l);
     const used = o.path && o.path.some((r, i) => i && linkKey(o.path[i - 1], r) === linkKey(l[0], l[1]));
     g += `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${!on ? '#e5484d' : used ? '#ff7a2f' : l[3] === 'radio' ? '#7aa7d9' : '#9fb3c8'}" stroke-width="${used ? 6 : 4}" ${!on ? 'stroke-dasharray="8 6"' : l[3] === 'radio' ? 'stroke-dasharray="2 7" stroke-linecap="round"' : ''}/>`;
     if (!on) g += `<text x="${(A.x + B.x) / 2}" y="${(A.y + B.y) / 2 - 8}" text-anchor="middle" font-size="18">🚧</text>`;
   });
   Object.entries(ROUTERS).forEach(([id, r]) => {
+    if (!seen(id)) { g += `<g opacity=".35"><circle cx="${r.x}" cy="${r.y}" r="15" fill="none" stroke="#c9d2de" stroke-width="2" stroke-dasharray="4 4"/><text x="${r.x}" y="${r.y + 5}" text-anchor="middle" font-size="14" fill="var(--muted)">?</text></g>`; return; }
     const down = S.net.routerDown === id, cur = o.at === id, nb = o.clickable && o.clickable.includes(id);
     g += `<g class="rt${nb ? ' nb' : ''}" data-r="${id}"><circle cx="${r.x}" cy="${r.y}" r="${cur ? 24 : 19}" fill="${down ? '#fdecec' : cur ? '#fff1e8' : 'var(--panel)'}" stroke="${down ? '#e5484d' : cur ? '#ff7a2f' : nb ? '#2f6fde' : '#9fb3c8'}" stroke-width="${cur || nb ? 4 : 2.5}"/><text x="${r.x}" y="${r.y + 5}" text-anchor="middle" font-size="15">${down ? '⛔' : '🛜'}</text><text x="${r.x}" y="${r.y + 42}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">${r.name}</text></g>`;
     if (cur) g += `<text x="${r.x + 22}" y="${r.y - 18}" font-size="22">📦</text>`;
@@ -811,7 +832,7 @@ function routing(cfg) {
     const rows = Object.keys(ROUTERS).filter(d => d !== at).map(d => `<tr class="${d === cfg.to ? 'hl' : ''}"><td>${ROUTERS[d].name}</td><td>${t[d] ? ROUTERS[t[d]].name : (cfg.editAt === at && d === cfg.to ? '<b>❓ à compléter</b>' : '—')}</td></tr>`).join('');
     b.innerHTML = `${path.length === 1 ? `<div class="intro">${cfg.intro}</div>` : ''}
       <div class="rt-status"><span>📦 Paquet de <b>${ROUTERS[cfg.from].name}</b> vers <b>${ROUTERS[cfg.to].name}</b></span><span class="ttl ${ttl <= 1 ? 'low' : ''}">Compteur de sauts restants : <b>${ttl}</b></span></div>
-      <div class="rt-grid"><div>${mapSVG({ links, at, path, clickable: edited ? nbs : [] })}</div>
+      <div class="rt-grid"><div>${mapSVG({ links, at, path, clickable: edited ? nbs : [], fog: cfg.fog ? [...new Set(path.concat(nbs))] : null })}</div>
       <div><h4>Table de routage de ${ROUTERS[at].name}</h4><table class="rt-table"><tr><th>Pour aller à…</th><th>passer par</th></tr>${rows}</table>
       ${edited ? `<p class="small muted">Clique sur le routeur voisin (cerclé de bleu) à qui passer le paquet.</p><button class="btn danger" id="rt-kill">🗑️ Détruire le paquet</button>` : `<div class="goal">Choisis le voisin de ${ROUTERS[at].name} pour aller à ${ROUTERS[cfg.to].name} :</div><div class="choices" id="rt-edit">${nbs.map(n => `<button class="btn choice" data-n="${n}">${ROUTERS[n].name}</button>`).join('')}</div>`}</div></div>
       <div class="q-fb rt-fb" hidden></div><div class="actions" id="rt-act"></div>`;
@@ -898,6 +919,75 @@ function tcpPuzzle(cfg) {
   draw();
 }
 
+/* mini-jeu : distribuer un gros fichier, depuis un serveur ou en pair-à-pair */
+function p2pLab(cfg) {
+  const N = 8, K = 12, PIECE_S = 27; // un morceau = 1/12 de 4 Go, environ 27 s à 100 Mbit/s
+  const b = openModal({ title: cfg.title, wide: true, closable: false });
+  curNotion = 'p2p';
+  const res = {};
+  let running = false;
+  b.innerHTML = `<div class="intro">${cfg.intro}</div>
+    <div class="p2p-top"><div class="p2p-srv">🖥️ <b>Serveur du lycée</b><small>envoie 1 morceau à la fois</small><span class="p2p-sent">0 morceau envoyé</span></div><div class="p2p-clock">⏱️ <b>0 min 00 s</b></div></div>
+    <div class="p2p-grid">${[...Array(N).keys()].map(i => `<div class="p2p-pc" data-i="${i}"><b>PC ${i + 1}</b><div class="p2p-bar">${'<i></i>'.repeat(K)}</div></div>`).join('')}</div>
+    <div class="actions"><button class="btn primary" id="p2p-srv">▶ 1. Tout envoyer depuis le serveur</button><button class="btn" id="p2p-p2p" disabled>▶ 2. Essayer en pair-à-pair</button></div>
+    <div class="p2p-res"></div><div class="actions" id="p2p-end"></div>`;
+  const fmt = t => `${Math.floor(t / 60)} min ${String(Math.round(t % 60)).padStart(2, '0')} s`;
+  function run(mode) {
+    if (running) return;
+    running = true;
+    b.querySelectorAll('.actions .btn').forEach(x => { x.disabled = true; });
+    const has = [...Array(N)].map(() => new Set());
+    let tick = 0, sent = 0;
+    const cells = [...b.querySelectorAll('.p2p-pc')].map(p => [...p.querySelectorAll('i')]);
+    cells.forEach(c => c.forEach(x => { x.className = ''; }));
+    const give = (to, k, from) => { has[to].add(k); const c = cells[to][k]; c.className = from === 'srv' ? 'srv new' : 'peer new'; };
+    function step() {
+      tick++;
+      cells.forEach(c => c.forEach(x => x.classList.remove('new')));
+      if (mode === 'srv') {
+        // le serveur envoie chaque morceau à chaque PC, l'un après l'autre
+        const to = has.findIndex(h => h.size < K);
+        give(to, has[to].size, 'srv'); sent++;
+      } else {
+        // le serveur envoie le morceau le plus rare, puis chaque PC renvoie un morceau qu'un autre n'a pas
+        const count = k => has.filter(h => h.has(k)).length;
+        const rare = [...Array(K).keys()].sort((x, y) => count(x) - count(y))[0];
+        const need = shuffle([...Array(N).keys()]).find(i => !has[i].has(rare));
+        const got = new Set();
+        if (need !== undefined) { give(need, rare, 'srv'); sent++; got.add(need); }
+        shuffle([...Array(N).keys()]).forEach(from => {
+          const offer = shuffle([...has[from]]);
+          for (const k of offer) {
+            const to = shuffle([...Array(N).keys()]).find(i => i !== from && !got.has(i) && !has[i].has(k));
+            if (to !== undefined) { give(to, k, 'peer'); got.add(to); break; }
+          }
+        });
+      }
+      b.querySelector('.p2p-sent').textContent = `${sent} morceau${sent > 1 ? 'x' : ''} envoyé${sent > 1 ? 's' : ''}`;
+      b.querySelector('.p2p-clock b').textContent = fmt(tick * PIECE_S);
+      if (tick % 3 === 0) sfx.plug();
+      if (has.every(h => h.size === K)) { finish(mode, tick, sent); return; }
+      setTimeout(step, mode === 'srv' ? 70 : 260);
+    }
+    step();
+  }
+  function finish(mode, tick, sent) {
+    running = false; res[mode] = { t: tick * PIECE_S, sent };
+    sfx.ok();
+    b.querySelector('.p2p-res').innerHTML = ['srv', 'p2p'].filter(m => res[m]).map(m => `<div class="q-fb ${m === 'p2p' ? 'ok' : ''}">${m === 'srv' ? '🖥️ <b>Depuis le serveur</b>' : '🔁 <b>En pair-à-pair</b>'} : ${fmt(res[m].t)} pour les 8 PC, et le serveur a envoyé <b>${res[m].sent} morceaux</b>.</div>`).join('');
+    b.querySelector('#p2p-srv').disabled = false;
+    b.querySelector('#p2p-p2p').disabled = false;
+    if (res.srv && res.p2p && !b.querySelector('#p2p-go')) {
+      S.quizOk++; addScore(20);
+      const btn = document.createElement('button'); btn.className = 'btn primary'; btn.id = 'p2p-go'; btn.textContent = 'Répondre à Maëlys →';
+      btn.onclick = () => { closeModal(true); cfg.onDone(res); };
+      b.querySelector('#p2p-end').append(btn);
+    }
+  }
+  b.querySelector('#p2p-srv').onclick = () => run('srv');
+  b.querySelector('#p2p-p2p').onclick = () => run('p2p');
+}
+
 /* carnet de notions */
 let curNotion = null;
 const carnetOpen = () => !$('#carnet-panel').hidden;
@@ -907,7 +997,7 @@ function carnet(focus) {
   if (carnetOpen() && !focus) { closeCarnet(); return; }
   renderCarnet(focus || curNotion);
 }
-/* nouvelle : fiche qui vient de se débloquer pendant que le carnet est ouvert */
+/* nouvelle : fiche qui vient de se débloquer pendant que le mémo est ouvert */
 function renderCarnet(focus, nouvelle) {
   const p = $('#carnet-panel');
   const wasOpen = carnetOpen();
@@ -915,7 +1005,7 @@ function renderCarnet(focus, nouvelle) {
   const keepOpen = prev ? [...prev.querySelectorAll('details[open]')].map(d => d.dataset.id) : [];
   const keepScroll = prev ? prev.scrollTop : 0;
   p.hidden = false; document.body.classList.add('carnet-on');
-  p.innerHTML = '<div class="m-head"><h2>📒 Mon carnet</h2><button class="m-close" aria-label="Fermer le carnet">✕</button></div><div class="m-body"></div>';
+  p.innerHTML = '<div class="m-head"><h2>📒 Mon mémo</h2><button class="m-close" aria-label="Fermer le mémo">✕</button></div><div class="m-body"></div>';
   p.querySelector('.m-close').onclick = closeCarnet;
   const b = p.querySelector('.m-body');
   const ids = Object.keys(NOTIONS);
@@ -984,7 +1074,7 @@ function missionComplete() {
   const b = openModal({ title: `✅ Mission ${S.m + 1} accomplie !`, closable: false });
   b.innerHTML = `<div class="mission-card"><h3>${m.title}</h3><p>Score : <b>${S.score}</b> · Satisfaction des clients : <b>${Math.round(S.sat)} %</b></p>
     <h4>📒 Notions acquises</h4><ul>${notions.map(n => `<li>${NOTIONS[n].icon} ${NOTIONS[n].title}</li>`).join('')}</ul>
-    ${last ? '<p>🎉 Tu as terminé ton stage ! Voici ton rapport.</p>' : endPart ? `<div class="goal">🏁 <b>Fin de la partie ${m.partie}.</b> ${ONLINE.on ? 'Ta partie est sauvegardée en ligne.' : `Note ton <b>code de reprise</b> : il te permettra de reprendre la partie ${np} sur n'importe quel ordinateur. Si ton professeur le demande, enregistre aussi ton rapport.<div class="code">${resumeCode(np)}</div>`}</div><p>${partOpen(np) ? `Tu peux commencer la partie ${np} tout de suite, ou continuer à répondre aux tickets de la hotline.` : `🔒 La partie ${np} s'ouvrira quand ton professeur la débloquera. En attendant, réponds aux appels de la hotline${arcadeOff() ? '' : " ou va jouer à la borne d'arcade 🕹️ (à côté du café)"} !`}</p>` : '<p>Prends une minute pour relire les fiches de ton carnet avant de continuer.</p>'}</div>
+    ${last ? '<p>🎉 Tu as terminé ton stage ! Voici ton rapport.</p>' : endPart ? `<div class="goal">🏁 <b>Fin de la partie ${m.partie}.</b> ${ONLINE.on ? 'Ta partie est sauvegardée en ligne.' : `Note ton <b>code de reprise</b> : il te permettra de reprendre la partie ${np} sur n'importe quel ordinateur. Si ton professeur le demande, enregistre aussi ton rapport.<div class="code">${resumeCode(np)}</div>`}</div><p>${partOpen(np) ? `Tu peux commencer la partie ${np} tout de suite, ou continuer à répondre aux tickets de la hotline.` : `🔒 La partie ${np} s'ouvrira quand ton professeur la débloquera. En attendant, réponds aux appels de la hotline${arcadeOff() ? '' : " ou va jouer à la borne d'arcade 🕹️ (à côté du café)"} !`}</p>` : '<p>Prends une minute pour relire les fiches de ton mémo avant de continuer.</p>'}</div>
     <div class="actions">${last ? '<button class="btn primary" id="next">Voir mon rapport de stage</button>' : endPart ? `<button class="btn" id="send">📤 Enregistrer mon rapport</button><button class="btn ${partOpen(np) ? '' : 'primary'}" id="stay">Continuer la hotline</button>${partOpen(np) ? `<button class="btn primary" id="next">Commencer la partie ${np}</button>` : ''}` : '<button class="btn primary" id="next">Mission suivante →</button>'}</div>`;
   if (b.querySelector('#next')) b.querySelector('#next').onclick = () => {
     closeModal(true);
@@ -1096,7 +1186,7 @@ function spawnIncident(inc, c) {
   while ($('#calls').children.length > 2) $('#calls').firstChild.remove();
   setTimeout(() => card.remove(), 14000);
   unlock(inc.notion);
-  if (S.incTotal === 1 && !inc.quiz) toast('💡 Premier ticket ! Va sur place, observe, teste, puis choisis la cause. Ton carnet a une fiche « Méthode de la hotline ».', 'info', 7000);
+  if (S.incTotal === 1 && !inc.quiz) toast('💡 Premier ticket ! Va sur place, observe, teste, puis choisis la cause. Ton mémo a une fiche « Méthode de la hotline ».', 'info', 7000);
   unlock('diagnostic');
   save(); refreshHUD();
 }
@@ -1332,7 +1422,7 @@ function help() {
     <li>⌨️ Ou déplace-toi avec les <b>flèches</b> / <b>ZQSD</b> / <b>WASD</b>, et interagis avec <kbd>E</kbd> ou <kbd>Espace</kbd>.</li>
     <li>🟡 La <b>flèche jaune</b> indique ton objectif. Le panneau de droite liste les étapes.</li>
     <li>☎️ Les <b>clients appellent</b> la hotline : un ticket s'ouvre et un <b>!</b> rouge montre où aller. Observe, teste (ipconfig, ping, nslookup, tracert), trouve la cause, répare.</li>
-    <li><kbd>T</kbd> carte du réseau IroiseNet · <kbd>C</kbd> carnet de notions · <kbd>Échap</kbd> menu.</li>
+    <li><kbd>T</kbd> carte du réseau IroiseNet · <kbd>M</kbd> mémo des notions · <kbd>Échap</kbd> menu.</li>
     <li>💾 La partie est sauvegardée dans ce navigateur. À la fin de chaque partie, note ton <b>code de reprise</b> (inutile si ta partie est sauvegardée en ligne).</li></ul>`;
 }
 function menu() {
@@ -1458,7 +1548,9 @@ addEventListener('keydown', ev => {
   const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
   if (ev.key === 'Escape') { if (carnetOpen()) closeCarnet(); else if (modalOpen() && modalClosable) closeModal(); else if (!uiBusy() && S) menu(); return; }
   if (typing) return;
-  if ((ev.key === 'c' || ev.key === 'C') && S && $('#title-screen').hidden) { carnet(); return; }
+  // Ctrl+C, Ctrl+V… : jamais de raccourci du jeu
+  if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  if ((ev.key === 'm' || ev.key === 'M') && S && $('#title-screen').hidden) { carnet(); return; }
   if (dlg && ['e', 'E', ' ', 'Enter'].includes(ev.key)) { ev.preventDefault(); advanceDialog(); return; }
   if (!S || uiBusy()) return;
   const k = KEYMAP[ev.key] || KEYMAP[ev.key.toLowerCase()];

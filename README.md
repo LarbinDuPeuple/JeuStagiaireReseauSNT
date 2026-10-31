@@ -11,14 +11,14 @@ Jeu sérieux pour navigateur, en vue isométrique, pour la SNT en 2nde, thèmes 
 
 | Partie | Mission | Notions |
 |---|---|---|
-| 1 | 1. Bienvenue au bout du monde | histoire d'Internet, réseaux physiques, ordre de grandeur du trafic |
-| 1 | 2. Allô, la hotline ? | adresse IP, box et passerelle, analyse du réseau local, DNS dans les deux sens (`ipconfig`, `nslookup`) |
-| 2 | 3. Le voyage des paquets | routage de proche en proche, tables locales, panne, compteur de sauts (`tracert`) |
-| 2 | 4. TCP à la rescousse | rôles d'IP et de TCP, fiabilité et absence de garantie temporelle |
+| 1 | 1. Bienvenue au bout du monde | histoire d'Internet, réseaux physiques, calculs de débits, ordre de grandeur du trafic |
+| 1 | 2. Allô, la hotline ? | adresse IP, box et passerelle, analyse du réseau local, DNS dans les deux sens (`ipconfig`, `nslookup`), diagnostic d'une panne de DNS (`ping`) |
+| 2 | 3. Le voyage des paquets | routage de proche en proche « dans le brouillard » (le paquet ne voit que les voisins), tables locales, panne, compteur de sauts (`tracert`) |
+| 2 | 4. TCP à la rescousse | rôles d'IP et de TCP, fiabilité et absence de garantie temporelle, pair-à-pair (simulateur serveur / pair-à-pair) |
 | 3 | 5. Le site de la crêperie | Web et Internet, hypertexte, histoire du Web, URL et HTTPS, requête HTTP et paramètres (navigateur avec outils de développement), client et serveur, HTML et CSS (éditeur avec aperçu) |
 | 3 | 6. Chercher, protéger, publier | indexation à la main, popularité et liens promotionnels, hameçonnage, cookies et réglages du navigateur, droit d'auteur, licences, droit à l'oubli |
 
-Pendant le jeu, **23 tickets** de la hotline se débloquent au fil des missions : 12 pannes à diagnostiquer (box éteinte, DNS en panne, routeur de Morlaix coupé, déni de service, pair-à-pair, neutralité du Net, NTP, clé Wi-Fi, page 404, paiement sur une page en http…) et 11 quiz de révision posés par les collègues (réseaux physiques, adresses IP, DNS, routage, IP et TCP, usages, histoire du Web et URL, requêtes HTTP, HTML et CSS, moteurs de recherche, sécurité). Quand un élève a fini une partie, il continue la hotline et la borne d'arcade s'allume pour lui en attendant les autres. Le jeu propose aussi un carnet de 25 fiches, une carte du réseau, une invite de commandes simulée, un rapport de stage imprimable et, hors ligne, un **code de reprise** entre deux parties.
+Pendant le jeu, **23 tickets** de la hotline se débloquent au fil des missions : 12 pannes à diagnostiquer (box éteinte, DNS en panne, routeur de Morlaix coupé, déni de service, pair-à-pair, neutralité du Net, NTP, clé Wi-Fi, page 404, paiement sur une page en http…) et 11 quiz de révision posés par les collègues (réseaux physiques, adresses IP, DNS, routage, IP et TCP, usages, histoire du Web et URL, requêtes HTTP, HTML et CSS, moteurs de recherche, sécurité). Quand un élève a fini une partie, il continue la hotline et la borne d'arcade s'allume pour lui en attendant les autres. Le jeu propose aussi un mémo de 25 fiches, une carte du réseau, une invite de commandes simulée, un rapport de stage imprimable et, hors ligne, un **code de reprise** entre deux parties.
 
 **Borne d'arcade « Routeur express »** (pour les élèves en avance : elle s'allume entre deux parties et l'enseignant peut l'éteindre) : un mini-jeu rétro de 2 minutes où l'élève joue le réseau. Il achemine des paquets de routeur en routeur jusqu'à leur réseau de destination, en lisant les tables de routage, pendant que des fibres cassent. Les points dépendent du chemin (le plus court rapporte le plus) et de la vitesse, donc il n'y a pas de score parfait. Le réseau change à chaque partie. En ligne, un classement montre le record de chaque élève de la classe et une « bataille des classes ».
 
@@ -26,7 +26,7 @@ Pendant le jeu, **23 tickets** de la hotline se débloquent au fil des missions 
 
 - Clic sur le sol pour se déplacer, clic sur un collègue ou un équipement pour aller l'utiliser.
 - Flèches / ZQSD / WASD pour se déplacer, <kbd>E</kbd> ou <kbd>Espace</kbd> pour interagir.
-- <kbd>T</kbd> : carte du réseau · <kbd>C</kbd> : carnet · <kbd>Échap</kbd> : menu.
+- <kbd>T</kbd> : carte du réseau · <kbd>M</kbd> : mémo (fiches de notions) · <kbd>Échap</kbd> : menu.
 
 ## Technique
 

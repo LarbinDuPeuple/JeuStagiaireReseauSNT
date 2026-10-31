@@ -11,15 +11,15 @@ L'élève fait son **stage chez IroiseNet**, un fournisseur d'accès à Internet
 
 La partie 3 se passe le lendemain, au **pôle Web** d'IroiseNet, avec **Klervi**, la webmaster qui gère les sites des clients (la crêperie Ar Vag, sur le port).
 
-Le jeu reprend le moteur du « Stagiaire Réseau » (STI2D) : vue isométrique, collègues, tickets de la hotline qui tombent au hasard, invite de commandes simulée, carnet de fiches, rapport de stage imprimable.
+Le jeu reprend le moteur du « Stagiaire Réseau » (STI2D) : vue isométrique, collègues, tickets de la hotline qui tombent au hasard, invite de commandes simulée, mémo de fiches, rapport de stage imprimable.
 
 | Partie | Mission | Ce que fait l'élève | Durée indicative |
 |---|---|---|---|
-| 1 | 1. Bienvenue au bout du monde | Frise historique, tri des réseaux physiques sur l'établi, ordre de grandeur du trafic | 15 min |
-| 1 | 2. Allô, la hotline ? | `ipconfig` à distance chez une cliente, analyse des appareils connectés à sa box (un voisin squatte son Wi-Fi), `nslookup` dans les deux sens | 25 min |
+| 1 | 1. Bienvenue au bout du monde | Frise historique, tri des réseaux physiques sur l'établi, **calculs de débits** avec Loïc (temps de téléchargement, quelle connexion pour Ouessant ?), ordre de grandeur du trafic | 20 min |
+| 1 | 2. Allô, la hotline ? | `ipconfig` à distance chez une cliente (questions à côté du terminal : quel appareil, même réseau ?, quelle ligne est fausse ?), analyse des appareils connectés à sa box (un voisin squatte son Wi-Fi), `nslookup` dans les deux sens (deux sites sur le même serveur), **diagnostic avec `ping`** d'une panne de DNS à la boulangerie | 35 min |
 | 1 | Tickets | Box éteinte, horloge déréglée (NTP), panne de DNS au CDI, clé Wi-Fi, machine à café ; quiz de révision : réseaux physiques, adresses IP, DNS | le reste de l'heure |
-| 2 | 3. Le voyage des paquets | Router un paquet de Brest à Paris en lisant les tables locales, `tracert`, panne de fibre Morlaix–Rennes, paquet qui tourne en rond jusqu'à destruction | 30 min |
-| 2 | 4. TCP à la rescousse | Reconstituer un message comme TCP (paquets désordonnés et perdus), visio qui saccade, contrôle final | 20 min |
+| 2 | 3. Le voyage des paquets | Router un paquet de Brest à Paris **dans le brouillard** (on ne voit que les voisins : seule la table guide), `tracert` (quel chemin, où est la lenteur ?), panne de fibre Morlaix–Rennes puis nouveau trajet Ouessant → Paris dans le brouillard, paquet qui tourne en rond jusqu'à destruction | 35 min |
+| 2 | 4. TCP à la rescousse | Reconstituer un message comme TCP (paquets désordonnés et perdus), visio qui saccade, **simulateur serveur / pair-à-pair** (distribuer une mise à jour à 8 PC) et usages légaux ou illicites, contrôle final | 30 min |
 | 2 | Tickets | Routeur de Morlaix en panne, déni de service sur le site de la mairie, pair-à-pair, neutralité du Net, visio lente à Ouessant ; quiz de révision : routage, IP et TCP, usages | le reste de l'heure |
 | 3 | 5. Le site de la crêperie | Web ≠ Internet et liens hypertextes, frise du Web, décomposer des URL et repérer la page sécurisée, **navigateur avec outils de développement** (onglet Réseau : requête GET, paramètre `jour=mardi`, code 404 ; onglet Code source : le JavaScript est visible, le PHP jamais), client ou serveur, **éditeur HTML/CSS** avec aperçu (corriger un lien, ajouter un lien, passer le titre en rouge par le CSS) | 35 min |
 | 3 | 6. Chercher, protéger, publier | **Indexation à la main** de 4 pages puis requête, **popularité** sur un graphe de liens, lien promotionnel, **mail d'hameçonnage** (survoler le lien), **réglages du navigateur** avec visualiseur de traqueurs, droit d'auteur, licence CC BY, droit d'usage, droit à l'oubli, contrôle final | 35 min |
@@ -35,9 +35,9 @@ Le jeu reprend le moteur du « Stagiaire Réseau » (STI2D) : vue isométrique, 
 | Caractériser les principes du routage et ses limites | Mission 3 (routage de proche en proche, panne, compteur de sauts), ticket « Morlaix » |
 | Distinguer la fiabilité de transmission et l'absence de garantie temporelle | Mission 4 (visio Brest–Plymouth), ticket « Ouessant » |
 | Retrouver une adresse IP à partir d'une adresse symbolique et inversement | Mission 2 (`nslookup` dans les deux sens), ticket « CDI » |
-| Décrire l'intérêt des réseaux pair-à-pair et les usages illicites | Ticket « Une lettre inquiétante », contrôle final |
-| Caractériser quelques types de réseaux physiques | Mission 1 (établi), ticket « Ouessant » |
-| Caractériser l'ordre de grandeur du trafic et son évolution | Mission 1 (question de Gwenaëlle) |
+| Décrire l'intérêt des réseaux pair-à-pair et les usages illicites | Mission 4 (simulateur de Maëlys, tri des usages), ticket « Une lettre inquiétante », contrôle final |
+| Caractériser quelques types de réseaux physiques | Mission 1 (établi, calculs de débits avec Loïc), ticket « Ouessant » |
+| Caractériser l'ordre de grandeur du trafic et son évolution | Mission 1 (questions de Gwenaëlle, combien de films ?) |
 
 ### Thème Le Web (partie 3)
 
@@ -61,7 +61,7 @@ Exemples d'activités du BO Web repris : modifier une page existante, changer sa
 
 ### Activités du BO Internet
 
-Exemples d'activités du BO repris : déterminer l'adresse IP d'un équipement et l'adresse du DNS (mission 2), analyser son réseau local pour observer ce qui y est connecté (box de Mme Le Gall), suivre un chemin avec une commande du protocole IP (`tracert`, mission 3). Le texte du BO sur la **neutralité du Net**, le **déni de service** et **NTP** est aussi abordé par des tickets.
+Exemples d'activités du BO repris : déterminer l'adresse IP d'un équipement et l'adresse du DNS (mission 2), analyser son réseau local pour observer ce qui y est connecté (box de Mme Le Gall), suivre un chemin avec une commande du protocole IP (`tracert`, mission 3), illustrer le routage (carte « dans le brouillard » : le paquet ne voit que les voisins), comparer la distribution d'un fichier depuis un serveur et en pair-à-pair (mission 4). Les questions des missions 2 et 3 s'affichent **à côté du terminal**, qui reste utilisable : les élèves doivent lancer eux-mêmes les bonnes commandes pour répondre, au lieu de recopier une valeur. Le texte du BO sur la **neutralité du Net**, le **déni de service** et **NTP** est aussi abordé par des tickets.
 
 ## Déroulé proposé
 
@@ -69,7 +69,7 @@ Exemples d'activités du BO repris : déterminer l'adresse IP d'un équipement e
 
 | Temps | Phase | Élèves | Enseignant |
 |---|---|---|---|
-| 0:00 – 0:10 | Lancement | Ouvrir le jeu, saisir son prénom et choisir sa classe (2nde 3 à 6) | Accroche : « Que se passe-t-il entre le moment où tu tapes wikipedia.fr et l'affichage ? ». Montrer les commandes (clic, ZQSD, E, T, C). |
+| 0:00 – 0:10 | Lancement | Ouvrir le jeu, saisir son prénom et choisir sa classe (2nde 3 à 6) | Accroche : « Que se passe-t-il entre le moment où tu tapes wikipedia.fr et l'affichage ? ». Montrer les commandes (clic, ZQSD, E, T, M). |
 | 0:10 – 1:10 | Jeu, partie 1 | Missions 1 et 2, puis tickets | Circuler, faire verbaliser : « c'est quoi la passerelle ? », « que fait le DNS ? ». |
 | 1:10 – 1:30 | Débrief et trace écrite | **Noter le code de reprise** (fin de la mission 2) ; compléter la 1re moitié de la fiche résumé Internet | Synthèse au tableau : adresse IP, box = passerelle, DNS dans les deux sens. |
 
@@ -107,7 +107,7 @@ Une borne rétro au fond de la hotline, à côté du café. Elle s'allume **tout
 - **Notions revues :** routage de proche en proche, tables locales, panne et mise à jour des tables, compteur de sauts, absence de garantie temporelle, découpage en paquets et rôle de TCP. L'écran de fin explique les erreurs de la partie avec ces notions.
 - **Classement (en ligne) :** le meilleur score de chaque élève de la classe, et la « bataille des classes » (moyenne des 5 meilleurs records de chaque classe). Tu le vois aussi en bas de l'onglet de la classe dans l'espace enseignant, avec le nombre de parties jouées et un bouton pour remettre le classement de la classe à zéro.
 - La borne se met en pause quand tu bloques la classe. Le mini-jeu ne compte pas dans la note.
-- **Élèves en difficulté :** appels « Calme » ou « Désactivés » ; le carnet (touche C) contient une fiche par notion. Les commandes ont des boutons raccourcis.
+- **Élèves en difficulté :** appels « Calme » ou « Désactivés » ; le mémo (touche M) contient une fiche par notion. Les commandes ont des boutons raccourcis.
 - **DYS :** les dialogues avancent au clic, sans limite de temps. Le chronomètre des tickets ne pénalise que la satisfaction, pas la réussite.
 
 ## Mode enseignant
@@ -164,12 +164,15 @@ Questions de sortie suggérées (5 min) :
 
 ## Corrigé rapide
 
-- **Mme Le Gall :** IP `192.168.1.23`, box (passerelle) `192.168.1.1`, DNS `203.0.113.53`. L'intrus est `PC-JEROME` ; on change la clé Wi-Fi.
-- **DNS :** `wikipedia.fr` → `185.15.58.224` ; `203.0.113.80` → `lycee-lacroixrouge.bzh`.
-- **Routage Brest → Paris :** Brest → Morlaix → Rennes → Paris. `tracert wikipedia.fr` affiche 5 lignes : **4 routeurs** puis le serveur.
-- **Panne Morlaix–Rennes :** la table de Brest devient Paris → via **Quimper** ; chemin Brest → Quimper → Nantes → Paris.
+- **Débits (Loïc) :** 1 Go en ADSL à 8 Mbit/s → **1 000 s** ; en fibre à 1 000 Mbit/s → **8 s** ; 50 Go en 4G à 50 Mbit/s → environ **2 h 15** ; Ouessant, visio → **4G** (le satellite a trop de délai). Trafic 2021 ≈ **10¹² films** de 4 Go.
+- **Mme Le Gall :** ordinateur `192.168.1.23` ; sortie vers Internet = la box `192.168.1.1` ; la console `192.168.1.26` est sur le même réseau local (même début d'adresse) ; le réglage qui vient d'IroiseNet est le serveur DNS `203.0.113.53` ; chez M. Kerbrat, c'est la **passerelle** qui est fausse. L'intrus est `PC-JEROME` (son adresse prouve qu'il est sur son réseau local) ; on change la clé Wi-Fi.
+- **DNS :** `wikipedia.fr` → `185.15.58.224` ; `203.0.113.80` → `lycee-lacroixrouge.bzh` ; la crêperie et le club de voile sont sur le **même serveur** (`203.0.113.85`) ; « Non-existent domain » = le nom n'existe pas.
+- **Boulangerie Guivarc'h :** la box répond au ping, l'adresse IP de Wikipédia aussi, mais pas le nom → panne de **DNS** ; le neveu a mis `192.168.1.53` comme serveur DNS ; il faut remettre `203.0.113.53`, puis vérifier avec `ping wikipedia.fr`.
+- **Routage Brest → Paris (brouillard) :** Brest → Morlaix → Rennes → Paris, en suivant la ligne « Paris » de chaque table. Avec `tracert wikipedia.fr`, la ville avant Paris est **Rennes** (chemin le plus court : 600 km contre 685) ; `tracert mairie-ouessant.bzh` : le temps explose entre **Brest et Ouessant** (liaison radio).
+- **Panne Morlaix–Rennes :** la table de Brest devient Paris → via **Quimper** ; chemin Brest → Quimper → Nantes → Paris. Puis, dans le brouillard : Ouessant → Brest → Quimper → Nantes → Paris.
 - **Paquet fou :** Quimper → Nantes → Quimper → Nantes → Quimper → Nantes ; le compteur arrive à 0 à Nantes : il faut **détruire le paquet**.
 - **Puzzle TCP :** 8 paquets, 2 perdus au hasard (jamais le n° 1) à redemander.
+- **Pair-à-pair (Maëlys) :** depuis le serveur, environ 43 min et 96 morceaux envoyés ; en pair-à-pair, environ 6 à 7 min et une quinzaine de morceaux seulement. Si le serveur tombe en panne, les PC continuent à s'échanger leurs morceaux. Légal : logiciel libre, mise à jour d'un jeu, ses propres vidéos ; illicite : film au cinéma, album sans accord, série d'une plateforme payante.
 
 | Ticket | Indice clé | Cause | Réparation |
 |---|---|---|---|
@@ -192,7 +195,7 @@ Les **11 quiz de révision** (Loïc : réseaux physiques et histoire ; Erwan : a
 **Partie 3 :**
 
 - **Frise du Web :** hypertexte (Ted Nelson, 1965) → Web au CERN (Tim Berners-Lee, 1989) → Mosaic (1993) → JavaScript et PHP (1995) → DOM (2001) → mobiles (2010).
-- **Onglet Réseau :** `GET /carte.php?jour=mardi` → paramètre **jour**, valeur **mardi**, réponse 200 (page fabriquée par le serveur en PHP) ; `GET /horaires.htm` → **404** (le fichier s'appelle `horaires.html`). Les élèves peuvent essayer `?jour=dimanche` ou `?jour=lundi` dans la barre d'adresse.
+- **Onglet Réseau :** les questions s'affichent à côté du navigateur, qui reste utilisable. En modifiant l'adresse (`?jour=vendredi`), on trouve la **galette Saint-Jacques** ; aucun fichier `vendredi.html` : le programme `carte.php` fabrique la page selon le paramètre (un jour farfelu, comme `?jour=noel`, donne une crêpe mystère). La page d'accueil déclenche **deux** requêtes (HTML puis feuille de style). `GET /horaires.htm` → **404** (le fichier s'appelle `horaires.html`) ; `?jour=lundi` → **200** (le programme existe, il répond que c'est fermé).
 - **Éditeur :** `<a href="horaires.html">`, ajout de `<a href="carte.php?jour=mardi">La carte du jour</a>`, et `h1 { color: red; }` dans le CSS (un attribut `style` dans le HTML est refusé).
 - **Index :** phare → P1, P3 ; Ouessant → P1, P3, P4 ; crêpes → P2, P3 ; tempête → P1, P4 ; Brest → P2, P4. Requête « phare Ouessant » → **P1 et P3**.
 - **Popularité :** D (mairie) reçoit 3 liens, E 2, A 1, B et C aucun. B (croisières) est en tête des résultats parce que c'est une **annonce** payée.
@@ -201,12 +204,13 @@ Les **11 quiz de révision** (Loïc : réseaux physiques et histoire ; Erwan : a
 
 ## Écarts au programme et points de vigilance
 
-- **Hors programme non exploités :** `ipconfig` affiche le masque de sous-réseau (comme un vrai Windows), mais aucune question ne porte dessus. Le nom technique « TTL » n'est pas utilisé : le jeu parle de « compteur de sauts ».
+- **Hors programme non exploités :** `ipconfig` affiche le masque de sous-réseau (comme un vrai Windows), mais aucune question ne porte dessus. Pour savoir si deux appareils sont sur le même réseau local, le jeu dit simplement « même début d'adresse » (sans parler de masque). Le nom technique « TTL » n'est pas utilisé : le jeu parle de « compteur de sauts ».
 - **Simplifications :** les tables de routage sont calculées par la distance la plus courte ; les vrais protocoles de routage ne sont pas au programme.
 - **Borne d'arcade :** les adresses `10.x.x.x` sont des adresses privées, choisies pour être courtes ; dans la réalité, les routeurs d'Internet n'en voient pas passer. Le délai de mise à jour des tables est volontairement exagéré pour le jeu.
 - **Adresses fictives :** IroiseNet, les clients et les domaines en `.bzh` sont inventés. Les adresses `203.0.113.x` et `198.51.100.x` sont des plages réservées à la documentation. Seule `wikipedia.fr` est un vrai nom ; son adresse réelle peut différer de celle du jeu : un vrai `nslookup` en classe fait une bonne comparaison.
 - **Ouessant :** la liaison radio de l'île est une situation inventée pour le scénario.
-- **Pair-à-pair, neutralité du Net, déni de service** sont surtout traités par des tickets aléatoires et le quiz de révision « règles et usages ». La fiche du carnet et une question du contrôle final les garantissent pour tous, mais un débrief oral reste utile.
+- **Pair-à-pair :** traité pour tous par l'activité de Maëlys (mission 4). Le simulateur simplifie (un morceau par PC et par étape, débits identiques).
+- **Neutralité du Net, déni de service** sont surtout traités par des tickets aléatoires et le quiz de révision « règles et usages ». La fiche du mémo et une question du contrôle final les garantissent pour tous, mais un débrief oral reste utile.
 - **Partie 3, simplifications :** le navigateur, ses outils de développement et le visualiseur de traqueurs sont simulés (pas de vraie requête) ; il est utile de montrer un vrai F12 et de faire comparer deux vrais moteurs de recherche. La popularité est calculée en comptant les liens reçus ; l'algorithme n'est pas programmé (activité du BO non reprise). La « valeur d'un bien » n'est abordée que par la question de la musique achetée.
 - **Activités du BO Web non reprises :** mettre en ligne une page, comparer les paramétrages de plusieurs navigateurs, comparer les politiques de conservation des moteurs de recherche (seulement évoquées dans un quiz).
 - **Planning :** environ deux heures de jeu au total pour le thème Internet, une heure pour le Web. Sur deux séances, cela décale le Web d'une semaine ; si la classe avance vite, les deux parties tiennent dans une même séance.

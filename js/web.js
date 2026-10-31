@@ -24,11 +24,19 @@ function browserLab(cfg) {
   let cur = null, tab = 'net', sel = null;
   const b = openModal({ title: cfg.title, wide: true });
   curNotion = 'http';
-  b.innerHTML = `<ul class="tasks"></ul>
+  b.innerHTML = `<div class="tool-split"><div class="tool-main"><ul class="tasks"></ul>
     <div class="browser"><form class="br-bar"><span class="br-lock">🔒</span><input spellcheck="false" autocomplete="off" aria-label="Adresse"><button class="btn small">Aller</button></form>
     <div class="br-page"></div></div>
     <div class="devtools"><div class="dt-tabs"><button class="chip" data-t="net">📶 Réseau</button><button class="chip" data-t="src">&lt;/&gt; Code source</button></div><div class="dt-body"></div></div>
-    <div class="actions"><button class="btn primary" id="br-done" hidden>J'ai tout vu : je réponds à Klervi</button></div>`;
+    <div class="actions"><button class="btn primary" id="br-done" hidden>J'ai tout vu : je réponds à Klervi</button></div></div><div class="side-q" hidden></div></div>`;
+  // questions à droite : le navigateur reste utilisable pour chercher les réponses
+  let quizDone = !cfg.side, tasksDone = false;
+  const end = () => { if (quizDone && tasksDone) { closeModal(true); cfg.onDone(); } };
+  if (cfg.side) sidePanel(b, cfg.side, () => {
+    quizDone = true;
+    if (!tasksDone) b.querySelector('.side-q').insertAdjacentHTML('beforeend', '<div class="q-fb">👆 Termine les tâches de la liste, à gauche, pour finir.</div>');
+    end();
+  });
   const bar = b.querySelector('.br-bar input'), page = b.querySelector('.br-page'), body = b.querySelector('.dt-body');
   const parse = url => {
     let u = String(url).trim();
@@ -74,6 +82,7 @@ function browserLab(cfg) {
     const st = cfg.tasks.map(t => t.test(o));
     taskList(b.querySelector('.tasks'), cfg.tasks, st);
     const btn = b.querySelector('#br-done');
+    if (cfg.side) { if (!tasksDone && st.every(Boolean)) { tasksDone = true; sfx.ok(); end(); } return; }
     if (btn.hidden && st.every(Boolean)) { btn.hidden = false; sfx.ok(); }
   }
   b.querySelector('.br-bar').onsubmit = ev => { ev.preventDefault(); go(bar.value); };

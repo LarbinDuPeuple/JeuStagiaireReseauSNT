@@ -1,7 +1,7 @@
 'use strict';
 /* =====================================================================
    Le Stagiaire du Bout du Monde — contenu pédagogique (SNT 2nde)
-   Personnages, fiches du carnet, réseau simulé, missions et incidents.
+   Personnages, fiches du mémo, réseau simulé, missions et incidents.
    Les fonctions utilisées ici (say, quiz, terminal, routing…) sont
    définies dans game.js et appelées uniquement pendant la partie.
    Toutes les adresses et tous les noms de domaine sont fictifs, sauf
@@ -24,13 +24,14 @@ const PEOPLE = {
   mairie: { name: 'Service informatique', role: 'Mairie de Brest', shirt: '#3d4a6b', hair: '#2b1b12', skin: '#c98e62' },
   tanguy: { name: 'Tanguy', role: 'Client, Saint-Marc', shirt: '#22a06b', hair: '#6b4423', skin: '#f2c9a5' },
   annaig: { name: 'Annaïg', role: 'Cliente, Ouessant', shirt: '#0e7490', hair: '#2a1a10', skin: '#e8b894' },
+  guivarch: { name: "M. Guivarc'h", role: 'Boulanger, Plougastel', shirt: '#a16207', hair: '#e5e5e5', skin: '#f0c39e' },
   nolwenn: { name: 'Nolwenn', role: 'Cliente, Lambézellec', shirt: '#b45309', hair: '#1d1d1d', skin: '#8d5a3b' }
 };
 
 const IDLE = {
   gwen: ["Yann est coincé à Ouessant : plus de bateau avec cette tempête. Heureusement que tu es là !", "Ici, on est au bout du monde, mais on est reliés au monde entier."],
   erwan: ["Moi aussi j'ai fait ma 2nde à La Croix Rouge. Le réseau, je l'ai découvert en SNT !", "Mon conseil : un problème ? On teste du plus proche au plus loin.", "Il pleut ? Normal, on est à Brest."],
-  maelys: ["Quand un client appelle, reste calme et pose des questions simples.", "Le carnet (touche C) contient toutes les fiches que tu débloques."],
+  maelys: ["Quand un client appelle, reste calme et pose des questions simples.", "Le mémo (touche M) contient toutes les fiches que tu débloques."],
   soizic: ["Sur mon grand écran, chaque trait est une fibre optique entre deux routeurs.", "Aucun routeur ne connaît tout Internet. Chacun ne connaît que ses voisins."],
   klervi: ["Moi, je m'occupe des sites web que les clients hébergent chez IroiseNet : la crêperie du port, le club de voile…", "Internet, ce sont les tuyaux. Le Web, c'est un service qui passe dedans, comme le mail.", "Ma touche préférée ? F12. On voit tout ce que le navigateur échange avec le serveur."],
   loic: ["Sur l'établi, il y a de tout : de la fibre, du cuivre, et même un vieux modem qui chante.", "Un kouign-amann ? Non ? Tant pis, plus pour moi."]
@@ -57,7 +58,11 @@ const NOTIONS = {
     <tr><td>Wi-Fi</td><td>sans fil (ondes radio)</td><td>rapide</td><td>actuel</td></tr>
     <tr><td>4G / 5G</td><td>sans fil (antennes)</td><td>rapide</td><td>actuel</td></tr>
     <tr><td>Bluetooth</td><td>sans fil, très courte portée</td><td>lent</td><td>actuel</td></tr>
-    <tr><td>Satellite</td><td>sans fil</td><td>moyen, avec beaucoup de délai</td><td>actuel (zones isolées)</td></tr></table>` },
+    <tr><td>Satellite</td><td>sans fil</td><td>moyen, avec beaucoup de délai</td><td>actuel (zones isolées)</td></tr></table>
+    <h4>Calculer un temps de téléchargement</h4>
+    <p>Le <b>débit</b> se mesure en bits par seconde : 1 Mbit/s = 1 million de bits par seconde. Attention, <b>1 octet = 8 bits</b>, donc 1 Go = 8 000 Mbit.</p>
+    <p><b>Temps (s) = quantité de données (Mbit) ÷ débit (Mbit/s)</b>. Exemple : 2 Go en ADSL à 8 Mbit/s → 16 000 ÷ 8 = 2 000 s, environ 33 min.</p>
+    <p>Débits typiques : modem 56k ≈ 0,056 Mbit/s · ADSL ≈ 8 Mbit/s · 4G ≈ 50 Mbit/s · fibre ≈ 1 000 Mbit/s. Le <b>délai</b> (temps d'aller-retour) compte aussi : environ 600 ms par satellite, contre quelques ms par la fibre.</p>` },
   trafic: { icon: '📈', title: "Le trafic d'Internet", html: `
     <p>Le programme indique un trafic prévu en 2021 de <b>3 300 milliards de milliards d'octets</b>, soit 3,3 × 10<sup>21</sup> octets.</p>
     <p>Ce trafic augmente chaque année, surtout à cause de la <b>vidéo</b>.</p>
@@ -80,7 +85,8 @@ const NOTIONS = {
     <pre>nslookup iroisenet.bzh   → 203.0.113.10
 nslookup 203.0.113.10    → iroisenet.bzh</pre>
     <p>Le DNS est réalisé par un <b>grand nombre d'ordinateurs</b> répartis sur le réseau et mis à jour en permanence. Un serveur DNS est un ordinateur connecté comme les autres.</p>
-    <p>Si le DNS est en panne : le nom ne marche plus, mais l'adresse IP, si !</p>` },
+    <p>Si le DNS est en panne : le nom ne marche plus, mais l'adresse IP, si !</p>
+    <p>Le serveur DNS d'IroiseNet a l'adresse <code>203.0.113.53</code> : c'est celui qui est réglé sur l'ordinateur de tous ses clients.</p>` },
   routage: { icon: '🧭', title: 'Le routage des paquets', html: `
     <ul>
       <li>L'information voyage en <b>paquets</b>. Chaque paquet contient l'<b>adresse de l'émetteur</b>, l'<b>adresse du destinataire</b> et un morceau des données.</li>
@@ -216,6 +222,7 @@ const CLIENTS = {
   kerbrat: { name: 'PC de M. Kerbrat (Morlaix)', ip: '192.168.1.12', gw: '192.168.1.1', dns: DNS_IP, at: 'morlaix', wifi: false },
   tanguy: { name: 'PC de Tanguy (Saint-Marc)', ip: '192.168.1.40', gw: '192.168.1.1', dns: DNS_IP, at: 'brest', wifi: true },
   annaig: { name: "PC d'Annaïg (Ouessant)", ip: '192.168.1.15', gw: '192.168.1.1', dns: DNS_IP, at: 'ouessant', wifi: true },
+  guivarch: { name: "PC de la boulangerie Guivarc'h (Plougastel)", ip: '192.168.1.20', gw: '192.168.1.1', dns: '192.168.1.53', at: 'brest', wifi: false },
   nolwenn: { name: 'PC de Nolwenn (Lambézellec)', ip: '192.168.1.31', gw: '192.168.1.1', dns: DNS_IP, at: 'brest', wifi: true }
 };
 const DNS_RECORDS = {
@@ -225,10 +232,12 @@ const DNS_RECORDS = {
   'mairie-brest.bzh': '198.51.100.20',
   'meteo-iroise.bzh': '198.51.100.71',
   'ntp.iroisenet.bzh': '203.0.113.123',
-  'creperie-arvag.bzh': '203.0.113.85'
+  'creperie-arvag.bzh': '203.0.113.85',
+  'club-voile-brest.bzh': '203.0.113.85', // hébergé sur le même serveur web que la crêperie
+  'mairie-ouessant.bzh': '203.0.113.200'
 };
 // où se trouve chaque serveur (routeur auquel il est relié)
-const HOST_AT = { '185.15.58.224': 'paris', '203.0.113.10': 'brest', '203.0.113.80': 'brest', '198.51.100.20': 'brest', '198.51.100.71': 'quimper', '203.0.113.123': 'brest', '203.0.113.85': 'brest', [DNS_IP]: 'brest' };
+const HOST_AT = { '185.15.58.224': 'paris', '203.0.113.10': 'brest', '203.0.113.80': 'brest', '198.51.100.20': 'brest', '198.51.100.71': 'quimper', '203.0.113.123': 'brest', '203.0.113.85': 'brest', '203.0.113.200': 'ouessant', [DNS_IP]: 'brest' };
 
 const ROUTERS = {
   ouessant: { name: 'Ouessant', x: 46, y: 96, ip: '203.0.113.240' },
@@ -265,13 +274,17 @@ const Q_SUPPORTS = { title: "🔧 L'établi de Loïc", notion: 'physique', quest
     ex: "Internet est <b>indépendant du réseau physique</b> : IP et TCP sont des logiciels installés dans chaque appareil." }
 ] };
 
-const Q_HISTOIRE = { title: '📜 La frise de Gwenaëlle', notion: 'histoire', intro: "📒 Tu peux ouvrir ton <b>carnet</b> à tout moment, même pendant une question (bouton « Carnet » en haut, ou touche C). La fiche « Petite histoire d'Internet » vient de s'y ajouter.", questions: [
+const Q_HISTOIRE = { title: '📜 La frise de Gwenaëlle', notion: 'histoire', intro: "📒 Tu peux ouvrir ton <b>mémo</b> à tout moment, même pendant une question (bouton « Mémo » en haut, ou touche M). La fiche « Petite histoire d'Internet » vient de s'y ajouter.", questions: [
   { t: 'order', q: 'Remets ces étapes dans l\'ordre chronologique :', items: ['Premiers ordinateurs reliés en réseau', 'ArpaNet, le réseau américain', 'Cyclades, le réseau français', "Naissance d'Internet avec TCP/IP"],
-    hint: 'La fiche « Petite histoire d\'Internet » de ton carnet donne les dates.', ex: "Cyclades, projet français, a inspiré la façon dont Internet découpe l'information en paquets." },
+    hint: 'La fiche « Petite histoire d\'Internet » de ton mémo donne les dates.', ex: "Cyclades, projet français, a inspiré la façon dont Internet découpe l'information en paquets." },
   { q: "En 1983, qu'est-ce qui permet à des réseaux très différents de former un seul Internet ?",
     c: ['Un seul constructeur pour tous', 'Un protocole commun : TCP/IP', 'Un câble unique autour du monde', 'Un ordinateur central aux États-Unis'], a: 1,
     fb: ["Justement non : Internet est indépendant des constructeurs.", null, "Internet relie des réseaux de toutes sortes, pas un câble unique.", "Il n'y a pas d'ordinateur central : c'est ce qui rend Internet robuste."],
-    ex: "Tous les réseaux « parlent » le même protocole, TCP/IP : c'est la naissance d'Internet." }
+    ex: "Tous les réseaux « parlent » le même protocole, TCP/IP : c'est la naissance d'Internet." },
+  { q: "Quelle idée du réseau français Cyclades Internet utilise-t-il encore aujourd'hui ?",
+    c: ["Découper l'information en paquets indépendants", 'Relier tous les ordinateurs à un ordinateur central', 'Transmettre uniquement par satellite', 'Donner un nom de domaine à chaque site'], a: 0,
+    fb: [null, "Au contraire : Internet n'a pas de centre, c'est ce qui le rend robuste.", "Internet utilise tous les supports : câbles, fibre, ondes…", "Les noms de domaine (DNS) sont arrivés plus tard, en 1983-1984."],
+    ex: "Chaque paquet voyage seul, avec l'adresse du destinataire : c'est l'héritage de Cyclades." }
 ] };
 
 const Q_TRAFIC = { title: '📈 La question de Gwenaëlle', notion: 'trafic', questions: [
@@ -280,7 +293,11 @@ const Q_TRAFIC = { title: '📈 La question de Gwenaëlle', notion: 'trafic', qu
     ex: "3,3 × 10²¹ octets, soit 3 300 milliards de milliards d'octets. Ton téléphone (128 Go ≈ 10¹¹ octets) en contiendrait une toute petite poussière !" },
   { q: "Quel usage fait le plus grimper le trafic d'Internet ces dernières années ?",
     c: ['Les mails', 'Les SMS', 'La vidéo', 'Les pages de texte'], a: 2,
-    ex: "La vidéo (streaming, réseaux sociaux, visio) représente la plus grande part du trafic." }
+    ex: "La vidéo (streaming, réseaux sociaux, visio) représente la plus grande part du trafic." },
+  { q: "Un film en haute définition fait environ 4 Go (4 × 10⁹ octets). Le trafic de 2021, 3,3 × 10²¹ octets, correspond à peu près à combien de films ?",
+    c: ['≈ 10¹² films', '≈ 10⁹ films', '≈ 10⁶ films', '≈ 10³⁰ films'], a: 0,
+    fb: [null, "Trop peu : divise 3,3 × 10²¹ par 4 × 10⁹, et regarde surtout les puissances de 10.", "Bien trop peu : 21 − 9 = 12.", "Quand on divise, on soustrait les puissances : 21 − 9 = 12."],
+    ex: "3,3 × 10²¹ ÷ 4 × 10⁹ ≈ 0,8 × 10¹², soit environ mille milliards de films en une année !" }
 ] };
 
 /* ---------------------------------------------------------------------
@@ -323,16 +340,17 @@ const CREPERIE = {
       const j = String(p.jour || '').toLowerCase();
       const body = j === 'lundi' ? '<p>La crêperie est fermée le lundi. Kenavo !</p>'
         : CARTE_DU_JOUR[j] ? `<ul>\n    <li>Galette du jour : ${CARTE_DU_JOUR[j]}</li>\n    <li>Galette complète – 9 €</li>\n    <li>Crêpe beurre-sucre – 4 €</li>\n    <li>Crêpe caramel au beurre salé – 5 €</li>\n  </ul>`
+        : j ? `<p>🤔 « ${esc(j)} » ? Le programme de la crêperie ne fabrique une carte que pour les jours de la semaine.</p>\n  <p>Le crêpier vous offre quand même une crêpe mystère 🥞 !</p>`
         : '<p>Aucune carte pour ce jour.</p>';
       return { status: 200, kind: 'page fabriquée par le serveur (programme PHP)', html: `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Carte du ${j || '?'} – Crêperie Ar Vag</title>
+  <title>Carte du ${esc(j) || '?'} – Crêperie Ar Vag</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <h1>Carte du ${j || '?'}</h1>
+  <h1>Carte du ${esc(j) || '?'}</h1>
   ${body}
   <p><a href="/index.html">Retour à l'accueil</a></p>
 </body>
@@ -388,7 +406,7 @@ const MISSIONS = [
             ['gwen', "C'est donc toi qui vas tenir la hotline avec Erwan et Maëlys. Erwan a fait sa 2nde au lycée La Croix Rouge, comme toi : il te donnera un coup de main."],
             ['moi', "La hotline ? Mais je ne connais rien au réseau d'un fournisseur d'accès !"],
             ['gwen', "Justement, on va commencer par les bases. Viens voir la frise sur le panneau, là, à gauche."],
-            ['gwen', "Et garde ton <b>carnet</b> sous la main (touche C) : il se remplit de fiches au fil de la journée, et tu peux le consulter même pendant mes questions."]
+            ['gwen', "Et garde ton <b>mémo</b> sous la main (touche M) : il se remplit de fiches au fil de la journée, et tu peux le consulter même pendant mes questions."]
           ], done);
         } },
       { id: 'm1s2', label: "Remettre en ordre la frise de l'histoire d'Internet", target: 'frise',
@@ -400,6 +418,27 @@ const MISSIONS = [
             ['loic', "Salut ! Ici, c'est l'atelier. Sur l'établi, j'ai tout ce qui transporte Internet jusqu'aux clients."],
             ['loic', "Des câbles en cuivre, de la fibre optique, des antennes… et même un vieux modem. Aide-moi à ranger tout ça."]
           ], () => quiz(Q_SUPPORTS, done));
+        },
+        notions: ['physique'] },
+      { id: 'm1d', label: 'Calculer des débits avec Loïc', target: 'loic',
+        run() {
+          say([
+            ['loic', "Deux clientes ont appelé l'atelier ce matin. Mme Le Gall trouve son ADSL bien lent, et Annaïg, à Ouessant, veut faire des visios avec sa fille au Canada."],
+            ['loic', "Avant de leur répondre, on fait les calculs. La fiche « Les réseaux physiques » de ton mémo explique comment faire. Sors ta calculatrice !"]
+          ], () => quiz({ title: '🧮 Les calculs de Loïc', notion: 'physique', questions: [
+            { t: 'input', q: "Mme Le Gall télécharge un épisode de série de <b>1 Go</b> (soit 8 000 Mbit). Son ADSL a un débit de <b>8 Mbit/s</b>. Combien de <b>secondes</b> faut-il ?", a: ['1000', '1 000'], ph: 'en secondes',
+              hint: "Temps = quantité ÷ débit, avec la quantité en Mbit.", ex: "8 000 ÷ 8 = 1 000 s, soit presque 17 minutes." },
+            { t: 'input', q: "Avec la <b>fibre</b> à 1 000 Mbit/s, combien de secondes faudrait-il pour le même épisode ?", a: ['8'], ph: 'en secondes',
+              hint: "Même calcul : 8 000 Mbit ÷ 1 000 Mbit/s.", ex: "8 000 ÷ 1 000 = 8 s : cent vingt-cinq fois plus vite que l'ADSL !" },
+            { q: "Un jeu de 50 Go se télécharge en 4G à 50 Mbit/s. Combien de temps environ ?",
+              c: ['Environ 2 h 15 min', 'Environ 1 minute', 'Environ 8 secondes', 'Environ 3 jours'], a: 0,
+              fb: [null, "Pense à convertir : 50 Go = 50 × 8 000 = 400 000 Mbit.", "C'est le temps pour 1 Go en fibre, pas 50 Go en 4G.", "Beaucoup trop : refais le calcul avec 400 000 Mbit."],
+              ex: "50 Go = 400 000 Mbit ; 400 000 ÷ 50 = 8 000 s, soit environ 2 h 13 min." },
+            { q: "Pas de fibre à Ouessant. Pour des <b>visios</b> avec sa fille au Canada, que conseiller à Annaïg ?",
+              c: ["La 4G, grâce à l'antenne de l'île", 'Un satellite : bon débit, mais 600 ms de délai', 'Un modem 56k sur la ligne du téléphone', 'Le Bluetooth de son téléphone portable'], a: 0,
+              fb: [null, "Le débit irait, mais avec 600 ms de délai à chaque échange, la conversation devient pénible.", "56 kbit/s ne suffisent même pas pour une image fixe correcte en visio.", "Le Bluetooth ne porte qu'à quelques mètres."],
+              ex: "Pour une visio, il faut un bon débit <b>et</b> peu de délai : la 4G convient. Le satellite reste une solution de secours pour les zones sans antenne." }
+          ] }, done));
         },
         notions: ['physique'] },
       { id: 'm1s4', label: 'Faire le point avec Gwenaëlle', target: 'gwen',
@@ -417,7 +456,7 @@ const MISSIONS = [
   {
     id: 'm2', partie: 1, title: 'Allô, la hotline ?', when: 'Lundi · 10h00 · Brest',
     story: "Le téléphone de ton bureau sonne déjà. Avec la prise en main à distance, tu peux ouvrir l'invite de commandes sur l'ordinateur d'un client, comme si tu étais chez lui.",
-    goals: ["Trouver l'adresse IP d'un appareil, de sa box (passerelle) et de son serveur DNS", 'Analyser un réseau local pour voir ce qui y est connecté', 'Retrouver une adresse IP à partir d\'un nom, et inversement (DNS)'],
+    goals: ["Trouver l'adresse IP d'un appareil, de sa box (passerelle) et de son serveur DNS", 'Analyser un réseau local pour voir ce qui y est connecté', 'Retrouver une adresse IP à partir d\'un nom, et inversement (DNS)', 'Diagnostiquer une panne en testant du plus proche au plus loin (ping)'],
     onStart() { S.ring = true; },
     steps: [
       { id: 'm2s1', label: 'Décrocher le téléphone (Mme Le Gall appelle)', target: 'telephone',
@@ -434,19 +473,36 @@ const MISSIONS = [
         run() {
           const c = CLIENTS.legall;
           terminal('legall', {
-            goal: "Affiche la configuration réseau de l'ordinateur de Mme Le Gall avec <code>ipconfig</code>.",
+            goal: "Affiche la configuration réseau de l'ordinateur de Mme Le Gall avec <code>ipconfig</code>, puis réponds à ses questions (à droite). Tu peux relancer des commandes à tout moment.",
             quick: ['ipconfig', 'aide'],
             onResult(r, api) {
               if (r.type === 'ipconfig' && !api.flag) {
                 api.flag = true;
-                api.after("Bravo, tu as la configuration complète. Relève les trois adresses !", 'Répondre à Mme Le Gall', () => quiz({ title: '📞 Mme Le Gall attend', notion: 'ip', questions: [
-                  { t: 'input', q: "Quelle est l'<b>adresse IP</b> (IPv4) de l'ordinateur de Mme Le Gall ?", a: [c.ip], ph: 'ex : 10.0.0.1', hint: 'Relis la ligne « Adresse IPv4 » de ipconfig.', ex: `Son adresse IP est <code>${c.ip}</code>.` },
-                  { t: 'input', q: "Quelle est l'adresse de sa <b>box</b> (la passerelle par défaut) ?", a: [c.gw], ph: 'ex : 10.0.0.254', hint: 'Relis la ligne « Passerelle par défaut ».', ex: "La box est la porte de sortie vers Internet : c'est la <b>passerelle</b>." },
-                  { t: 'input', q: "Quelle est l'adresse de son <b>serveur DNS</b> ?", a: [c.dns], ph: 'ex : 10.0.0.53', hint: 'Relis la ligne « Serveurs DNS ».', ex: "C'est le serveur DNS d'IroiseNet, dans notre salle des machines !" },
+                api.side({ title: '📞 Mme Le Gall attend', notion: 'ip', questions: [
+                  { t: 'input', q: "« Mon petit-fils me demande l'adresse IP <b>de l'ordinateur</b>. Je lui dis quoi ? »", a: [c.ip], ph: 'adresse IP',
+                    hint: "Dans ipconfig, cherche la ligne qui désigne l'ordinateur lui-même (pas la box, pas le DNS).", ex: `L'ordinateur a l'adresse <code>${c.ip}</code> : c'est la ligne « Adresse IPv4 ».` },
+                  { q: "« Et s'il veut régler sa console pour qu'elle sorte sur Internet, par quel appareil passe-t-elle ? »",
+                    c: [`La box, dont l'adresse est ${c.gw}`, `Le serveur DNS, à l'adresse ${c.dns}`, `L'ordinateur du salon, en ${c.ip}`, "Directement la fibre, sans adresse"], a: 0,
+                    fb: [null, "Le serveur DNS traduit les noms en adresses : il ne fait pas passer les paquets vers Internet.", "L'ordinateur n'est qu'un appareil du réseau, comme la console.", "Tous les appareils de la maison passent par la box : c'est la passerelle."],
+                    ex: "La box est la <b>passerelle par défaut</b> : la porte de sortie de la maison vers Internet." },
+                  { q: "La console de Jean a l'adresse <code>192.168.1.26</code>. Est-elle sur le même réseau local que l'ordinateur ?",
+                    c: ["Oui : le début de l'adresse est le même, seule la fin change", "Non : deux appareils ne peuvent pas être sur le même réseau", "Non : la console a un nombre plus grand à la fin", "Impossible à savoir sans appeler le service technique d'IroiseNet"], a: 0,
+                    fb: [null, "Un réseau local relie justement plusieurs appareils.", "La fin de l'adresse désigne l'appareil : elle est forcément différente.", "Compare simplement avec l'adresse de l'ordinateur, dans ipconfig."],
+                    ex: `<code>192.168.1</code>.23 et <code>192.168.1</code>.26 : même début (le réseau de la maison), fin différente (l'appareil). Comme une adresse postale : même rue, numéro différent.` },
+                  { q: "Le voisin, abonné lui aussi chez IroiseNet, a la même passerelle et le même serveur DNS. Lequel de ces deux réglages vient d'IroiseNet, et non de la maison ?",
+                    c: [`Le serveur DNS (${c.dns})`, `La passerelle (${c.gw})`, `L'adresse IPv4 (${c.ip})`, 'Le masque de sous-réseau'], a: 0,
+                    fb: [null, "Le voisin a aussi une box en " + c.gw + ", mais c'est sa propre box, chez lui : chaque maison a la sienne.", "L'adresse de l'ordinateur est propre à chaque appareil.", "Ce n'est pas une adresse de machine."],
+                    ex: `<code>${c.dns}</code> est le serveur DNS d'IroiseNet, dans notre salle des machines : il sert à tous les clients. La passerelle, elle, est la box de chaque maison.` },
                   { q: "Laquelle de ces adresses IPv4 est <b>impossible</b> ?",
                     c: ['192.168.1.256', '172.16.254.100', '10.29.4.57', '8.8.8.8'], a: 0,
-                    ex: "Chaque nombre d'une adresse IPv4 va de 0 à 255 : <b>256</b> est donc impossible." }
-                ] }, done));
+                    ex: "Chaque nombre d'une adresse IPv4 va de 0 à 255 : <b>256</b> est donc impossible." },
+                  { q: `Chez M. Kerbrat, ipconfig affiche :<pre class="mini-term">Adresse IPv4 . . . . : 192.168.1.12
+Passerelle par défaut : 192.168.0.1
+Serveurs DNS  . . . . : ${DNS_IP}</pre>Sa box a l'adresse 192.168.1.1, et Internet ne marche pas. Quelle ligne est fausse ?`,
+                    c: ['La passerelle par défaut', "L'adresse IPv4", 'Les serveurs DNS', 'Aucune, la panne vient de la fibre'], a: 0,
+                    fb: [null, "192.168.1.12 commence comme l'adresse de la box : l'ordinateur est bien sur le réseau de la maison.", "C'est le même serveur DNS que pour tous les clients d'IroiseNet.", "Une ligne ne correspond pas à l'adresse de sa box : regarde bien."],
+                    ex: "La passerelle doit être l'adresse de la box (192.168.1.1). Avec 192.168.0.1, l'ordinateur envoie ses paquets vers un appareil qui n'existe pas !" }
+                ] }, done);
               }
             }
           });
@@ -468,6 +524,10 @@ const MISSIONS = [
               Mme Le Gall vit seule avec son fils Jean. Quel appareil n'a rien à faire sur son réseau ?`,
               c: ['PC-SALON', 'Console-Jean', 'PC-JEROME', 'Tablette-Mamie'], a: 2,
               ex: "Un voisin utilise son Wi-Fi sans autorisation : il télécharge la nuit et ralentit sa connexion." },
+            { q: "PC-JEROME a l'adresse <code>192.168.1.47</code>. Qu'est-ce que cela prouve ?",
+              c: ['Il est connecté au réseau local de Mme Le Gall', 'Toutes les adresses en 192.168 sont chez elle', 'Il est forcément dans la même pièce que sa box', "Il a piraté l'ordinateur de Mme Le Gall"], a: 0,
+              fb: [null, "Des millions de maisons utilisent des adresses en 192.168.1… : c'est la box de chaque maison qui les distribue.", "Le Wi-Fi traverse les murs : le voisin peut être chez lui.", "Il utilise son Wi-Fi, pas son ordinateur : l'interface de la box ne montre que les connexions."],
+              ex: "C'est la box qui lui a donné cette adresse : il est bien sur son réseau local, sans doute depuis l'appartement d'à côté." },
             { q: 'Que conseilles-tu à Mme Le Gall ?',
               c: ['Débrancher la box tous les soirs avant de dormir', 'Acheter un ordinateur plus récent et plus rapide', 'Changer la clé du Wi-Fi pour une clé longue et secrète', 'Baisser le volume de la télévision'], a: 2,
               fb: ["Elle ne pourrait plus regarder la télé le soir… et l'intrus reviendrait le lendemain.", "L'ordinateur n'y est pour rien : c'est l'accès au Wi-Fi qu'il faut protéger.", null, '😄 Non.'],
@@ -485,31 +545,77 @@ const MISSIONS = [
         } },
       { id: 'm2s5', label: 'Interroger le DNS avec nslookup (sur ton poste)', target: 'mon_pc',
         run() {
-          S.sp.ns = S.sp.ns || {};
           terminal('mon_pc', {
-            goal: "1) Trouve l'adresse IP de <code>wikipedia.fr</code>. 2) Trouve à quel nom correspond l'adresse <code>203.0.113.80</code>.",
-            quick: ['nslookup wikipedia.fr', 'nslookup 203.0.113.80', 'aide'],
-            onResult(r, api) {
-              if (r.type !== 'nslookup' || !r.ok) return;
-              if (r.query === 'wikipedia.fr') S.sp.ns.a = 1;
-              if (r.query === '203.0.113.80') S.sp.ns.b = 1;
-              if (S.sp.ns.a && S.sp.ns.b && !api.flag) {
-                api.flag = true;
-                api.after('Les deux recherches sont faites. Vérifions !', 'Répondre', () => quiz({ title: '📖 Le DNS', notion: 'dns', questions: [
-                  { t: 'input', q: "Quelle est l'adresse IP de <code>wikipedia.fr</code> ?", a: [DNS_RECORDS['wikipedia.fr']], ph: 'adresse IP', hint: 'Relis la ligne « Address » de nslookup wikipedia.fr.', ex: 'Le DNS a traduit le nom en adresse IP.' },
-                  { t: 'input', q: "À quel nom correspond l'adresse <code>203.0.113.80</code> ?", a: ['lycee-lacroixrouge.bzh'], ph: 'nom de domaine', hint: 'Relis la ligne « Nom » de nslookup 203.0.113.80.', ex: "C'est le site de ton lycée (version simulée) ! Le DNS fonctionne aussi dans l'autre sens." },
-                  { q: 'Qui réalise le service DNS sur Internet ?',
-                    c: ['Un seul ordinateur géant aux États-Unis', 'Ta box, qui connaît tous les sites', 'Un grand nombre d\'ordinateurs répartis', 'Les câbles de fibre optique'], a: 2,
-                    ex: "Le DNS est réparti sur un très grand nombre de serveurs, mis à jour en permanence." },
-                  { q: "Le DNS d'un client tombe en panne. Que se passe-t-il ?",
-                    c: ['Plus rien ne marche, même en tapant une adresse IP', 'Les noms ne marchent plus, les adresses IP si', "L'ordinateur perd son adresse IP et sa passerelle", 'Le Wi-Fi se coupe dans toute la maison'], a: 1,
-                    ex: "Sans annuaire, on ne trouve plus un site par son nom… mais on peut toujours le joindre par son adresse IP." }
-                ] }, () => { S.sp.ns = null; done(); }));
-              }
-            }
+            goal: "Réponds aux questions d'Erwan (à droite) en interrogeant le DNS. Exemple : <code>nslookup wikipedia.fr</code>. Ça marche aussi avec une adresse IP : <code>nslookup 203.0.113.10</code>.",
+            quick: ['nslookup wikipedia.fr', 'aide'],
+            side: { title: '📖 Les questions d\'Erwan', notion: 'dns', questions: [
+              { t: 'input', q: "Quand tu tapes <code>wikipedia.fr</code> dans ton navigateur, à quelle adresse IP ton ordinateur envoie-t-il ses paquets ?", a: [DNS_RECORDS['wikipedia.fr']], ph: 'adresse IP',
+                hint: 'Demande au DNS de traduire ce nom : nslookup wikipedia.fr', ex: 'Le DNS a traduit le nom en adresse IP : les paquets partent vers cette adresse.' },
+              { t: 'input', q: "Dans l'historique d'un ordinateur du CDI, Mme Quéré trouve seulement l'adresse <code>203.0.113.80</code>. Quel site a été visité ?", a: ['lycee-lacroixrouge.bzh', 'www.lycee-lacroixrouge.bzh'], ph: 'nom de domaine',
+                hint: "Le DNS marche dans les deux sens : nslookup suivi d'une adresse IP donne le nom.", ex: "C'est le site de ton lycée (version simulée) ! Le DNS fonctionne aussi de l'adresse vers le nom." },
+              { q: "Deux de ces sites sont hébergés sur le <b>même serveur</b> (même adresse IP). Lesquels ?<br><small><code>creperie-arvag.bzh</code>, <code>club-voile-brest.bzh</code>, <code>mairie-brest.bzh</code>, <code>meteo-iroise.bzh</code></small>",
+                c: ['La crêperie et le club de voile', 'La mairie et le site de la météo', 'La crêperie et la mairie', 'Le club de voile et la météo'], a: 0,
+                hint: 'Interroge le DNS pour chacun des quatre noms, et compare les adresses.', ex: "Les deux sites ont l'adresse <code>203.0.113.85</code> : c'est le serveur web d'IroiseNet, qui héberge plusieurs sites. Plusieurs noms peuvent donc mener à la même machine." },
+              { q: "Tu tapes <code>nslookup crepes-de-brest.bzh</code> (essaie !). Que peux-tu conclure de la réponse ?",
+                c: ["Ce nom n'existe pas dans le DNS", "Le serveur DNS d'IroiseNet est en panne", 'Le site existe mais il est fermé le lundi', "Ton ordinateur a perdu son adresse IP"], a: 0,
+                fb: [null, "Le serveur DNS a bien répondu (« Non-existent domain ») : il fonctionne.", "Le DNS ne sait rien des horaires d'un site : il ne connaît que des noms et des adresses.", "Ton ordinateur a pu interroger le DNS : il a donc bien une adresse."],
+                ex: "« Non-existent domain » : le serveur DNS a répondu, mais aucun annuaire ne connaît ce nom." },
+              { q: 'Qui réalise le service DNS sur Internet ?',
+                c: ['Un seul ordinateur géant aux États-Unis', 'Ta box, qui connaît tous les sites', "Un grand nombre d'ordinateurs répartis", 'Les câbles de fibre optique'], a: 2,
+                ex: "Le DNS est réparti sur un très grand nombre de serveurs, mis à jour en permanence." },
+              { q: "Le DNS d'un client tombe en panne. Que se passe-t-il ?",
+                c: ['Plus rien ne marche, même en tapant une adresse IP', 'Les noms ne marchent plus, les adresses IP si', "L'ordinateur perd son adresse IP et sa passerelle", 'Le Wi-Fi se coupe dans toute la maison'], a: 1,
+                ex: "Sans annuaire, on ne trouve plus un site par son nom… mais on peut toujours le joindre par son adresse IP." }
+            ] },
+            onSide: done
           });
         },
         notions: ['dns'] },
+      { id: 'm2d', label: "Dépanner la boulangerie Guivarc'h (sur ton poste)", target: 'mon_pc',
+        run() {
+          say([
+            ['guivarch', "(au téléphone) Bonjour, boulangerie Guivarc'h, à Plougastel ! Depuis que mon neveu a « bidouillé » l'ordinateur, plus aucun site ne s'ouvre : « Impossible de trouver le serveur ». Et ma box clignote normalement !"],
+            ['erwan', "Prends la main sur son ordinateur. Méthode de la hotline : on teste du plus proche au plus loin. Un <code>ping</code> vers une adresse IP, puis vers un nom… ça en dit déjà long."]
+          ], () => {
+            let fixed = false;
+            const T = terminal('guivarch', {
+              goal: "Trouve la panne de M. Guivarc'h avec les commandes, en répondant aux questions à droite.",
+              quick: ['ping 192.168.1.1', 'ping 185.15.58.224', 'ping wikipedia.fr', 'ipconfig', 'aide'],
+              side: { title: "🥖 La panne de la boulangerie", notion: 'diagnostic', questions: [
+                { q: "Commence par le plus proche : <code>ping 192.168.1.1</code>, l'adresse de sa box. Que montre le résultat ?",
+                  c: ['La box répond : le réseau de la maison fonctionne', 'La box ne répond pas : elle est sûrement débranchée', 'La box répond, donc tous les sites devraient marcher', "Le ping ne sert à rien pour une box"], a: 0,
+                  fb: [null, "Lance la commande : la box répond bien (« Réponse de 192.168.1.1 »).", "Pas si vite : la box répond, mais les sites ne s'ouvrent toujours pas. Le problème est plus loin.", "Le ping teste n'importe quelle machine qui a une adresse IP, box comprise."],
+                  ex: "La box répond : le câble et le réseau de la maison fonctionnent. Le problème est plus loin." },
+                { q: "Compare <code>ping 185.15.58.224</code> (l'adresse de Wikipédia) et <code>ping wikipedia.fr</code>. Que constates-tu ?",
+                  c: ["L'adresse répond, le nom non", 'Aucun des deux ne répond', 'Les deux répondent normalement', "Le nom répond, l'adresse non"], a: 0,
+                  hint: 'Lance les deux commandes et lis bien la fin de chaque résultat.', ex: "Avec l'adresse IP, les paquets vont jusqu'à Paris et reviennent : Internet fonctionne. Avec le nom, l'ordinateur ne trouve même pas l'adresse." },
+                { q: "Alors, qu'est-ce qui ne fonctionne pas chez M. Guivarc'h ?",
+                  c: ['La traduction des noms en adresses IP', 'La fibre entre Plougastel et le routeur de Brest', 'La box, qui ne transmet plus aucun paquet', 'Le site de Wikipédia, en panne depuis ce matin'], a: 0,
+                  fb: [null, "Si la fibre était coupée, le ping vers l'adresse IP de Wikipédia échouerait aussi.", "La box transmet bien les paquets : le ping vers 185.15.58.224 revient.", "Wikipédia répond à son adresse IP : le site fonctionne."],
+                  ex: "Les adresses marchent, pas les noms : c'est le <b>DNS</b> qui ne répond pas." },
+                { q: "Regarde son <code>ipconfig</code>. Quel réglage le neveu a-t-il modifié ?",
+                  c: ['Les serveurs DNS', "L'adresse IPv4", 'La passerelle par défaut', 'Le masque de sous-réseau'], a: 0,
+                  fb: [null, "Son adresse commence comme celle de sa box : elle est correcte.", "La passerelle est bien la box (192.168.1.1), qui répond au ping.", "Ce réglage est le même chez tous les clients (255.255.255.0)."],
+                  hint: "Compare avec la configuration de Mme Le Gall, cliente d'IroiseNet elle aussi.", ex: "Le serveur DNS est réglé sur <code>192.168.1.53</code> : aucune machine ne répond à cette adresse ! Le neveu a fait une erreur." },
+                { t: 'input', q: "Quelle adresse de serveur DNS faut-il remettre sur son ordinateur ?", a: [DNS_IP], ph: 'adresse IP',
+                  hint: "C'est le même serveur que pour tous les clients d'IroiseNet : tu l'as vu chez Mme Le Gall, et la fiche « DNS » de ton mémo le rappelle.", ex: "Le serveur DNS d'IroiseNet, dans notre salle des machines." }
+              ] },
+              keep: true,
+              onSide() {
+                fixed = true; S.net.dnsFix = S.net.dnsFix || {}; S.net.dnsFix.guivarch = DNS_IP; sfx.ok();
+                T.note("✅ Serveur DNS corrigé sur l'ordinateur de M. Guivarc'h. <b>Vérifie que ça marche</b> : tape <code>ping wikipedia.fr</code>.");
+              },
+              onResult(r, api) {
+                if (fixed && r.type === 'ping' && r.ok && !/^[\d.]+$/.test(r.query) && !api.flag) {
+                  api.flag = true;
+                  api.after("🎉 Le nom répond à nouveau : le DNS traduit de nouveau les noms en adresses. M. Guivarc'h vous offre un kouign-amann !", 'Raccrocher', done);
+                }
+              }
+            });
+          });
+        },
+        skip() { S.net.dnsFix = S.net.dnsFix || {}; S.net.dnsFix.guivarch = DNS_IP; },
+        notions: ['diagnostic'] },
       { id: 'm2s6', label: 'Bilan de la matinée avec Gwenaëlle', target: 'gwen',
         run() {
           say([
@@ -537,12 +643,16 @@ const MISSIONS = [
         notions: ['routage'] },
       { id: 'm3s2', label: 'Router un paquet de Brest à Paris (grand écran)', target: 'ecran',
         run() {
-          routing({ title: '🧭 Router un paquet', from: 'brest', to: 'paris', ttl: 8,
-            intro: "Un paquet part de <b>Brest</b> vers le serveur de Wikipédia, relié à <b>Paris</b>. À chaque routeur, lis sa table et clique sur le voisin à qui il faut passer le paquet.",
+          routing({ title: '🧭 Router un paquet', from: 'brest', to: 'paris', ttl: 8, fog: true,
+            intro: "Un paquet part de <b>Brest</b> vers le serveur de Wikipédia, relié à <b>Paris</b>. Comme un vrai routeur, tu ne vois que tes <b>voisins directs</b> : le reste du réseau est dans le brouillard. Lis la table du routeur où se trouve le paquet, et clique sur le voisin à qui le passer.",
             onDone: () => quiz({ title: '🧭 Le routage', notion: 'routage', questions: [
               { q: 'Pour choisir où envoyer un paquet, le routeur de Morlaix utilise :',
                 c: ["La carte complète d'Internet, téléchargée chaque matin", 'Sa table, construite avec ses voisins', 'Les indications envoyées par le destinataire', 'Le serveur DNS'], a: 1,
                 ex: "Chaque routeur a une carte <b>locale</b> : il connaît ses voisins et la direction à prendre, pas tout le chemin." },
+              { q: "Pendant ce trajet, qu'est-ce qui t'a permis de choisir le bon voisin à chaque étape ?",
+                c: ['La table du routeur où était le paquet', "La carte complète du réseau, affichée à l'écran", 'Le compteur de sauts du paquet', "L'adresse IP de l'émetteur, écrite dans le paquet"], a: 0,
+                fb: [null, "Justement, elle était dans le brouillard : tu ne voyais que les voisins.", "Le compteur dit combien de routeurs le paquet peut encore traverser, pas où aller.", "C'est la destination qui compte pour choisir la direction, pas l'émetteur."],
+                ex: "C'est exactement ce que fait un routeur : il cherche la destination dans sa table, qui lui donne le voisin suivant." },
               { q: "Pourquoi n'y a-t-il pas de carte globale d'Internet dans chaque routeur ?",
                 c: ['Elle serait trop grande et changerait sans arrêt', "C'est interdit par la loi", "Les routeurs n'ont pas assez d'écran pour l'afficher", 'Elle existe, mais seuls les opérateurs y ont accès'], a: 0,
                 ex: "Internet relie des milliards d'appareils et change en permanence : le routage de proche en proche permet de fonctionner à grande échelle." }
@@ -552,20 +662,24 @@ const MISSIONS = [
       { id: 'm3s3', label: 'Suivre le chemin avec tracert (sur ton poste)', target: 'mon_pc',
         run() {
           terminal('mon_pc', {
-            goal: "Utilise <code>tracert wikipedia.fr</code> pour afficher la liste des routeurs traversés.",
+            goal: "<code>tracert</code> affiche la liste des routeurs traversés et le temps de réponse de chacun. Sers-t'en pour répondre à Soizic (à droite). Exemple : <code>tracert wikipedia.fr</code>.",
             quick: ['tracert wikipedia.fr', 'aide'],
-            onResult(r, api) {
-              if (r.type === 'tracert' && r.ok && r.query === 'wikipedia.fr' && !api.flag) {
-                api.flag = true;
-                const n = r.hops - 1;
-                api.after(`Le chemin s'affiche : ${r.hops} étapes, la dernière étant le serveur lui-même.`, 'Répondre', () => quiz({ title: '🛰️ tracert', notion: 'routage', questions: [
-                  { t: 'input', q: "Combien de <b>routeurs</b> le paquet a-t-il traversés (sans compter le serveur de Wikipédia à la fin) ?", a: [String(n)], ph: 'un nombre', hint: 'Compte les lignes du tracert, puis retire la dernière (le serveur).', ex: `${n} routeurs, de la box de l'agence jusqu'à Paris.` },
-                  { q: 'À quoi sert la commande tracert ?',
-                    c: ['À traduire un nom de domaine en adresse IP', 'À afficher sa propre adresse IP', 'À afficher les routeurs traversés', 'À accélérer la connexion'], a: 2,
-                    ex: "tracert (traceroute) affiche chaque routeur traversé, avec le temps de réponse." }
-                ] }, done));
-              }
-            }
+            side: { title: '🛰️ Les questions de Soizic', notion: 'routage', questions: [
+              { q: "Avec <code>tracert wikipedia.fr</code> : par quelle ville passe le paquet <b>juste avant</b> Paris ?",
+                c: ['Rennes', 'Nantes', 'Morlaix', 'Quimper'], a: 0,
+                hint: 'Lis les noms des routeurs, ligne par ligne : routeur-…iroisenet.bzh.', ex: "Brest → Morlaix → Rennes → Paris : chaque ligne du tracert est un routeur." },
+              { q: "Sur la carte, on pourrait aussi passer par Quimper et Nantes. Pourquoi le paquet ne le fait-il pas ?",
+                c: ['Ce chemin-là est plus court', 'Le routeur de Quimper est en panne depuis ce matin', 'Chaque paquet tire son chemin au hasard', "Nantes n'a pas de liaison vers Paris"], a: 0,
+                fb: [null, "Aucune alarme sur la carte : tous les routeurs fonctionnent.", "Non : chaque routeur suit sa table, qui donne le meilleur chemin.", "Regarde la carte (touche T) : Nantes est bien relié à Paris."],
+                ex: "Les tables de routage choisissent le chemin le plus court : 600 km par Morlaix et Rennes, contre 685 km par Quimper et Nantes." },
+              { q: "Annaïg, à Ouessant, trouve Internet très lent. Fais <code>tracert mairie-ouessant.bzh</code>. Où le temps de réponse augmente-t-il brutalement ?",
+                c: ['Entre Brest et Ouessant', 'Dès la sortie de ton poste', 'Entre Rennes et Paris', 'Il ne change presque pas'], a: 0,
+                hint: 'Compare la colonne des millisecondes, ligne par ligne.', ex: "Entre Brest et Ouessant, ce n'est pas de la fibre mais une <b>liaison radio</b> : plusieurs centaines de millisecondes au lieu de quelques-unes." },
+              { q: 'À quoi sert la commande tracert ?',
+                c: ['À traduire un nom de domaine en adresse IP', 'À afficher sa propre adresse IP', 'À afficher les routeurs traversés', 'À accélérer la connexion'], a: 2,
+                ex: "tracert (traceroute) affiche chaque routeur traversé, avec le temps de réponse." }
+            ] },
+            onSide: done
           });
         } },
       { id: 'm3s4', label: 'Panne ! Rétablir le chemin vers Paris (grand écran)', target: 'ecran',
@@ -576,11 +690,19 @@ const MISSIONS = [
             ['soizic', "Le routeur de Morlaix s'en est aperçu et a prévenu ses voisins : « je ne peux plus joindre Paris ». Mets à jour la table de Brest, puis renvoie un paquet."]
           ], () => routing({ title: '🚧 Panne entre Morlaix et Rennes', from: 'brest', to: 'paris', ttl: 8, editAt: 'brest',
             intro: "La liaison <b>Morlaix – Rennes</b> est coupée (en rouge). Choisis d'abord le nouveau voisin de Brest pour aller à Paris, puis route le paquet.",
-            onDone: () => quiz({ title: '🚧 Après la panne', notion: 'routage', questions: [
+            onDone: () => say([
+              ['soizic', "Bien joué. Les autres routeurs ont mis leur table à jour, eux aussi. Annaïg, à Ouessant, envoie justement un paquet vers Paris."],
+              ['soizic', "Retour dans le brouillard : tu ne vois que les voisins. Fais confiance aux tables !"]
+            ], () => routing({ title: '🌫️ Ouessant → Paris, après la panne', from: 'ouessant', to: 'paris', ttl: 8, fog: true,
+              intro: "Un paquet part d'<b>Ouessant</b> vers <b>Paris</b>. La liaison Morlaix – Rennes est toujours coupée, mais les tables ont été mises à jour. Tu ne vois que les voisins du routeur où se trouve le paquet.",
+              onDone: () => quiz({ title: '🚧 Après la panne', notion: 'routage', questions: [
               { q: 'Comment les routeurs ont-ils réagi à la panne ?',
                 c: ['Ils ont attendu que la fibre soit réparée', 'Un ordinateur central les a tous reprogrammés à distance', 'Ils ont tous été redémarrés', 'Ils ont changé de chemin de proche en proche'], a: 3,
-                ex: "Les routeurs échangent en permanence avec leurs voisins : quand l'un disparaît, les autres trouvent un nouveau chemin." }
-            ] }, done) }));
+                ex: "Les routeurs échangent en permanence avec leurs voisins : quand l'un disparaît, les autres trouvent un nouveau chemin." },
+              { q: "Le paquet d'Ouessant est passé par Quimper et Nantes, plus long que Morlaix et Rennes. Pourquoi ?",
+                c: ['La liaison Morlaix – Rennes est coupée', "Ouessant n'a pas le droit de passer par Morlaix", 'Les paquets des îles prennent toujours le plus long', 'Paris a demandé ce chemin-là'], a: 0,
+                ex: "Le chemin le plus court est coupé : les tables ont choisi le meilleur chemin <b>encore disponible</b>." }
+            ] }, done) })) }));
         },
         skip() { S.net.cut = 'morlaix-rennes'; },
         notions: ['routage'] },
@@ -608,7 +730,7 @@ const MISSIONS = [
   {
     id: 'm4', partie: 2, title: 'TCP à la rescousse', when: 'Lundi · 15h30 · Brest',
     story: "La classe de 2nde du lycée La Croix Rouge prépare une visio avec ses correspondants de Plymouth, de l'autre côté de la Manche. Mme Quéré, la documentaliste, appelle : leur message arrive en morceaux !",
-    goals: ['Distinguer le rôle des protocoles IP et TCP', 'Distinguer la fiabilité de transmission et l\'absence de garantie temporelle', 'Faire le bilan : pair-à-pair, neutralité du Net'],
+    goals: ['Distinguer le rôle des protocoles IP et TCP', 'Distinguer la fiabilité de transmission et l\'absence de garantie temporelle', "Décrire l'intérêt des réseaux pair-à-pair et leurs usages illicites", 'Faire le bilan : neutralité du Net'],
     onStart() { S.ring = true; },
     steps: [
       { id: 'm4s1', label: 'Écouter Mme Quéré (lycée La Croix Rouge)', target: 'telephone',
@@ -631,6 +753,10 @@ const MISSIONS = [
               { q: "Quel protocole a remis les paquets dans l'ordre et redemandé ceux qui manquaient ?",
                 c: ['IP', 'DNS', 'TCP', 'NTP'], a: 2,
                 ex: "<b>TCP</b> fiabilise la communication : il réordonne et redemande les paquets manquants." },
+              { q: "Le paquet n° 7 n'arrive jamais au lycée. Que fait TCP, sur l'ordinateur qui reçoit ?",
+                c: ["Il le redemande à l'émetteur", 'Il invente le contenu manquant', 'Il affiche le message sans ce morceau', 'Il demande au routeur de Brest de le chercher'], a: 0,
+                fb: [null, "TCP ne devine rien : il veut le vrai morceau.", "TCP garantit un message complet : il ne laisse pas de trou.", "Les routeurs ne gardent pas les paquets : seul l'émetteur peut renvoyer le morceau."],
+                ex: "Comme tu l'as fait avec le bouton « redemander » : TCP réclame à l'émetteur les paquets manquants." },
               { q: "Où est installé TCP/IP ?",
                 c: ['Dans les câbles de fibre optique', 'Uniquement chez IroiseNet', 'Dans chaque appareil connecté', 'Dans les satellites seulement'], a: 2,
                 ex: "TCP/IP n'est pas dans l'infrastructure : il est dans chacun des ordinateurs connectés." }
@@ -656,6 +782,31 @@ const MISSIONS = [
           ] }, done));
         },
         notions: ['temps'] },
+      { id: 'm4p2p', label: 'Distribuer la mise à jour du lycée (avec Maëlys)', target: 'maelys',
+        run() {
+          say([
+            ['cdi', "(au téléphone) Encore moi ! Pour la visio de jeudi, les 8 ordinateurs de la salle doivent installer la mise à jour du logiciel : 4 Go chacun. Le technicien dit que ça va prendre une éternité…"],
+            ['maelys', "Deux méthodes : tout télécharger depuis le serveur du lycée, ou laisser les ordinateurs s'échanger les morceaux, en <b>pair-à-pair</b>. Essaie les deux sur mon simulateur, et compare."]
+          ], () => p2pLab({ title: '🔁 Serveur ou pair-à-pair ?',
+            intro: "Le fichier de 4 Go est découpé en <b>12 morceaux</b>. Le serveur du lycée ne peut envoyer qu'<b>un morceau à la fois</b> (environ 27 s par morceau). En bleu : les morceaux reçus du serveur ; en vert : ceux reçus d'un autre PC.",
+            onDone: () => quiz({ title: '🔁 Le bilan de Maëlys', notion: 'p2p', questions: [
+              { q: 'Quelle méthode a été la plus rapide, et pourquoi ?',
+                c: ["Le pair-à-pair : les PC s'échangent les morceaux", 'Le serveur : un seul expéditeur, c\'est plus simple', 'Le serveur : il a une meilleure connexion que les PC', 'Aucune : elles ont pris exactement le même temps'], a: 0,
+                fb: [null, "Regarde les chronomètres : le serveur seul a mis bien plus longtemps.", "Le serveur est le même dans les deux cas : c'est l'aide des autres PC qui change tout.", "Compare les deux résultats affichés sous le simulateur."],
+                ex: "En pair-à-pair, chaque ordinateur est à la fois <b>récepteur et émetteur</b> : plus il y a d'ordinateurs, plus il y a d'expéditeurs." },
+              { q: "En pair-à-pair, combien de morceaux le serveur a-t-il envoyés, par rapport au mode serveur ?",
+                c: ['Beaucoup moins : environ une copie du fichier', 'Exactement autant : huit copies complètes du fichier', "Plus, car il doit aussi aider tous les PC", "Aucun : les PC se débrouillent tout seuls"], a: 0,
+                fb: [null, "Relis les compteurs : en mode serveur, 8 × 12 = 96 morceaux. Et en pair-à-pair ?", "Relis le compteur du serveur en pair-à-pair.", "Il faut bien que quelqu'un envoie chaque morceau une première fois !"],
+                ex: "Le serveur n'envoie presque qu'une copie : ce sont les PC qui la diffusent entre eux. Il n'est plus saturé." },
+              { q: "Le serveur du lycée tombe en panne au milieu de la distribution en pair-à-pair, mais chaque morceau est déjà sur au moins un PC. Que se passe-t-il ?",
+                c: ["Les PC continuent à s'échanger leurs morceaux", 'Tout s\'arrête : rien ne circule sans le serveur', 'Les PC doivent tout recommencer depuis le début', 'Les morceaux déjà reçus sont effacés'], a: 0,
+                ex: "Pas de serveur central indispensable : tant que chaque morceau existe quelque part, les pairs peuvent finir la distribution." },
+              { t: 'tri', q: "Le pair-à-pair est une technique : c'est l'usage qui est légal ou non. Range ces usages :", cats: ['Légal', 'Illicite'],
+                items: [['Télécharger un logiciel libre (Linux) en pair-à-pair', 0], ['Partager le dernier film sorti au cinéma', 1], ['Mettre à jour un jeu vidéo (le lanceur utilise le pair-à-pair)', 0], ["Diffuser l'album d'un artiste sans son accord", 1], ['Partager ses propres vidéos de vacances', 0], ["Partager une série d'une plateforme payante", 1]],
+                hint: "La question à se poser : l'auteur a-t-il donné son accord ?", ex: "Partager une œuvre sans l'accord de ses auteurs est interdit par le droit d'auteur, quelle que soit la technique utilisée." }
+            ] }, done) }));
+        },
+        notions: ['p2p'] },
       { id: 'm4s4', label: 'Rapport final à Gwenaëlle', target: 'gwen',
         run() {
           say([
@@ -695,9 +846,9 @@ const MISSIONS = [
         notions: ['hypertexte'] },
       { id: 'm5s2', label: 'Compléter la frise avec l\'histoire du Web', target: 'frise',
         run() {
-          say([['gwen', "Tu tombes bien ! J'ai ajouté le Web sur la frise. Internet date de 1983… et le Web, d'après toi ?"]], () => quiz({ title: '🕸️ La frise du Web', notion: 'web_histoire', intro: "📒 La fiche « Petite histoire du Web » vient de s'ajouter à ton carnet (touche C).", questions: [
+          say([['gwen', "Tu tombes bien ! J'ai ajouté le Web sur la frise. Internet date de 1983… et le Web, d'après toi ?"]], () => quiz({ title: '🕸️ La frise du Web', notion: 'web_histoire', intro: "📒 La fiche « Petite histoire du Web » vient de s'ajouter à ton mémo (touche M).", questions: [
             { t: 'order', q: "Remets ces étapes du Web dans l'ordre chronologique :", items: ["Ted Nelson invente l'hypertexte", 'Tim Berners-Lee crée le Web au CERN', 'Mosaic, premier navigateur grand public', 'JavaScript et PHP : des sites interactifs', 'Le DOM standardise les pages', 'Le Web arrive sur les mobiles'],
-              hint: 'La fiche « Petite histoire du Web » de ton carnet donne les dates.', ex: '1965, 1989, 1993, 1995, 2001, 2010 : en moins de 50 ans, le Web est passé d\'une idée à nos téléphones.' },
+              hint: 'La fiche « Petite histoire du Web » de ton mémo donne les dates.', ex: '1965, 1989, 1993, 1995, 2001, 2010 : en moins de 50 ans, le Web est passé d\'une idée à nos téléphones.' },
             { q: 'Où le Web est-il né, en 1989 ?', c: ['Au CERN, près de Genève', 'Dans la Silicon Valley', "Au ministère de l'Armée américaine", 'À Brest, chez IroiseNet'], a: 0,
               ex: "Au CERN, le laboratoire européen de physique, où Tim Berners-Lee voulait partager des documents entre chercheurs." },
             { q: 'Internet (1983) et le Web (1989) : lequel est apparu en premier ?', c: ["Internet, et le Web s'appuie dessus", 'Le Web, et Internet est venu ensuite', 'Les deux sont nés le même jour', "Ils sont nés à cinquante ans d'écart"], a: 0,
@@ -727,20 +878,34 @@ const MISSIONS = [
             tasks: [
               { label: 'Clique sur « La carte du jour », puis ouvre sa requête dans l\'onglet Réseau', test: o => o.opened.some(r => r.path === '/carte.php') },
               { label: 'Clique sur « Nos horaires » : quel code le serveur renvoie-t-il ?', test: o => o.log.some(r => r.status === 404) },
-              { label: 'Affiche le code source de la page d\'accueil', test: o => o.source.includes('/index.html') }
+              { label: 'Affiche le code source de la page d\'accueil', test: o => o.source.includes('/index.html') },
+              { label: "Trouve la galette du <b>vendredi</b> : aucun lien n'y mène, modifie l'adresse dans la barre !", hint: "Dans la barre d'adresse, remplace <code>jour=mardi</code> par <code>jour=vendredi</code>, puis « Aller ».",
+                test: o => o.log.some(r => r.path === '/carte.php' && String(r.params.jour || '').toLowerCase() === 'vendredi') },
+              { label: 'Pour rire : demande la carte d\'un jour qui n\'existe pas', hint: 'Par exemple <code>jour=noel</code>.',
+                test: o => o.log.some(r => r.path === '/carte.php' && r.params.jour && !CARTE_DU_JOUR[String(r.params.jour).toLowerCase()] && String(r.params.jour).toLowerCase() !== 'lundi') }
             ],
-            onDone: () => quiz({ title: '📨 Ce que dit l\'onglet Réseau', notion: 'http', questions: [
-              { t: 'input', q: 'Dans la requête de la carte du jour, quel est le <b>nom</b> du paramètre passé au serveur ?', a: ['jour'], ph: 'nom du paramètre',
-                hint: "Les paramètres sont après le « ? », sous la forme nom=valeur.", ex: "Dans <code>/carte.php?jour=mardi</code>, le paramètre s'appelle <b>jour</b>." },
-              { t: 'input', q: 'Et quelle est la <b>valeur</b> de ce paramètre ?', a: ['mardi'], ph: 'valeur',
-                ex: "jour=<b>mardi</b> : le serveur s'en sert pour fabriquer la carte du bon jour. Essaie <code>?jour=dimanche</code> dans la barre d'adresse, tu verras !" },
+            side: { title: '📨 Les questions de Klervi', notion: 'http', questions: [
+              { t: 'input', q: 'Quelle est la galette du jour le <b>vendredi</b> ?', a: ['Galette Saint-Jacques', 'Saint-Jacques', 'Saint Jacques', 'Galette Saint Jacques', 'Galette Saint-Jacques – 14 €', 'Galette Saint-Jacques - 14 €', 'Galette Saint-Jacques 14 €'], ph: 'nom de la galette',
+                hint: "Aucun lien n'y mène : change la valeur du paramètre <code>jour</code> dans la barre d'adresse.", ex: "En changeant le paramètre <code>jour</code> dans l'URL, tu as envoyé ta propre requête au serveur." },
+              { q: "Pour te répondre, le serveur avait-il un fichier <code>vendredi.html</code> tout prêt ?",
+                c: ['Non : un programme fabrique la page selon le paramètre', 'Oui : il y a un fichier par jour de la semaine, tout prêt sur le serveur', "Oui : le navigateur l'avait déjà gardé en mémoire", "Non : c'est le DNS qui a fabriqué la page"], a: 0,
+                fb: [null, "Regarde l'onglet Réseau : on demande toujours le même fichier, carte.php. Seul le paramètre change.", "Tu n'avais jamais demandé le vendredi : le navigateur ne pouvait pas l'avoir.", "Le DNS traduit les noms en adresses, il ne fabrique pas de pages."],
+                ex: "<code>carte.php</code> est un <b>programme</b> exécuté sur le serveur : il lit le paramètre <code>jour</code> et fabrique la page à chaque requête. Le jour farfelu le prouve !" },
+              { q: "Dans l'onglet Réseau, combien de requêtes le navigateur envoie-t-il pour afficher la page d'accueil ?",
+                c: ['Deux : la page HTML, puis sa feuille de style', 'Une seule : la page contient tout', 'Trois : une pour chaque lien et pour la photo de la page', "Aucune : la page est déjà sur l'ordinateur"], a: 0,
+                fb: [null, "Regarde bien la liste : index.html… et un deuxième fichier.", "Les liens ne sont demandés que quand on clique dessus.", "Chaque affichage déclenche des requêtes : regarde l'onglet Réseau."],
+                ex: "Le HTML demande lui-même la feuille de style (<code>&lt;link rel=\"stylesheet\"&gt;</code>) : le navigateur envoie une requête par fichier." },
               { q: 'Quelle méthode HTTP le navigateur utilise-t-il pour demander une page ?', c: ['GET', 'POST', 'PING', 'DNS'], a: 0,
                 fb: [null, 'POST sert surtout à envoyer un formulaire.', "ping est une commande de test du réseau, pas une méthode HTTP.", "Le DNS est l'annuaire d'Internet, pas une méthode HTTP."],
                 ex: '<b>GET</b> veut dire « donne-moi cette page ». <b>POST</b> sert à envoyer des données, par exemple un formulaire.' },
               { q: 'Pour les horaires, le serveur a répondu <b>404 Not Found</b>. Que signifie ce code ?', c: ["La page demandée n'existe pas", 'Le serveur web est complètement éteint', 'Le DNS ne connaît pas ce nom de site', 'La fibre de la crêperie est coupée'], a: 0,
                 fb: [null, "Un serveur éteint ne répondrait rien du tout. Ici, il répond… pour dire que la page n'existe pas.", "Le DNS a bien trouvé le serveur, puisque le serveur a répondu.", "Les autres pages du site s'affichent : la connexion fonctionne."],
-                ex: "Le lien demande <code>horaires.htm</code>, mais le fichier s'appelle <code>horaires.html</code>. On va corriger ça avec Klervi." }
-            ] }, done)
+                ex: "Le lien demande <code>horaires.htm</code>, mais le fichier s'appelle <code>horaires.html</code>. On va corriger ça avec Klervi." },
+              { q: "Essaie <code>?jour=lundi</code> : le serveur répond <b>200 OK</b>, pas 404. Pourquoi ?",
+                c: ['Le programme existe, il fabrique une page « fermé »', 'Le lundi, le serveur web de la crêperie ne vérifie jamais les erreurs', '200 veut dire que la crêperie est fermée', "Le navigateur a corrigé l'erreur tout seul"], a: 0,
+                ex: "404 signifie « ce fichier n'existe pas ». Ici, <code>carte.php</code> existe bien : il répond simplement que la crêperie est fermée le lundi." }
+            ] },
+            onDone: done
           }));
         },
         notions: ['http'] },
